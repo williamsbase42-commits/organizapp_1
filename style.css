@@ -2135,6 +2135,33 @@ header .shadow-xl {
   overflow: visible !important;
 }
 
+/* Estilos específicos para botones de opciones dentro de carpetas */
+#folder-items-list .item-options-btn {
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+#folder-items-list .item-options-btn:hover {
+  background-color: rgba(107, 114, 128, 0.1) !important;
+}
+
+/* Asegurar que los menús dentro de carpetas sean completamente visibles */
+#folder-items-list .item-options-menu {
+  position: fixed !important;
+  z-index: 99999 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  display: block !important;
+}
+
+/* Forzar visibilidad del menú cuando no está oculto */
+#folder-items-list .item-options-menu:not(.hidden) {
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: block !important;
+}
+
 @keyframes menuSlideIn {
   from {
     opacity: 0;

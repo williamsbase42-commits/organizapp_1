@@ -3799,12 +3799,12 @@ function exportFolder(folderId) {
 
     // Crear y descargar archivo
     const jsonString = JSON.stringify(exportData, null, 2);
-    const blob = new Blob([jsonString], { type: 'application/json' });
+    const blob = new Blob([jsonString], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     
     const a = document.createElement('a');
     a.href = url;
-    a.download = `carpeta-${folder.name.replace(/[^a-zA-Z0-9]/g, '_')}.json`;
+    a.download = `carpeta-${folder.name.replace(/[^a-zA-Z0-9]/g, '_')}.txt`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -3857,12 +3857,12 @@ function exportNote(itemId) {
 
     // Crear y descargar archivo
     const jsonString = JSON.stringify(exportData, null, 2);
-    const blob = new Blob([jsonString], { type: 'application/json' });
+    const blob = new Blob([jsonString], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     
     const a = document.createElement('a');
     a.href = url;
-    a.download = `nota-${item.content.substring(0, 30).replace(/[^a-zA-Z0-9]/g, '_')}.json`;
+    a.download = `nota-${item.content.substring(0, 30).replace(/[^a-zA-Z0-9]/g, '_')}.txt`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -3946,12 +3946,6 @@ async function shareNote(itemId) {
     }
 
     try {
-        // Verificar si Web Share API está disponible
-        if (!navigator.share) {
-            showSystemMessage("Tu navegador no permite compartir archivos directamente. Usa la opción de Exportar.", 'error');
-            return;
-        }
-
         // Crear datos de la nota
         const exportData = {
             tipo: "nota",
@@ -3966,35 +3960,61 @@ async function shareNote(itemId) {
             carpeta: item.folderId ? getFolderById(item.folderId)?.name : null
         };
 
+        // Crear archivo .txt con contenido JSON
         const jsonString = JSON.stringify(exportData, null, 2);
-        const blob = new Blob([jsonString], { type: 'application/json' });
-        const fileName = `nota-${item.content.substring(0, 30).replace(/[^a-zA-Z0-9]/g, '_')}.json`;
+        const blob = new Blob([jsonString], { type: 'text/plain' });
+        const fileName = `nota-${item.content.substring(0, 30).replace(/[^a-zA-Z0-9]/g, '_')}.txt`;
         
-        const file = new File([blob], fileName, { type: 'application/json' });
+        const file = new File([blob], fileName, { type: 'text/plain' });
 
-        await navigator.share({
-            title: 'Nota - OrganizApp',
-            text: `Mira esta nota "${item.content.substring(0, 50)}..." exportada desde OrganizApp`,
-            files: [file]
-        });
-
-        showSystemMessage(`Nota "${item.content.substring(0, 30)}..." compartida correctamente`);
+        // Verificar si Web Share API está disponible
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+                title: 'Nota - OrganizApp',
+                text: `Mira esta nota "${item.content.substring(0, 50)}..." exportada desde OrganizApp`,
+                files: [file]
+            });
+            showSystemMessage(`Nota "${item.content.substring(0, 30)}..." compartida correctamente`);
+        } else {
+            // Fallback: compartir solo texto
+            const shareText = `📝 Nota de OrganizApp\n\n"${item.content}"\n\nTipo: ${item.type}\nEstado: ${item.status}\nFecha: ${item.date}`;
+            
+            if (navigator.share) {
+                await navigator.share({
+                    title: 'Nota - OrganizApp',
+                    text: shareText
+                });
+                showSystemMessage(`Nota "${item.content.substring(0, 30)}..." compartida correctamente`);
+            } else {
+                // Copiar al portapapeles como último recurso
+                await navigator.clipboard.writeText(shareText);
+                showSystemMessage(`Nota copiada al portapapeles. Contenido:\n\n${shareText}`, 'info');
+            }
+        }
     } catch (error) {
         if (error.name === 'AbortError') {
             showSystemMessage("Compartir cancelado");
         } else {
-            showSystemMessage("Error al compartir. Usa la opción de Exportar.", 'error');
+            console.error('Error al compartir:', error);
+            // Fallback: copiar al portapapeles
+            try {
+                const shareText = `📝 Nota de OrganizApp\n\n"${item.content}"\n\nTipo: ${item.type}\nEstado: ${item.status}\nFecha: ${item.date}`;
+                await navigator.clipboard.writeText(shareText);
+                showSystemMessage(`Error al compartir. Nota copiada al portapapeles:\n\n${shareText}`, 'info');
+            } catch (clipboardError) {
+                showSystemMessage("Error al compartir. Usa la opción de Exportar.", 'error');
+            }
         }
     }
 }
 
 /**
- * IMPORTA UN ARCHIVO JSON (CARPETA O NOTA)
+ * IMPORTA UN ARCHIVO (.txt o .json) EXPORTADO DESDE ORGANIZAPP
  */
 function importFile() {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = '.json';
+    input.accept = '.json,.txt';
     input.style.display = 'none';
     
     input.onchange = function(event) {
@@ -4020,7 +4040,7 @@ function importFile() {
                     showSystemMessage("❌ Archivo incompatible con OrganizApp.", 'error');
                 }
             } catch (error) {
-                showSystemMessage("❌ Error al leer el archivo. Verifica que sea un JSON válido.", 'error');
+                showSystemMessage("❌ Error al leer el archivo. Verifica que sea un archivo válido exportado desde OrganizApp (.txt o .json).", 'error');
             }
         };
         
