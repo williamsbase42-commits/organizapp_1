@@ -1008,7 +1008,7 @@ function saveFolders() {
 }
 
 /** Crea una nueva carpeta. */
-function createFolder(name, description = '', color = 'green', emoji = '📁') {
+function createFolder(name, description = '', color = 'green', emoji = '📁', accessKey = null) {
     console.log('Creating folder:', name, description, color, emoji);
     
     const newFolder = {
@@ -1024,6 +1024,11 @@ function createFolder(name, description = '', color = 'green', emoji = '📁') {
     
     folders.push(newFolder);
     console.log('Folder created:', newFolder);
+    
+    // Guardar clave de acceso si se proporciona
+    if (accessKey && accessKey.trim()) {
+        saveFolderAccessKey(newFolder.id, accessKey.trim());
+    }
     
     saveFolders();
     renderFoldersList();
@@ -1214,11 +1219,20 @@ function createFolderCardHtml(folder, itemsCount) {
     const folderColor = folder.color || 'green';
     const colorConfig = getColorConfig(folderColor);
     
+    // Verificar si la carpeta tiene clave de acceso
+    const hasAccessKey = hasFolderAccessKey(folder.id);
+    const isUnlocked = isFolderUnlocked(folder.id);
+    
     return `
         <div class="folder-card group bg-gradient-to-br from-white via-gray-50/50 to-gray-100/50 dark:from-gray-800 dark:via-gray-700/50 dark:to-gray-600/50 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600" data-folder-id="${folder.id}">
             <div class="flex items-center justify-between mb-4">
-                <div class="folder-icon p-3 rounded-xl shadow-md" style="${getIconColorStyle(folderColor)}">
+                <div class="folder-icon p-3 rounded-xl shadow-md relative" style="${getIconColorStyle(folderColor)}">
                     <span class="text-2xl">${folder.emoji || '📁'}</span>
+                    ${hasAccessKey ? `
+                        <div class="absolute -top-1 -right-1 w-4 h-4 bg-yellow-500 rounded-full border-2 border-white dark:border-gray-800 flex items-center justify-center" title="${isUnlocked ? 'Carpeta desbloqueada' : 'Carpeta protegida - Requiere clave'}">
+                            <span class="text-xs">${isUnlocked ? '🔓' : '🔐'}</span>
+                        </div>
+                    ` : ''}
                 </div>
                 <div class="relative">
                     <button class="folder-options-btn p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 shadow-sm hover:shadow-md" data-folder-id="${folder.id}" title="Opciones de carpeta">
@@ -1252,6 +1266,14 @@ function createFolderCardHtml(folder, itemsCount) {
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
                                     </svg>
                                     <span>Compartir carpeta</span>
+                                </div>
+                            </button>
+                            <button class="folder-menu-access-key w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 hover:text-yellow-600 dark:hover:text-yellow-400 transition-colors" data-action="${hasAccessKey ? 'remove-access-key' : 'access-key'}" data-folder-id="${folder.id}">
+                                <div class="flex items-center space-x-2">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                                    </svg>
+                                    <span>${hasAccessKey ? 'Eliminar clave de acceso' : 'Crear clave de acceso'}</span>
                                 </div>
                             </button>
                             <div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
@@ -1497,7 +1519,13 @@ function showFoldersListView() {
 }
 
 /** Muestra el contenido de una carpeta específica */
-function showFolderContentView(folderId) {
+function showFolderContentView(folderId, skipAccessCheck = false) {
+    // Verificar si la carpeta tiene clave de acceso (solo si no se salta la verificación)
+    if (!skipAccessCheck && hasFolderAccessKey(folderId) && !isFolderUnlocked(folderId)) {
+        openAccessKeyModal(folderId);
+        return;
+    }
+    
     currentFolderView = 'content';
     selectedFolderId = folderId;
     
@@ -1703,6 +1731,20 @@ function renderList() {
         };
         filteredItems = filteredItems.filter(item => item.type === categoryMap[currentCategory]);
     }
+
+    // Filtrar elementos de carpetas protegidas
+    filteredItems = filteredItems.filter(item => {
+        if (!item.folderId) {
+            return true; // Elementos sin carpeta siempre se muestran
+        }
+        
+        // Si el elemento está en una carpeta protegida, verificar si está desbloqueada
+        if (hasFolderAccessKey(item.folderId)) {
+            return isFolderUnlocked(item.folderId);
+        }
+        
+        return true; // Carpetas sin protección siempre se muestran
+    });
 
     // En la vista Todo, mostrar TODOS los elementos (con y sin carpeta)
     // En otras vistas, mantener el comportamiento original
@@ -2594,7 +2636,15 @@ document.addEventListener('click', (e) => {
     if (e.target.closest('.folder-card') && !e.target.closest('.folder-options-btn') && !e.target.closest('.folder-options-menu')) {
         const folderCard = e.target.closest('.folder-card');
         const folderId = folderCard.getAttribute('data-folder-id');
-        showFolderContentView(folderId);
+        
+        // Verificar si la carpeta tiene clave de acceso
+        if (hasFolderAccessKey(folderId) && !isFolderUnlocked(folderId)) {
+            // Mostrar modal de clave de acceso
+            openAccessKeyModal(folderId);
+        } else {
+            // Abrir carpeta normalmente
+            showFolderContentView(folderId);
+        }
     }
     
     // Click en botón de opciones de carpeta
@@ -2619,7 +2669,7 @@ document.addEventListener('click', (e) => {
     }
     
     // Click en opciones del menú de carpeta
-    if (e.target.closest('.folder-menu-edit, .folder-menu-export, .folder-menu-share, .folder-menu-delete')) {
+    if (e.target.closest('.folder-menu-edit, .folder-menu-export, .folder-menu-share, .folder-menu-access-key, .folder-menu-delete')) {
         e.preventDefault();
         e.stopPropagation();
         const menuItem = e.target.closest('[data-action]');
@@ -2645,6 +2695,12 @@ document.addEventListener('click', (e) => {
                 break;
             case 'share':
                 shareFolder(folderId);
+                break;
+            case 'access-key':
+                openCreateAccessKeyModal(folderId);
+                break;
+            case 'remove-access-key':
+                openRemoveAccessKeyModal(folderId);
                 break;
             case 'delete':
                 if (confirm('¿Estás seguro de que quieres eliminar esta carpeta y todos sus elementos?')) {
@@ -2974,10 +3030,24 @@ document.getElementById('create-folder-confirm-btn').addEventListener('click', (
     const description = folderDescriptionInput.value.trim();
     const color = getSelectedFolderColor('folder-color-option');
     const emoji = getSelectedFolderEmoji('folder-emoji-option');
+    const accessKeyInput = document.getElementById('folder-access-key-input');
+    const hasAccessKeyCheckbox = document.getElementById('folder-has-access-key');
+    
+    // Obtener clave de acceso si está habilitada
+    let accessKey = null;
+    if (hasAccessKeyCheckbox.checked && accessKeyInput.value.trim()) {
+        accessKey = accessKeyInput.value.trim();
+    }
     
     if (name) {
-        createFolder(name, description, color, emoji);
+        createFolder(name, description, color, emoji, accessKey);
         createFolderModal.classList.add('hidden');
+        
+        // Limpiar campos
+        folderNameInput.value = '';
+        folderDescriptionInput.value = '';
+        accessKeyInput.value = '';
+        hasAccessKeyCheckbox.checked = false;
     } else {
         showSystemMessage("El nombre de la carpeta es obligatorio.", 'error');
         folderNameInput.focus();
@@ -3016,6 +3086,40 @@ document.getElementById('delete-folder-btn').addEventListener('click', () => {
             editFolderModal.classList.add('hidden');
             editingFolderId = null;
         }
+    }
+});
+
+// Event listeners para modales de clave de acceso
+document.getElementById('cancel-access-key-btn').addEventListener('click', () => {
+    document.getElementById('access-key-modal').classList.add('hidden');
+});
+
+document.getElementById('confirm-access-key-btn').addEventListener('click', handleConfirmAccessKey);
+
+document.getElementById('cancel-create-access-key-btn').addEventListener('click', () => {
+    document.getElementById('create-access-key-modal').classList.add('hidden');
+});
+
+document.getElementById('save-access-key-btn').addEventListener('click', handleSaveAccessKey);
+
+// Event listener para Enter en el campo de clave de acceso
+document.getElementById('access-key-input').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        handleConfirmAccessKey();
+    }
+});
+
+// Event listener para Enter en el campo de nueva clave de acceso
+document.getElementById('new-access-key-input').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        handleSaveAccessKey();
+    }
+});
+
+// Event listener para Enter en el campo de confirmar clave de acceso
+document.getElementById('confirm-access-key-input').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        handleSaveAccessKey();
     }
 });
 
@@ -4018,6 +4122,343 @@ async function shareFolder(folderId) {
             showSystemMessage("Error al compartir. Usa la opción de Exportar.", 'error');
         }
     }
+}
+
+// ===== FUNCIONES DE CLAVE DE ACCESO =====
+
+/**
+ * Almacena la clave de acceso de una carpeta en localStorage
+ * @param {string} folderId - ID de la carpeta
+ * @param {string} accessKey - Clave de acceso
+ */
+function saveFolderAccessKey(folderId, accessKey) {
+    const accessKeys = getFolderAccessKeys();
+    accessKeys[folderId] = accessKey;
+    localStorage.setItem('folderAccessKeys', JSON.stringify(accessKeys));
+}
+
+/**
+ * Obtiene la clave de acceso de una carpeta desde localStorage
+ * @param {string} folderId - ID de la carpeta
+ * @returns {string|null} - Clave de acceso o null si no existe
+ */
+function getFolderAccessKey(folderId) {
+    const accessKeys = getFolderAccessKeys();
+    return accessKeys[folderId] || null;
+}
+
+/**
+ * Obtiene todas las claves de acceso almacenadas
+ * @returns {Object} - Objeto con las claves de acceso por carpeta
+ */
+function getFolderAccessKeys() {
+    const stored = localStorage.getItem('folderAccessKeys');
+    return stored ? JSON.parse(stored) : {};
+}
+
+/**
+ * Elimina la clave de acceso de una carpeta
+ * @param {string} folderId - ID de la carpeta
+ */
+function removeFolderAccessKey(folderId) {
+    const accessKeys = getFolderAccessKeys();
+    delete accessKeys[folderId];
+    localStorage.setItem('folderAccessKeys', JSON.stringify(accessKeys));
+}
+
+/**
+ * Verifica si una carpeta tiene clave de acceso
+ * @param {string} folderId - ID de la carpeta
+ * @returns {boolean} - true si tiene clave de acceso
+ */
+function hasFolderAccessKey(folderId) {
+    return getFolderAccessKey(folderId) !== null;
+}
+
+/**
+ * Verifica si el usuario ha ingresado la clave correcta para una carpeta
+ * @param {string} folderId - ID de la carpeta
+ * @returns {boolean} - true si la clave es correcta
+ */
+function isFolderUnlocked(folderId) {
+    // La clave debe ser permanente - siempre retornar false para forzar ingreso de clave
+    return false;
+}
+
+/**
+ * Obtiene la lista de carpetas desbloqueadas en esta sesión
+ * @returns {Array} - Array de IDs de carpetas desbloqueadas
+ */
+function getUnlockedFolders() {
+    const stored = sessionStorage.getItem('unlockedFolders');
+    return stored ? JSON.parse(stored) : [];
+}
+
+/**
+ * Marca una carpeta como desbloqueada en esta sesión
+ * @param {string} folderId - ID de la carpeta
+ */
+function unlockFolder(folderId) {
+    const unlockedFolders = getUnlockedFolders();
+    if (!unlockedFolders.includes(folderId)) {
+        unlockedFolders.push(folderId);
+        sessionStorage.setItem('unlockedFolders', JSON.stringify(unlockedFolders));
+    }
+}
+
+/**
+ * Bloquea una carpeta (requiere ingresar clave nuevamente)
+ * @param {string} folderId - ID de la carpeta
+ */
+function lockFolder(folderId) {
+    const unlockedFolders = getUnlockedFolders();
+    const index = unlockedFolders.indexOf(folderId);
+    if (index > -1) {
+        unlockedFolders.splice(index, 1);
+        sessionStorage.setItem('unlockedFolders', JSON.stringify(unlockedFolders));
+    }
+}
+
+/**
+ * Abre el modal para crear/editar clave de acceso
+ * @param {string} folderId - ID de la carpeta
+ */
+function openCreateAccessKeyModal(folderId) {
+    const modal = document.getElementById('create-access-key-modal');
+    
+    if (!modal) {
+        console.error('Modal create-access-key-modal no encontrado');
+        return;
+    }
+    
+    const newKeyInput = document.getElementById('new-access-key-input');
+    const confirmKeyInput = document.getElementById('confirm-access-key-input');
+    const enableCheckbox = document.getElementById('enable-access-key');
+    const matchError = document.getElementById('access-key-match-error');
+    
+    // Limpiar campos
+    newKeyInput.value = '';
+    confirmKeyInput.value = '';
+    enableCheckbox.checked = false;
+    matchError.classList.add('hidden');
+    
+    // Verificar si ya tiene clave
+    const hasKey = hasFolderAccessKey(folderId);
+    
+    if (hasKey) {
+        enableCheckbox.checked = true;
+        // No mostrar la clave actual por seguridad
+    }
+    
+    // Guardar el folderId en el modal
+    modal.setAttribute('data-folder-id', folderId);
+    
+    // Mostrar modal
+    modal.classList.remove('hidden');
+    newKeyInput.focus();
+}
+
+/**
+ * Abre el modal para ingresar clave de acceso
+ * @param {string} folderId - ID de la carpeta
+ */
+function openAccessKeyModal(folderId) {
+    const modal = document.getElementById('access-key-modal');
+    const keyInput = document.getElementById('access-key-input');
+    const errorDiv = document.getElementById('access-key-error');
+    const modalTitle = modal.querySelector('h3');
+    const modalDescription = modal.querySelector('p');
+    const confirmBtn = document.getElementById('confirm-access-key-btn');
+    
+    // Restaurar contenido del modal para acceso
+    modalTitle.textContent = 'Clave de Acceso';
+    modalDescription.textContent = 'Esta carpeta está protegida. Ingresa la clave de acceso para continuar:';
+    confirmBtn.textContent = '🔓 Acceder';
+    
+    // Limpiar campos
+    keyInput.value = '';
+    errorDiv.classList.add('hidden');
+    
+    // Guardar el folderId y el modo en el modal
+    modal.setAttribute('data-folder-id', folderId);
+    modal.setAttribute('data-mode', 'access');
+    
+    // Mostrar modal
+    modal.classList.remove('hidden');
+    keyInput.focus();
+}
+
+/**
+ * Valida la clave de acceso ingresada
+ * @param {string} folderId - ID de la carpeta
+ * @param {string} inputKey - Clave ingresada por el usuario
+ * @returns {boolean} - true si la clave es correcta
+ */
+function validateAccessKey(folderId, inputKey) {
+    const storedKey = getFolderAccessKey(folderId);
+    return storedKey === inputKey;
+}
+
+/**
+ * Maneja el evento de confirmar clave de acceso
+ */
+function handleConfirmAccessKey() {
+    const modal = document.getElementById('access-key-modal');
+    const folderId = modal.getAttribute('data-folder-id');
+    const mode = modal.getAttribute('data-mode');
+    const keyInput = document.getElementById('access-key-input');
+    const errorDiv = document.getElementById('access-key-error');
+    
+    const inputKey = keyInput.value.trim();
+    
+    if (!inputKey) {
+        errorDiv.textContent = '❌ Por favor ingresa la clave de acceso.';
+        errorDiv.classList.remove('hidden');
+        return;
+    }
+    
+    if (validateAccessKey(folderId, inputKey)) {
+        if (mode === 'remove') {
+            // Modo eliminación - eliminar protección
+            removeFolderAccessKey(folderId);
+            modal.classList.add('hidden');
+            showSystemMessage('🔓 Protección de carpeta eliminada correctamente');
+            
+            // Refrescar vista
+            renderList();
+            renderFoldersList();
+        } else {
+            // Modo acceso - mostrar contenido temporalmente
+            modal.classList.add('hidden');
+            showSystemMessage('🔓 Acceso temporal concedido');
+            
+            // Cambiar a vista de carpetas y abrir la carpeta específica
+            showFoldersView();
+            setTimeout(() => {
+                showFolderContentView(folderId, true);
+            }, 100);
+        }
+    } else {
+        // Clave incorrecta
+        errorDiv.textContent = '❌ Clave incorrecta. Inténtalo de nuevo.';
+        errorDiv.classList.remove('hidden');
+        keyInput.value = '';
+        keyInput.focus();
+    }
+}
+
+/**
+/**
+ * Abre el modal para eliminar clave de acceso (requiere confirmación con clave actual)
+ * @param {string} folderId - ID de la carpeta
+ */
+function openRemoveAccessKeyModal(folderId) {
+    const modal = document.getElementById('access-key-modal');
+    const keyInput = document.getElementById('access-key-input');
+    const errorDiv = document.getElementById('access-key-error');
+    const modalTitle = modal.querySelector('h3');
+    const modalDescription = modal.querySelector('p');
+    const confirmBtn = document.getElementById('confirm-access-key-btn');
+    
+    // Cambiar el contenido del modal para eliminación
+    modalTitle.textContent = 'Eliminar Clave de Acceso';
+    modalDescription.textContent = 'Para eliminar la protección de esta carpeta, ingresa la clave de acceso actual:';
+    confirmBtn.textContent = '🗑️ Eliminar';
+    
+    // Limpiar campos
+    keyInput.value = '';
+    errorDiv.classList.add('hidden');
+    
+    // Guardar el folderId y el modo en el modal
+    modal.setAttribute('data-folder-id', folderId);
+    modal.setAttribute('data-mode', 'remove');
+    
+    // Mostrar modal
+    modal.classList.remove('hidden');
+    keyInput.focus();
+}
+
+/**
+ * Maneja el evento de confirmar eliminación de clave de acceso
+ */
+function handleConfirmRemoveAccessKey() {
+    const modal = document.getElementById('access-key-modal');
+    const folderId = modal.getAttribute('data-folder-id');
+    const keyInput = document.getElementById('access-key-input');
+    const errorDiv = document.getElementById('access-key-error');
+    
+    const inputKey = keyInput.value.trim();
+    
+    if (!inputKey) {
+        errorDiv.textContent = '❌ Por favor ingresa la clave de acceso actual.';
+        errorDiv.classList.remove('hidden');
+        return;
+    }
+    
+    if (validateAccessKey(folderId, inputKey)) {
+        // Clave correcta - eliminar protección
+        removeFolderAccessKey(folderId);
+        modal.classList.add('hidden');
+        showSystemMessage('🔓 Protección de carpeta eliminada correctamente');
+        
+        // Refrescar vista
+        renderList();
+        renderFoldersList();
+    } else {
+        // Clave incorrecta
+        errorDiv.textContent = '❌ Clave incorrecta. Inténtalo de nuevo.';
+        errorDiv.classList.remove('hidden');
+        keyInput.value = '';
+        keyInput.focus();
+    }
+}
+
+
+/**
+ * Maneja el evento de guardar clave de acceso
+ */
+function handleSaveAccessKey() {
+    const modal = document.getElementById('create-access-key-modal');
+    const folderId = modal.getAttribute('data-folder-id');
+    const newKeyInput = document.getElementById('new-access-key-input');
+    const confirmKeyInput = document.getElementById('confirm-access-key-input');
+    const enableCheckbox = document.getElementById('enable-access-key');
+    const matchError = document.getElementById('access-key-match-error');
+    
+    const newKey = newKeyInput.value.trim();
+    const confirmKey = confirmKeyInput.value.trim();
+    const isEnabled = enableCheckbox.checked;
+    
+    // Validaciones
+    if (isEnabled && !newKey) {
+        showSystemMessage('❌ Por favor ingresa una clave de acceso.', 'error');
+        return;
+    }
+    
+    if (isEnabled && newKey !== confirmKey) {
+        matchError.classList.remove('hidden');
+        return;
+    } else {
+        matchError.classList.add('hidden');
+    }
+    
+    if (isEnabled) {
+        // Guardar clave
+        saveFolderAccessKey(folderId, newKey);
+        showSystemMessage('🔐 Clave de acceso configurada correctamente');
+    } else {
+        // Eliminar clave
+        removeFolderAccessKey(folderId);
+        lockFolder(folderId); // Bloquear en esta sesión
+        showSystemMessage('🔓 Protección de carpeta removida');
+    }
+    
+    // Cerrar modal
+    modal.classList.add('hidden');
+    
+    // Refrescar vista
+    renderList();
+    renderFoldersList();
 }
 
 /**
