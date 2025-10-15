@@ -802,18 +802,34 @@
                     .then(function(registration) {
                         console.log('ServiceWorker registrado exitosamente:', registration.scope);
                         
-                        // Verificar actualizaciones
+                        // Verificar actualizaciones automáticamente
                         registration.addEventListener('updatefound', function() {
                             const newWorker = registration.installing;
                             newWorker.addEventListener('statechange', function() {
                                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    // Nueva versión disponible
-                                    if (confirm('Nueva versión disponible. ¿Deseas actualizar?')) {
-                                        newWorker.postMessage({ action: 'skipWaiting' });
-                                        window.location.reload();
+                                    // Nueva versión disponible - actualización automática
+                                    console.log('Nueva versión disponible, actualizando automáticamente...');
+                                    newWorker.postMessage({ action: 'skipWaiting' });
+                                    
+                                    // Mostrar mensaje de actualización
+                                    if (typeof showSystemMessage === 'function') {
+                                        showSystemMessage('🔄 Actualizando aplicación...', 'info');
                                     }
+                                    
+                                    // Recargar después de un breve delay
+                                    setTimeout(() => {
+                                        window.location.reload();
+                                    }, 1000);
                                 }
                             });
+                        });
+                        
+                        // Escuchar mensajes del Service Worker
+                        navigator.serviceWorker.addEventListener('message', function(event) {
+                            if (event.data.type === 'NEW_VERSION_AVAILABLE') {
+                                console.log('Nueva versión detectada:', event.data.version);
+                                // La actualización se maneja automáticamente arriba
+                            }
                         });
                     })
                     .catch(function(error) {
