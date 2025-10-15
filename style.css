@@ -2365,3 +2365,29 @@ button[data-action]:hover {
         padding: 2px 6px;
     }
 }
+
+/* ===== ESTILOS ADICIONALES PARA MENÚS DE OPCIONES ===== */
+/* Estilos globales para todos los menús de opciones */
+.item-options-menu {
+  position: fixed !important;
+  z-index: 99999 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  display: block !important;
+  transform: none !important;
+  margin-top: 8px;
+  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Forzar visibilidad del menú cuando no está oculto */
+.item-options-menu:not(.hidden) {
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: block !important;
+}
+
+/* Debug: hacer visible temporalmente todos los menús para testing */
+.item-options-menu.hidden {
+  display: none !important;
+}

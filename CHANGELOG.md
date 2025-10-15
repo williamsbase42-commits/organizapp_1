@@ -2,6 +2,25 @@
 
 Todas las mejoras y correcciones notables de este proyecto serán documentadas en este archivo.
 
+## [1.0.4] - 2025-01-27
+
+### 🔧 Mejoras Técnicas
+- **Modal de Carpetas**: Reducido tamaño de modales de crear/editar carpetas (`max-w-xs` y `mx-2`) para evitar que se salgan de la pantalla
+- **Menús de Opciones**: Cambiado de `position: absolute` a `position: fixed` en la generación de HTML para mejor funcionamiento
+- **CSS Global**: Estilos globales para todos los menús de opciones con z-index y visibilidad optimizados
+- **Debug Mejorado**: Logs específicos para position: fixed con coordenadas absolutas de ventana
+
+### 🐛 Correcciones
+- **Modal Responsivo**: Modales de carpetas ahora se ajustan correctamente a pantallas pequeñas
+- **Menús en Carpetas**: Implementación definitiva de menús de tres puntos con position: fixed
+- **Posicionamiento**: Cálculo mejorado de posición para menús con coordenadas de ventana
+
+### 📱 Experiencia de Usuario
+- **Modales Compactos**: Mejor experiencia en dispositivos móviles con modales más pequeños
+- **Menús Funcionales**: Los tres puntos ahora deberían funcionar correctamente en todas las tarjetas
+
+---
+
 ## [1.0.3] - 2025-01-27
 
 ### 🔧 Mejoras Técnicas

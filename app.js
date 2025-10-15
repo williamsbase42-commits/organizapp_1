@@ -1400,7 +1400,7 @@ function createItemHtml(item) {
                     </button>
                     
                     <!-- Menú desplegable -->
-                    <div class="item-options-menu absolute right-0 top-full mt-1 w-44 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 hidden" data-item-id="${item.id}">
+                    <div class="item-options-menu fixed right-0 top-full mt-1 w-44 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 hidden" data-item-id="${item.id}">
                         <div class="py-1">
                             <button class="item-menu-duplicate w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" data-action="duplicate" data-id="${item.id}">
                                 <div class="flex items-center space-x-2">
@@ -2820,19 +2820,19 @@ document.addEventListener('click', (e) => {
                     zIndex: window.getComputedStyle(menu).zIndex
                 });
                 
-                // Calcular posición del menú de manera más inteligente
+                // Calcular posición del menú de manera más inteligente para position: fixed
                 const rect = optionsBtn.getBoundingClientRect();
                 const menuRect = menu.getBoundingClientRect();
                 const viewportWidth = window.innerWidth;
                 const viewportHeight = window.innerHeight;
                 
-                console.log('Menu positioning debug:', {
+                console.log('Menu positioning debug (fixed):', {
                     buttonRect: rect,
                     menuRect: menuRect,
                     viewport: { width: viewportWidth, height: viewportHeight }
                 });
                 
-                // Estrategia: Siempre intentar posicionar hacia la izquierda del botón primero
+                // Para position: fixed, usar coordenadas absolutas de la ventana
                 let left = rect.left - menuRect.width - 8; // 8px de separación
                 let top = rect.bottom + 8;
                 
