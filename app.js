@@ -2781,6 +2781,13 @@ document.addEventListener('click', (e) => {
         const optionsBtn = e.target.closest('.item-options-btn');
         const itemId = optionsBtn.getAttribute('data-item-id');
         
+        console.log('🔍 Click en botón de opciones:', {
+            itemId: itemId,
+            button: optionsBtn,
+            isInFolder: optionsBtn.closest('#folder-items-list') !== null,
+            parentContainer: optionsBtn.closest('#folder-items-list') ? 'folder-items-list' : 'item-list'
+        });
+        
         // Cerrar otros menús abiertos
         document.querySelectorAll('.item-options-menu').forEach(menu => {
             if (menu.getAttribute('data-item-id') !== itemId) {
@@ -2790,12 +2797,28 @@ document.addEventListener('click', (e) => {
         
         // Toggle del menú actual
         const menu = document.querySelector(`.item-options-menu[data-item-id="${itemId}"]`);
+        console.log('🎯 Menú encontrado:', {
+            menu: menu,
+            exists: !!menu,
+            isHidden: menu ? menu.classList.contains('hidden') : 'N/A',
+            classes: menu ? menu.className : 'N/A',
+            computedStyle: menu ? window.getComputedStyle(menu).display : 'N/A'
+        });
+        
         if (menu) {
             const isHidden = menu.classList.contains('hidden');
             
             if (isHidden) {
                 // Primero mostrar el menú para obtener sus dimensiones reales
                 menu.classList.remove('hidden');
+                
+                console.log('✅ Menú mostrado:', {
+                    classes: menu.className,
+                    computedStyle: window.getComputedStyle(menu).display,
+                    visibility: window.getComputedStyle(menu).visibility,
+                    opacity: window.getComputedStyle(menu).opacity,
+                    zIndex: window.getComputedStyle(menu).zIndex
+                });
                 
                 // Calcular posición del menú de manera más inteligente
                 const rect = optionsBtn.getBoundingClientRect();

@@ -2162,6 +2162,53 @@ header .shadow-xl {
   display: block !important;
 }
 
+/* Estilos adicionales para asegurar funcionamiento de menús en carpetas */
+#folder-items-list .item-options-btn {
+  position: relative !important;
+  z-index: 100 !important;
+  cursor: pointer !important;
+}
+
+#folder-items-list .item-options-btn:hover {
+  background-color: rgba(107, 114, 128, 0.1) !important;
+  transform: scale(1.05) !important;
+}
+
+/* Asegurar que el contenedor de botones tenga z-index alto */
+#folder-items-list .flex-shrink-0 {
+  position: relative !important;
+  z-index: 50 !important;
+}
+
+/* Forzar que los menús sean completamente visibles */
+#folder-items-list .item-options-menu {
+  position: fixed !important;
+  z-index: 99999 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  display: block !important;
+  transform: none !important;
+}
+
+/* Debug: hacer visible temporalmente todos los menús para testing */
+#folder-items-list .item-options-menu.hidden {
+  display: none !important;
+}
+
+/* Asegurar que los elementos dentro de carpetas tengan el comportamiento correcto */
+#folder-items-list > div {
+  position: relative !important;
+  z-index: auto !important;
+  overflow: visible !important;
+}
+
+/* Estilos específicos para el contenedor de cada elemento */
+#folder-items-list > div > div {
+  overflow: visible !important;
+  position: relative !important;
+}
+
 @keyframes menuSlideIn {
   from {
     opacity: 0;

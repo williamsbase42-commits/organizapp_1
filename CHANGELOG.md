@@ -2,6 +2,23 @@
 
 Todas las mejoras y correcciones notables de este proyecto serán documentadas en este archivo.
 
+## [1.0.3] - 2025-01-27
+
+### 🔧 Mejoras Técnicas
+- **Scroll en Modales**: Agregado `overflow-y-auto` y `my-4` a modales de agregar/editar elementos para mejor experiencia en pantallas pequeñas
+- **Debug Avanzado**: Implementados logs detallados para diagnosticar problemas con menús de tres puntos en carpetas
+- **CSS Mejorado**: Estilos adicionales específicos para elementos dentro de carpetas con z-index y overflow optimizados
+
+### 🐛 Correcciones
+- **Función Compartir**: Verificada funcionalidad para todas las tarjetas (inicio y carpetas)
+- **Menús de Opciones**: Estilos CSS reforzados para garantizar visibilidad de menús en elementos dentro de carpetas
+
+### 📱 Experiencia de Usuario
+- **Modales Responsivos**: Mejor manejo de scroll en dispositivos móviles
+- **Debug Temporal**: Logs de consola para identificar problemas específicos con menús
+
+---
+
 ## [1.0.2] - 2025-01-27
 
 ### 🐛 Correcciones
