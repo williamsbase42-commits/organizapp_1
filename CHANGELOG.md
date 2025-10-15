@@ -2,6 +2,25 @@
 
 Todas las mejoras y correcciones notables de este proyecto serán documentadas en este archivo.
 
+## [1.0.5] - 2025-01-27
+
+### 🔧 Mejoras Técnicas
+- **Modal de Carpetas Compacto**: Reducido padding interno (`p-3 sm:p-4`) y espaciado (`mb-3`) para modales más compactos en altura
+- **Sistema de Alertas**: Implementado sistema completamente nuevo de modales para opciones de elementos en lugar de menús desplegables
+- **Función Simplificada**: Nueva función `showItemOptions()` que crea modales dinámicos con opciones de duplicar y eliminar
+
+### 🐛 Correcciones
+- **Modal Responsivo**: Modales de carpetas ahora son más compactos verticalmente
+- **Menús Funcionales**: Sistema de alertas garantiza que las opciones de elementos siempre funcionen
+- **UX Mejorada**: Interfaz más clara con modales dedicados para cada acción
+
+### 📱 Experiencia de Usuario
+- **Modales Compactos**: Mejor uso del espacio vertical en pantallas pequeñas
+- **Opciones Claras**: Modal dedicado con opciones bien definidas para cada elemento
+- **Interacción Simple**: Click en tres puntos → Modal con opciones → Acción directa
+
+---
+
 ## [1.0.4] - 2025-01-27
 
 ### 🔧 Mejoras Técnicas

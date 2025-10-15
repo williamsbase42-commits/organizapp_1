@@ -1391,36 +1391,13 @@ function createItemHtml(item) {
                     </svg>
                 </button>
                 
-                <!-- Menú de opciones adicionales - NUEVO ENFOQUE -->
+                <!-- Menú de opciones adicionales - SISTEMA DE ALERTAS -->
                 <div class="relative">
-                    <button class="item-options-btn p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 shadow-sm hover:shadow-md" data-item-id="${item.id}" title="Más opciones" onclick="toggleItemMenu('${item.id}')">
+                    <button class="item-options-btn p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 shadow-sm hover:shadow-md" data-item-id="${item.id}" title="Más opciones" onclick="showItemOptions('${item.id}')">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
                         </svg>
                     </button>
-                    
-                    <!-- Menú desplegable - SIMPLIFICADO -->
-                    <div id="menu-${item.id}" class="item-options-menu absolute right-0 top-full mt-1 w-44 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 hidden" data-item-id="${item.id}">
-                        <div class="py-1">
-                            <button class="item-menu-duplicate w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" data-action="duplicate" data-id="${item.id}">
-                                <div class="flex items-center space-x-2">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                    </svg>
-                                    <span>Duplicar</span>
-                                </div>
-                            </button>
-                            <div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
-                            <button class="item-menu-delete w-full px-3 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" data-action="delete" data-id="${item.id}">
-                                <div class="flex items-center space-x-2">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                    <span>Eliminar</span>
-                                </div>
-                            </button>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -2772,7 +2749,64 @@ document.addEventListener('click', (e) => {
     }
 });
 
-/** NUEVA FUNCIÓN SIMPLE PARA MANEJAR MENÚS DE TRES PUNTOS */
+/** NUEVA FUNCIÓN CON SISTEMA DE ALERTAS PARA MENÚS */
+function showItemOptions(itemId) {
+    console.log('🎯 showItemOptions called with ID:', itemId);
+    
+    // Crear un modal simple con opciones
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+    modal.innerHTML = `
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-sm shadow-2xl border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-center mb-4">
+                <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <span class="text-xl">⚙️</span>
+                </div>
+                <h3 class="text-xl font-bold ml-3 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Opciones del Elemento</h3>
+            </div>
+            
+            <div class="space-y-3">
+                <button onclick="duplicateItem('${itemId}'); this.closest('.fixed').remove();" class="w-full px-4 py-3 text-left text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors rounded-lg border border-gray-200 dark:border-gray-600">
+                    <div class="flex items-center space-x-3">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        <span class="font-medium">Duplicar Elemento</span>
+                    </div>
+                </button>
+                
+                <button onclick="deleteItem('${itemId}'); this.closest('.fixed').remove();" class="w-full px-4 py-3 text-left text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors rounded-lg border border-red-200 dark:border-red-600">
+                    <div class="flex items-center space-x-3">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        <span class="font-medium">Eliminar Elemento</span>
+                    </div>
+                </button>
+            </div>
+            
+            <div class="flex justify-end mt-6">
+                <button onclick="this.closest('.fixed').remove();" class="px-6 py-2 text-sm font-semibold rounded-xl text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Agregar al DOM
+    document.body.appendChild(modal);
+    
+    // Cerrar al hacer click fuera
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+    
+    console.log('✅ Modal de opciones creado y mostrado');
+}
+
+/** FUNCIÓN SIMPLE PARA MANEJAR MENÚS DE TRES PUNTOS - DEPRECATED */
 function toggleItemMenu(itemId) {
     console.log('🎯 toggleItemMenu called with ID:', itemId);
     
