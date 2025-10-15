@@ -1391,16 +1391,16 @@ function createItemHtml(item) {
                     </svg>
                 </button>
                 
-                <!-- Menú de opciones adicionales -->
+                <!-- Menú de opciones adicionales - NUEVO ENFOQUE -->
                 <div class="relative">
-                    <button class="item-options-btn p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 shadow-sm hover:shadow-md" data-item-id="${item.id}" title="Más opciones">
+                    <button class="item-options-btn p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 shadow-sm hover:shadow-md" data-item-id="${item.id}" title="Más opciones" onclick="toggleItemMenu('${item.id}')">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
                         </svg>
                     </button>
                     
-                    <!-- Menú desplegable -->
-                    <div class="item-options-menu fixed right-0 top-full mt-1 w-44 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 hidden" data-item-id="${item.id}">
+                    <!-- Menú desplegable - SIMPLIFICADO -->
+                    <div id="menu-${item.id}" class="item-options-menu absolute right-0 top-full mt-1 w-44 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 hidden" data-item-id="${item.id}">
                         <div class="py-1">
                             <button class="item-menu-duplicate w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" data-action="duplicate" data-id="${item.id}">
                                 <div class="flex items-center space-x-2">
@@ -2771,6 +2771,35 @@ document.addEventListener('click', (e) => {
         emojiBtn.classList.add('ring-2', 'ring-orange-500', 'bg-orange-100', 'dark:bg-orange-900/30');
     }
 });
+
+/** NUEVA FUNCIÓN SIMPLE PARA MANEJAR MENÚS DE TRES PUNTOS */
+function toggleItemMenu(itemId) {
+    console.log('🎯 toggleItemMenu called with ID:', itemId);
+    
+    // Cerrar todos los otros menús primero
+    document.querySelectorAll('.item-options-menu').forEach(menu => {
+        if (menu.id !== `menu-${itemId}`) {
+            menu.classList.add('hidden');
+        }
+    });
+    
+    // Toggle del menú actual
+    const menu = document.getElementById(`menu-${itemId}`);
+    if (menu) {
+        const isHidden = menu.classList.contains('hidden');
+        console.log('📋 Menu found:', menu, 'isHidden:', isHidden);
+        
+        if (isHidden) {
+            menu.classList.remove('hidden');
+            console.log('✅ Menu shown');
+        } else {
+            menu.classList.add('hidden');
+            console.log('❌ Menu hidden');
+        }
+    } else {
+        console.error('❌ Menu not found for ID:', itemId);
+    }
+}
 
 /** Event listeners para menús de opciones de notas */
 document.addEventListener('click', (e) => {
