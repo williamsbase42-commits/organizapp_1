@@ -21,7 +21,7 @@ let editingItemId = null; // ID del elemento que se está editando
 
 // Variables para versículo diario
 let currentVerseIndex = 0;
-let dailyVerseEnabled = false;
+let dailyVerseEnabled = true; // Activado por defecto para nuevos usuarios
 let lastVerseDate = null; // Fecha del último versículo mostrado
 let dailyVerses = []; // Array de versículos cargados
 
@@ -4846,11 +4846,14 @@ function loadDailyVerseSettings() {
         const savedIndex = localStorage.getItem('currentVerseIndex');
         const savedDate = localStorage.getItem('lastVerseDate');
         
+        // Solo cargar configuración si existe, sino mantener valores por defecto
         if (savedEnabled !== null) {
             dailyVerseEnabled = savedEnabled === 'true';
-            if (dailyVerseToggle) {
-                dailyVerseToggle.checked = dailyVerseEnabled;
-            }
+        }
+        // Si no hay configuración guardada, dailyVerseEnabled ya está en true por defecto
+        
+        if (dailyVerseToggle) {
+            dailyVerseToggle.checked = dailyVerseEnabled;
         }
         
         if (savedIndex !== null) {
