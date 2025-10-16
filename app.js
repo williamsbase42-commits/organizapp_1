@@ -3363,17 +3363,212 @@ if (themeToggle) {
 function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            // CORRECCIÓN: Usar una ruta relativa 'service-worker.js' en lugar de la absoluta '/service-worker.js'
-            // Esto evita el error de protocolo en entornos de ejecución restringidos.
-            navigator.serviceWorker.register('service-worker.js') 
-                .then(registration => {
-                    console.log('Service Worker: Registrado con éxito. Alcance:', registration.scope);
-                })
-                .catch(error => {
-                    console.error('Service Worker: Fallo el registro:', error);
-                });
+            navigator.serviceWorker.register('service-worker.js', {
+                scope: './'
+            })
+            .then(registration => {
+                console.log('[PWA] Service Worker registrado exitosamente:', registration.scope);
+                
+                // Verificar si hay una actualización disponible
+                checkForServiceWorkerUpdate(registration);
+                
+                // Manejar actualizaciones del Service Worker
+                setupServiceWorkerUpdateHandling(registration);
+                
+            })
+            .catch(error => {
+                console.error('[PWA] Error registrando Service Worker:', error);
+            });
         });
     }
+}
+
+/** Verifica si hay una actualización del Service Worker disponible */
+function checkForServiceWorkerUpdate(registration) {
+    registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        
+        newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed') {
+                if (navigator.serviceWorker.controller) {
+                    // Hay una nueva versión disponible
+                    console.log('[PWA] Nueva versión disponible');
+                    showUpdateNotification();
+                } else {
+                    // Primera instalación
+                    console.log('[PWA] Service Worker instalado por primera vez');
+                }
+            }
+        });
+    });
+}
+
+/** Configura el manejo de actualizaciones del Service Worker */
+function setupServiceWorkerUpdateHandling(registration) {
+    // Escuchar mensajes del Service Worker
+    navigator.serviceWorker.addEventListener('message', (event) => {
+        const { data } = event;
+        
+        switch (data.type) {
+            case 'NEW_VERSION_AVAILABLE':
+                console.log('[PWA] Nueva versión detectada:', data.version);
+                showUpdateNotification(data.message);
+                break;
+                
+            case 'VERSION_INFO':
+                console.log('[PWA] Versión actual:', data.version);
+                break;
+                
+            case 'UPDATE_CHECK_RESULT':
+                if (data.hasUpdate) {
+                    showUpdateNotification('Nueva versión disponible');
+                }
+                break;
+        }
+    });
+    
+    // Manejar cambios de controlador
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        console.log('[PWA] Service Worker actualizado, recargando...');
+        window.location.reload();
+    });
+    
+    // Verificar actualizaciones periódicamente
+    setInterval(() => {
+        registration.update().catch(error => {
+            console.log('[PWA] Error verificando actualizaciones:', error);
+        });
+    }, 30000); // Verificar cada 30 segundos
+}
+
+/** Muestra notificación de actualización */
+function showUpdateNotification(message = 'Nueva versión disponible') {
+    // Evitar mostrar múltiples notificaciones
+    if (document.getElementById('update-notification')) {
+        return;
+    }
+    
+    const notification = document.createElement('div');
+    notification.id = 'update-notification';
+    notification.className = 'fixed top-4 right-4 z-50 transform transition-all duration-300 translate-x-full';
+    notification.innerHTML = `
+        <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-lg shadow-lg max-w-sm">
+            <div class="flex items-center space-x-3">
+                <div class="text-2xl">🔄</div>
+                <div class="flex-1">
+                    <h4 class="font-semibold">Actualización Disponible</h4>
+                    <p class="text-sm opacity-90">${message}</p>
+                </div>
+                <button id="close-update-notification" class="text-white hover:text-gray-200 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="mt-3 flex space-x-2">
+                <button id="update-now-btn" class="bg-white text-blue-600 px-3 py-1 rounded text-sm font-medium hover:bg-gray-100 transition-colors">
+                    Actualizar Ahora
+                </button>
+                <button id="update-later-btn" class="bg-transparent border border-white text-white px-3 py-1 rounded text-sm font-medium hover:bg-white hover:text-blue-600 transition-colors">
+                    Más Tarde
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Animar entrada
+    setTimeout(() => {
+        notification.classList.remove('translate-x-full');
+    }, 100);
+    
+    // Event listeners
+    document.getElementById('update-now-btn').addEventListener('click', () => {
+        updateApp();
+    });
+    
+    document.getElementById('update-later-btn').addEventListener('click', () => {
+        hideUpdateNotification();
+    });
+    
+    document.getElementById('close-update-notification').addEventListener('click', () => {
+        hideUpdateNotification();
+    });
+    
+    // Auto-ocultar después de 10 segundos
+    setTimeout(() => {
+        hideUpdateNotification();
+    }, 10000);
+}
+
+/** Oculta la notificación de actualización */
+function hideUpdateNotification() {
+    const notification = document.getElementById('update-notification');
+    if (notification) {
+        notification.classList.add('translate-x-full');
+        setTimeout(() => {
+            notification.remove();
+        }, 300);
+    }
+}
+
+/** Actualiza la aplicación */
+function updateApp() {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistration().then(registration => {
+            if (registration && registration.waiting) {
+                // Enviar mensaje al service worker para saltar la espera
+                registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+            } else {
+                // Recargar la página
+                window.location.reload();
+            }
+        });
+    } else {
+        window.location.reload();
+    }
+}
+
+/** Muestra modal de actualización (versión mejorada) */
+function showUpdateModal(message) {
+    // Crear modal de actualización si no existe
+    if (document.getElementById('update-modal')) {
+        return; // Ya existe, no crear otro
+    }
+    
+    const updateModal = document.createElement('div');
+    updateModal.id = 'update-modal';
+    updateModal.innerHTML = `
+        <div class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md shadow-2xl transition-all duration-300 transform scale-100">
+                <div class="text-center">
+                    <div class="text-6xl mb-4">🔄</div>
+                    <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">Nueva Versión Disponible</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6">${message}</p>
+                    <div class="flex space-x-3 justify-center">
+                        <button id="reload-app-btn" class="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                            Actualizar Ahora
+                        </button>
+                        <button id="close-update-modal" class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                            Más Tarde
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(updateModal);
+    
+    // Event listeners
+    document.getElementById('reload-app-btn').addEventListener('click', () => {
+        updateApp();
+    });
+    
+    document.getElementById('close-update-modal').addEventListener('click', () => {
+        updateModal.remove();
+    });
 }
 
 // --- Funciones para Modales de Carpetas ---
@@ -3525,31 +3720,7 @@ function initializePWA() {
         console.log('[PWA] App ejecutándose en modo standalone');
     }
     
-    // Manejar actualizaciones del Service Worker
-    if ('serviceWorker' in navigator) {
-        // Escuchar mensajes del Service Worker
-        navigator.serviceWorker.addEventListener('message', (event) => {
-            if (event.data.type === 'NEW_VERSION_AVAILABLE') {
-                console.log('[PWA] Nueva versión detectada:', event.data.version);
-                showUpdateModal(event.data.message);
-            }
-        });
-        
-        // Manejar cambios de controlador
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-            console.log('[PWA] Service Worker actualizado, recargando...');
-            window.location.reload();
-        });
-        
-        // Verificar actualizaciones periódicamente
-        setInterval(() => {
-            navigator.serviceWorker.getRegistration().then(registration => {
-                if (registration) {
-                    registration.update();
-                }
-            });
-        }, 60000); // Verificar cada minuto
-    }
+    // El manejo de actualizaciones del Service Worker se hace en registerServiceWorker()
 }
 
 /** Muestra el botón de instalación */
@@ -3654,53 +3825,6 @@ function showUpdateNotification() {
     });
 }
 
-/** Muestra modal de actualización */
-function showUpdateModal(message) {
-    // Crear modal de actualización si no existe
-    if (document.getElementById('update-modal')) {
-        return; // Ya existe, no crear otro
-    }
-    
-    const updateModal = document.createElement('div');
-    updateModal.id = 'update-modal';
-    updateModal.innerHTML = `
-        <div class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div class="bg-white dark:bg-surface-dark rounded-xl p-6 w-full max-w-md shadow-2xl transition-all duration-300 transform scale-100">
-                <div class="text-center">
-                    <div class="text-6xl mb-4">🔄</div>
-                    <h3 class="text-xl font-bold mb-4 dark:text-gray-100">Nueva Versión Disponible</h3>
-                    <p class="text-gray-600 dark:text-gray-300 mb-6">${message}</p>
-                    <div class="flex space-x-3 justify-center">
-                        <button id="reload-app-btn" class="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg transition-all duration-300 transform hover:scale-105">
-                            Recargar App
-                        </button>
-                        <button id="close-update-modal" class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-                            Más Tarde
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(updateModal);
-    
-    // Event listeners
-    document.getElementById('reload-app-btn').addEventListener('click', () => {
-        window.location.reload();
-    });
-    
-    document.getElementById('close-update-modal').addEventListener('click', () => {
-        updateModal.remove();
-    });
-    
-    // Auto-cerrar después de 30 segundos
-    setTimeout(() => {
-        if (document.getElementById('update-modal')) {
-            updateModal.remove();
-        }
-    }, 30000);
-}
 
 // ========================================
 // SISTEMA DE VERSÍCULO DEL DÍA

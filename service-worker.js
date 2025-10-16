@@ -1,11 +1,11 @@
 // Service Worker para OrganizApp PWA
 // === CONFIGURACIÓN DE VERSIONADO AUTOMÁTICO ===
-const CACHE_VERSION = 'v1.0.6'; // Incrementar manualmente para nuevas versiones
+const CACHE_VERSION = 'v1.3.0'; // Incrementar para nuevas versiones
 const CACHE_NAME = `organizapp-${CACHE_VERSION}`;
 const STATIC_CACHE_NAME = `organizapp-static-${CACHE_VERSION}`;
 const DYNAMIC_CACHE_NAME = `organizapp-dynamic-${CACHE_VERSION}`;
 
-// Archivos estáticos a cachear
+// Archivos estáticos críticos que deben estar siempre en caché
 const STATIC_FILES = [
   './',
   './index.html',
@@ -14,83 +14,118 @@ const STATIC_FILES = [
   './manifest.json',
   './versiculos.json',
   './icons/logo-1.png',
+  './icons/icon-192.png',
+  './icons/logo-1.png',
+  './icons/logo-1.png',
+  './icons/logo-1.png',
   'https://cdn.tailwindcss.com/3.4.0/tailwind.min.js'
 ];
 
-// URLs que siempre deben ir a la red
+// URLs que siempre deben ir a la red primero
 const NETWORK_FIRST_PATTERNS = [
   /\/api\//,
   /\/auth\//,
-  /\/users\//
+  /\/users\//,
+  /\/data\//
 ];
 
-// URLs que deben usar cache primero
+// URLs que deben usar caché primero
 const CACHE_FIRST_PATTERNS = [
-  /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
+  /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/,
   /\.(?:css|js)$/,
-  /\/icons\//
+  /\/icons\//,
+  /\/images\//
 ];
 
-// Instalación del Service Worker
+// === INSTALACIÓN DEL SERVICE WORKER ===
 self.addEventListener('install', event => {
-  console.log('[SW] Instalando Service Worker...');
+  console.log(`[SW] Instalando Service Worker ${CACHE_VERSION}...`);
   
   event.waitUntil(
     caches.open(STATIC_CACHE_NAME)
       .then(cache => {
-        console.log('[SW] Cacheando archivos estáticos...');
+        console.log('[SW] Cacheando archivos estáticos críticos...');
         return cache.addAll(STATIC_FILES);
       })
       .then(() => {
-        console.log('[SW] Instalación completada');
+        console.log('[SW] Instalación completada exitosamente');
+        // Forzar activación inmediata
         return self.skipWaiting();
       })
       .catch(error => {
         console.error('[SW] Error durante la instalación:', error);
+        // Intentar cachear archivos individualmente si falla addAll
+        return cacheFilesIndividually();
       })
   );
 });
 
-// Activación del Service Worker
+// Función auxiliar para cachear archivos individualmente
+async function cacheFilesIndividually() {
+  const cache = await caches.open(STATIC_CACHE_NAME);
+  
+  for (const file of STATIC_FILES) {
+    try {
+      await cache.add(file);
+      console.log(`[SW] Cacheado: ${file}`);
+    } catch (error) {
+      console.warn(`[SW] No se pudo cachear ${file}:`, error);
+    }
+  }
+}
+
+// === ACTIVACIÓN DEL SERVICE WORKER ===
 self.addEventListener('activate', event => {
-  console.log('[SW] Activando Service Worker...');
+  console.log(`[SW] Activando Service Worker ${CACHE_VERSION}...`);
   
   event.waitUntil(
     Promise.all([
-      // Limpiar caches antiguos
-      caches.keys().then(cacheNames => {
-        return Promise.all(
-          cacheNames.map(cacheName => {
-            // Eliminar caches que no coincidan con la versión actual
-            if (!cacheName.includes(CACHE_VERSION)) {
-              console.log('[SW] Eliminando cache antiguo:', cacheName);
-              return caches.delete(cacheName);
-            }
-          })
-        );
-      }),
+      // Limpiar todas las cachés antiguas
+      cleanOldCaches(),
       // Tomar control inmediato de todos los clientes
       self.clients.claim()
     ]).then(() => {
-      console.log('[SW] Activación completada');
+      console.log('[SW] Activación completada exitosamente');
       
       // Notificar a todos los clientes sobre la nueva versión
-      return self.clients.matchAll().then(clients => {
-        clients.forEach(client => {
-          client.postMessage({
-            type: 'NEW_VERSION_AVAILABLE',
-            version: CACHE_VERSION,
-            message: 'Nueva versión disponible, cierra y vuelve a abrir la app'
-          });
-        });
-      });
+      notifyClientsAboutUpdate();
     }).catch(error => {
       console.error('[SW] Error durante la activación:', error);
     })
   );
 });
 
-// Interceptación de requests
+// Función para limpiar cachés antiguas
+async function cleanOldCaches() {
+  const cacheNames = await caches.keys();
+  const deletePromises = cacheNames
+    .filter(cacheName => !cacheName.includes(CACHE_VERSION))
+    .map(cacheName => {
+      console.log(`[SW] Eliminando caché antigua: ${cacheName}`);
+      return caches.delete(cacheName);
+    });
+  
+  return Promise.all(deletePromises);
+}
+
+// Función para notificar clientes sobre actualización
+async function notifyClientsAboutUpdate() {
+  try {
+    const clients = await self.clients.matchAll();
+    clients.forEach(client => {
+      client.postMessage({
+        type: 'NEW_VERSION_AVAILABLE',
+        version: CACHE_VERSION,
+        message: 'Nueva versión disponible. Recargando automáticamente...',
+        timestamp: Date.now()
+      });
+    });
+  } catch (error) {
+    console.error('[SW] Error notificando clientes:', error);
+  }
+}
+
+// === INTERCEPTACIÓN DE REQUESTS ===
 self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
@@ -100,32 +135,35 @@ self.addEventListener('fetch', event => {
     return;
   }
   
-  // Verificar si debe usar network first
-  const shouldUseNetworkFirst = NETWORK_FIRST_PATTERNS.some(pattern => 
-    pattern.test(url.pathname)
-  );
-  
-  if (shouldUseNetworkFirst) {
-    event.respondWith(networkFirst(request));
+  // Ignorar requests de Chrome extensions y otros
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
     return;
   }
   
-  // Verificar si debe usar cache first
-  const shouldUseCacheFirst = CACHE_FIRST_PATTERNS.some(pattern => 
-    pattern.test(url.pathname)
-  );
-  
-  if (shouldUseCacheFirst) {
-    event.respondWith(cacheFirst(request));
-    return;
+  // Determinar estrategia de caché
+  if (shouldUseNetworkFirst(url)) {
+    event.respondWith(networkFirstStrategy(request));
+  } else if (shouldUseCacheFirst(url)) {
+    event.respondWith(cacheFirstStrategy(request));
+  } else {
+    event.respondWith(staleWhileRevalidateStrategy(request));
   }
-  
-  // Para otros requests, usar stale while revalidate
-  event.respondWith(staleWhileRevalidate(request));
 });
 
-// Estrategia: Network First
-async function networkFirst(request) {
+// Verificar si debe usar Network First
+function shouldUseNetworkFirst(url) {
+  return NETWORK_FIRST_PATTERNS.some(pattern => pattern.test(url.pathname));
+}
+
+// Verificar si debe usar Cache First
+function shouldUseCacheFirst(url) {
+  return CACHE_FIRST_PATTERNS.some(pattern => pattern.test(url.pathname));
+}
+
+// === ESTRATEGIAS DE CACHÉ ===
+
+// Estrategia: Network First (para datos dinámicos)
+async function networkFirstStrategy(request) {
   try {
     const networkResponse = await fetch(request);
     
@@ -136,14 +174,14 @@ async function networkFirst(request) {
     
     return networkResponse;
   } catch (error) {
-    console.log('[SW] Red no disponible, usando cache:', request.url);
+    console.log('[SW] Red no disponible, usando caché:', request.url);
     const cachedResponse = await caches.match(request);
     
     if (cachedResponse) {
       return cachedResponse;
     }
     
-    // Si no hay cache, devolver página offline
+    // Si es una página HTML y no hay caché, devolver index.html
     if (request.destination === 'document') {
       return caches.match('./index.html');
     }
@@ -152,8 +190,8 @@ async function networkFirst(request) {
   }
 }
 
-// Estrategia: Cache First
-async function cacheFirst(request) {
+// Estrategia: Cache First (para recursos estáticos)
+async function cacheFirstStrategy(request) {
   const cachedResponse = await caches.match(request);
   
   if (cachedResponse) {
@@ -171,91 +209,141 @@ async function cacheFirst(request) {
     return networkResponse;
   } catch (error) {
     console.error('[SW] Error en cache first:', error);
+    
+    // Para imágenes, devolver una imagen placeholder si no hay caché
+    if (request.destination === 'image') {
+      return new Response('', { status: 404 });
+    }
+    
     throw error;
   }
 }
 
-// Estrategia: Stale While Revalidate
-async function staleWhileRevalidate(request) {
+// Estrategia: Stale While Revalidate (para contenido mixto)
+async function staleWhileRevalidateStrategy(request) {
   const cache = await caches.open(DYNAMIC_CACHE_NAME);
   const cachedResponse = await cache.match(request);
   
-  const fetchPromise = fetch(request).then(networkResponse => {
-    if (networkResponse.ok) {
-      cache.put(request, networkResponse.clone());
-    }
-    return networkResponse;
-  }).catch(error => {
-    console.log('[SW] Error en fetch, usando cache:', error);
-  });
+  const fetchPromise = fetch(request)
+    .then(networkResponse => {
+      if (networkResponse.ok) {
+        cache.put(request, networkResponse.clone());
+      }
+      return networkResponse;
+    })
+    .catch(error => {
+      console.log('[SW] Error en fetch, usando caché:', error);
+      return null;
+    });
   
   return cachedResponse || fetchPromise;
 }
 
-// Manejo de mensajes del cliente
+// === MANEJO DE MENSAJES ===
 self.addEventListener('message', event => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
+  const { data } = event;
   
-  if (event.data && event.data.type === 'GET_VERSION') {
-    event.ports[0].postMessage({ version: CACHE_NAME });
+  switch (data?.type) {
+    case 'SKIP_WAITING':
+      console.log('[SW] Saltando espera...');
+      self.skipWaiting();
+      break;
+      
+    case 'GET_VERSION':
+      event.ports[0]?.postMessage({
+        type: 'VERSION_INFO',
+        version: CACHE_VERSION,
+        cacheName: CACHE_NAME
+      });
+      break;
+      
+    case 'CHECK_UPDATE':
+      checkForUpdate().then(hasUpdate => {
+        event.ports[0]?.postMessage({
+          type: 'UPDATE_CHECK_RESULT',
+          hasUpdate,
+          currentVersion: CACHE_VERSION
+        });
+      });
+      break;
+      
+    case 'CLEAR_CACHE':
+      clearAllCaches().then(() => {
+        event.ports[0]?.postMessage({
+          type: 'CACHE_CLEARED',
+          success: true
+        });
+      });
+      break;
   }
 });
 
-// Notificación de nueva versión disponible
-self.addEventListener('message', event => {
-  if (event.data && event.data.type === 'CHECK_UPDATE') {
-    checkForUpdate().then(hasUpdate => {
-      event.ports[0].postMessage({ hasUpdate });
-    });
-  }
-});
-
-// Verificar si hay actualizaciones
+// Verificar si hay actualizaciones disponibles
 async function checkForUpdate() {
   try {
-    const response = await fetch('./service-worker.js?' + Date.now());
-    const newSWContent = await response.text();
+    // Verificar si hay un nuevo service worker disponible
+    const registration = await self.registration;
+    if (registration.waiting) {
+      return true;
+    }
     
-    // Comparar con la versión actual (simplificado)
-    return !newSWContent.includes(CACHE_NAME);
+    // Verificar si hay un nuevo service worker en instalación
+    if (registration.installing) {
+      return true;
+    }
+    
+    // Intentar actualizar el service worker
+    await registration.update();
+    
+    return registration.waiting !== null;
   } catch (error) {
     console.error('[SW] Error verificando actualización:', error);
     return false;
   }
 }
 
-// Manejo de notificaciones push (para futuras funcionalidades)
+// Limpiar todas las cachés
+async function clearAllCaches() {
+  const cacheNames = await caches.keys();
+  const deletePromises = cacheNames.map(cacheName => caches.delete(cacheName));
+  return Promise.all(deletePromises);
+}
+
+// === MANEJO DE NOTIFICACIONES PUSH ===
 self.addEventListener('push', event => {
   if (event.data) {
-    const data = event.data.json();
-    const options = {
-      body: data.body,
-      icon: './icons/logo-1.png',
-      badge: './icons/logo-1.png',
-      vibrate: [100, 50, 100],
-      data: {
-        dateOfArrival: Date.now(),
-        primaryKey: 1
-      },
-      actions: [
-        {
-          action: 'explore',
-          title: 'Ver detalles',
-          icon: './icons/logo-1.png'
+    try {
+      const data = event.data.json();
+      const options = {
+        body: data.body || 'Nueva notificación de OrganizApp',
+        icon: './icons/icon-192.png',
+        badge: './icons/icon-192.png',
+        vibrate: [100, 50, 100],
+        data: {
+          dateOfArrival: Date.now(),
+          primaryKey: 1,
+          url: data.url || './'
         },
-        {
-          action: 'close',
-          title: 'Cerrar',
-          icon: './icons/logo-1.png'
-        }
-      ]
-    };
-    
-    event.waitUntil(
-      self.registration.showNotification(data.title, options)
-    );
+        actions: [
+          {
+            action: 'open',
+            title: 'Abrir',
+            icon: './icons/icon-192.png'
+          },
+          {
+            action: 'close',
+            title: 'Cerrar',
+            icon: './icons/icon-192.png'
+          }
+        ]
+      };
+      
+      event.waitUntil(
+        self.registration.showNotification(data.title || 'OrganizApp', options)
+      );
+    } catch (error) {
+      console.error('[SW] Error procesando notificación push:', error);
+    }
   }
 });
 
@@ -263,34 +351,23 @@ self.addEventListener('push', event => {
 self.addEventListener('notificationclick', event => {
   event.notification.close();
   
-  if (event.action === 'explore') {
+  if (event.action === 'open' || !event.action) {
     event.waitUntil(
-      clients.openWindow('./')
+      clients.openWindow(event.notification.data?.url || './')
     );
   }
 });
 
-// === MANEJO DE MENSAJES PARA ACTUALIZACIONES ===
-self.addEventListener('message', event => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
-  
-  if (event.data && event.data.type === 'GET_VERSION') {
-    event.ports[0].postMessage({
-      type: 'VERSION_INFO',
-      version: CACHE_VERSION
-    });
-  }
-  
-  if (event.data && event.data.type === 'CHECK_UPDATE') {
-    // Verificar si hay una nueva versión disponible
-    event.ports[0].postMessage({
-      type: 'UPDATE_CHECK_RESULT',
-      hasUpdate: true, // En una implementación real, esto vendría de una API
-      currentVersion: CACHE_VERSION
-    });
-  }
+// === MANEJO DE ERRORES GLOBALES ===
+self.addEventListener('error', event => {
+  console.error('[SW] Error global:', event.error);
 });
 
-console.log('[SW] Service Worker cargado correctamente');
+self.addEventListener('unhandledrejection', event => {
+  console.error('[SW] Promesa rechazada:', event.reason);
+});
+
+// === INICIALIZACIÓN ===
+console.log(`[SW] Service Worker ${CACHE_VERSION} cargado correctamente`);
+console.log(`[SW] Caché: ${CACHE_NAME}`);
+console.log(`[SW] Archivos estáticos: ${STATIC_FILES.length}`);
