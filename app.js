@@ -1,4 +1,4 @@
-// OrganizApp - Lógica JavaScript - Updated 2024-12-19
+﻿// OrganizApp - Lógica JavaScript - Updated 2024-12-19
 const STORAGE_KEY = 'miDiarioAsistenteData';
 const FOLDERS_STORAGE_KEY = 'organizappFoldersData';
 let items = [];
@@ -34,14 +34,16 @@ const addBtn = document.getElementById('add-btn');
 const cancelBtn = document.getElementById('cancel-btn');
 const summaryElement = document.getElementById('daily-summary');
 const searchInput = document.getElementById('search-input');
-const themeToggle = document.getElementById('theme-toggle');
+const themeToggle = document.getElementById('theme-toggle'); // Puede ser null si no existe
 const systemMessage = document.getElementById('system-message');
 
 // Referencias para configuración y versículo diario
 const configBtn = document.getElementById('config-btn');
 const configMenu = document.getElementById('config-menu');
 const dailyVerseToggle = document.getElementById('daily-verse-toggle');
-const themeToggleMenu = document.getElementById('theme-toggle-menu');
+const themeToggleMenu = document.getElementById('theme-toggle-switch');
+const themeIcon = document.getElementById('theme-icon');
+const themeText = document.getElementById('theme-text');
 const importBtnMenu = document.getElementById('import-btn-menu');
 const notificationBtnMenu = document.getElementById('notification-btn-menu');
 const dailyVerseModal = document.getElementById('daily-verse-modal');
@@ -2786,7 +2788,11 @@ foldersViewBtn.addEventListener('click', showFoldersView);
 createFolderBtn.addEventListener('click', openCreateFolderModal);
 
 /** Event listeners para importar/exportar/compartir */
-document.getElementById('import-btn').addEventListener('click', importFile);
+// El botón de importar ahora está en el menú de configuración
+const importBtn = document.getElementById('import-btn');
+if (importBtn) {
+    importBtn.addEventListener('click', importFile);
+}
 
 /** Event listener para compartir versículo */
 document.getElementById('share-verse-btn').addEventListener('click', shareVerse);
@@ -3229,11 +3235,6 @@ userNameInput.addEventListener('keypress', (e) => {
 closeWelcomeBtn.addEventListener('click', () => {
     dailyWelcomeModal.classList.add('hidden');
     markDailyWelcomeShown();
-    
-    // Mostrar mensaje adicional después de cerrar
-    setTimeout(() => {
-        showAdditionalMessage();
-    }, 500);
 });
 
 /** Event listeners para modal de edición */
@@ -3346,15 +3347,17 @@ function initializeDarkMode() {
     }
 }
 
-themeToggle.addEventListener('click', () => {
-    if (document.documentElement.classList.contains('dark')) {
-        document.documentElement.classList.remove('dark');
-        localStorage.setItem('theme', 'light');
-    } else {
-        document.documentElement.classList.add('dark');
-        localStorage.setItem('theme', 'dark');
-    }
-});
+if (themeToggle) {
+    themeToggle.addEventListener('click', () => {
+        if (document.documentElement.classList.contains('dark')) {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+        } else {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+        }
+    });
+}
 
 /** Registra el Service Worker si está disponible. */
 function registerServiceWorker() {
@@ -3438,6 +3441,15 @@ function initializeApp() {
     initializeEditFolderColorSelector();
     loadItems();
     loadFolders(); // Cargar carpetas
+    
+    // Cargar configuración del versículo diario
+    loadDailyVerseSettings();
+    
+    // Inicializar estado del toggle de tema
+    updateThemeToggleState();
+    
+    // Inicializar visibilidad del versículo diario
+    updateVerseWidgetVisibility();
     
     // Verificar si es usuario nuevo
     if (isFirstTimeUser()) {
@@ -3690,88 +3702,6 @@ function showUpdateModal(message) {
     }, 30000);
 }
 
-/** Muestra mensajes adicionales después del modal principal */
-function showAdditionalMessage() {
-    if (!currentUser) return;
-    
-    const additionalMessages = [
-        {
-            icon: '💡',
-            message: `¡Recuerda ${currentUser}! Cada pequeña acción te acerca a tus metas.`,
-            type: 'tip'
-        },
-        {
-            icon: '🌟',
-            message: `¡Tu dedicación es inspiradora, ${currentUser}! Sigue así.`,
-            type: 'motivation'
-        },
-        {
-            icon: '🎯',
-            message: `¡Enfócate en una tarea a la vez, ${currentUser}! La calidad importa más que la cantidad.`,
-            type: 'focus'
-        },
-        {
-            icon: '⚡',
-            message: `¡Tu energía positiva es contagiosa, ${currentUser}! ¡Aprovecha ese momentum!`,
-            type: 'energy'
-        },
-        {
-            icon: '🏆',
-            message: `¡Cada logro cuenta, ${currentUser}! Celebra tus victorias, por pequeñas que sean.`,
-            type: 'achievement'
-        },
-        {
-            icon: '🚀',
-            message: `¡El éxito está en los detalles, ${currentUser}! Presta atención a cada paso.`,
-            type: 'success'
-        },
-        {
-            icon: '💪',
-            message: `¡Tu constancia es tu superpoder, ${currentUser}! No te rindas.`,
-            type: 'persistence'
-        },
-        {
-            icon: '🌈',
-            message: `¡Cada día es una nueva oportunidad, ${currentUser}! ¡Aprovecha este momento!`,
-            type: 'opportunity'
-        }
-    ];
-    
-    const randomMessage = additionalMessages[Math.floor(Math.random() * additionalMessages.length)];
-    
-    // Crear notificación temporal
-    const notification = document.createElement('div');
-    notification.className = 'fixed top-4 right-4 bg-white dark:bg-surface-dark rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-4 max-w-sm z-50 transform translate-x-full transition-transform duration-300';
-    notification.innerHTML = `
-        <div class="flex items-start">
-            <span class="text-2xl mr-3">${randomMessage.icon}</span>
-            <div class="flex-1">
-                <p class="text-gray-800 dark:text-gray-200 text-sm">${randomMessage.message}</p>
-            </div>
-            <button class="ml-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" onclick="this.parentElement.parentElement.remove()">
-                ✕
-            </button>
-        </div>
-    `;
-    
-    document.body.appendChild(notification);
-    
-    // Animar entrada
-    setTimeout(() => {
-        notification.style.transform = 'translateX(0)';
-    }, 100);
-    
-    // Auto-remover después de 5 segundos
-    setTimeout(() => {
-        if (notification.parentElement) {
-            notification.style.transform = 'translateX(100%)';
-            setTimeout(() => {
-                notification.remove();
-            }, 300);
-        }
-    }, 5000);
-}
-
 // ========================================
 // SISTEMA DE VERSÍCULO DEL DÍA
 // ========================================
@@ -3802,21 +3732,27 @@ async function loadVerses() {
 }
 
 /**
- * OBTIENE EL VERSÍCULO DEL DÍA BASADO EN LA FECHA
+ * CARGA LOS VERSÍCULOS DESDE EL ARCHIVO JSON (versión para el sistema diario)
  */
-function getDailyVerse() {
-    if (!verses || verses.length === 0) {
-        return null;
-    }
-    
-    // Obtener la fecha actual
-    const today = new Date();
-    const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
-    
-    // Usar el día del año para seleccionar el versículo
-    const verseIndex = dayOfYear % verses.length;
-    return verses[verseIndex];
+function loadDailyVerses() {
+    return fetch('./versiculos.json')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(verses => {
+            dailyVerses = verses;
+            return verses;
+        })
+        .catch(error => {
+            console.error('Error cargando versículos diarios:', error);
+            dailyVerses = [];
+            return [];
+        });
 }
+
 
 /**
  * MUESTRA EL VERSÍCULO DEL DÍA EN EL WIDGET
@@ -3825,7 +3761,30 @@ function displayDailyVerse() {
     const verseContent = document.getElementById('verse-content');
     
     if (!verseContent) {
-        console.error('Elemento verse-content no encontrado');
+        return;
+    }
+    
+    // Si no hay versículos cargados, cargarlos primero
+    if (!dailyVerses || dailyVerses.length === 0) {
+        verseContent.innerHTML = `
+            <div class="text-center py-4">
+                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-amber-600 mx-auto"></div>
+                <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">Cargando versículo...</p>
+            </div>
+        `;
+        
+        loadDailyVerses().then(() => {
+            displayDailyVerse(); // Llamar recursivamente después de cargar
+        }).catch(error => {
+            console.error('Error al cargar versículos:', error);
+            verseContent.innerHTML = `
+                <div class="text-center py-8">
+                    <div class="text-red-500 text-4xl mb-2">⚠️</div>
+                    <p class="text-red-600 dark:text-red-400 font-medium">Error al cargar versículos</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">${error.message}</p>
+                </div>
+            `;
+        });
         return;
     }
     
@@ -3835,7 +3794,7 @@ function displayDailyVerse() {
         verseContent.innerHTML = `
             <div class="text-center py-8">
                 <div class="text-red-500 text-4xl mb-2">⚠️</div>
-                <p class="text-red-600 dark:text-red-400 font-medium">No se pudo cargar el versículo diario</p>
+                <p class="text-red-600 dark:text-red-400 font-medium">No se pudo obtener el versículo del día</p>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Intenta recargar la página</p>
             </div>
         `;
@@ -3851,8 +3810,6 @@ function displayDailyVerse() {
             <div class="verse-reference">— ${verse.cita}</div>
         </div>
     `;
-    
-    console.log('Versículo del día mostrado:', verse);
 }
 
 /**
@@ -3897,10 +3854,11 @@ async function shareVerse() {
 async function initializeVerseSystem() {
     console.log('Inicializando sistema de versículo del día...');
     
-    const loaded = await loadVerses();
-    if (loaded) {
+    try {
+        await loadDailyVerses();
         displayDailyVerse();
-    } else {
+    } catch (error) {
+        console.error('Error inicializando sistema de versículos:', error);
         // Mostrar error si no se pueden cargar los versículos
         const verseContent = document.getElementById('verse-content');
         if (verseContent) {
@@ -4811,10 +4769,14 @@ function loadDailyVerses() {
 
 // Función para obtener el versículo del día (mantiene el mismo durante todo el día)
 function getDailyVerse() {
+    if (!dailyVerses || dailyVerses.length === 0) {
+        return null;
+    }
+    
     const today = getCurrentDateString();
     
     // Si es un nuevo día o no hay versículo cargado, calcular nuevo índice
-    if (lastVerseDate !== today || currentVerseIndex === 0) {
+    if (lastVerseDate !== today || isNaN(currentVerseIndex) || currentVerseIndex === 0) {
         // Usar el día del año para seleccionar el versículo
         const todayDate = new Date();
         const dayOfYear = Math.floor((todayDate - new Date(todayDate.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
@@ -4910,6 +4872,41 @@ function loadDailyVerseSettings() {
     }
 }
 
+/**
+ * Actualiza el estado visual del toggle de tema
+ */
+function updateThemeToggleState() {
+    if (themeToggleMenu && themeIcon && themeText) {
+        const isDarkMode = document.documentElement.classList.contains('dark');
+        
+        if (isDarkMode) {
+            themeToggleMenu.checked = true;
+            themeIcon.textContent = '☀️';
+            themeText.textContent = 'Cambiar a Modo Claro';
+        } else {
+            themeToggleMenu.checked = false;
+            themeIcon.textContent = '🌙';
+            themeText.textContent = 'Cambiar a Modo Oscuro';
+        }
+    }
+}
+
+/**
+ * Actualiza la visibilidad del versículo diario en el modal principal
+ */
+function updateVerseWidgetVisibility() {
+    const verseWidget = document.getElementById('verse-widget');
+    if (verseWidget && dailyVerseToggle) {
+        if (dailyVerseToggle.checked) {
+            verseWidget.classList.remove('hidden');
+            // Mostrar el versículo cuando se activa
+            displayDailyVerse();
+        } else {
+            verseWidget.classList.add('hidden');
+        }
+    }
+}
+
 // ===== EVENT LISTENERS PARA CONFIGURACIÓN =====
 
 // Event listener para el botón de configuración
@@ -4918,6 +4915,11 @@ if (configBtn) {
         e.stopPropagation();
         if (configMenu) {
             configMenu.classList.toggle('hidden');
+            // Actualizar el estado del toggle cuando se abre el menú
+            if (!configMenu.classList.contains('hidden')) {
+                updateThemeToggleState();
+                updateVerseWidgetVisibility();
+            }
         }
     });
 }
@@ -4929,36 +4931,33 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// Event listener para el toggle del versículo diario
+
+// Event listener para el toggle de versículo diario
 if (dailyVerseToggle) {
     dailyVerseToggle.addEventListener('change', function() {
+        // Actualizar el estado
         dailyVerseEnabled = this.checked;
+        // Guardar configuración
         saveDailyVerseSettings();
-        
-        if (dailyVerseEnabled) {
-            showSystemMessage('📖 Versículo diario activado', 'success');
-            loadDailyVerses().then(() => {
-                getDailyVerse(); // Calcular versículo del día
-            });
-        } else {
-            showSystemMessage('📖 Versículo diario desactivado', 'info');
-            if (dailyVerseModal) {
-                dailyVerseModal.classList.add('hidden');
-            }
-        }
+        // Actualizar visibilidad del widget
+        updateVerseWidgetVisibility();
     });
 }
 
-// Event listener para el botón de tema en el menú
+// Event listener para el toggle de tema en el menú
 if (themeToggleMenu) {
-    themeToggleMenu.addEventListener('click', function() {
-        // Simular click en el botón original de tema
-        if (themeToggle) {
-            themeToggle.click();
+    themeToggleMenu.addEventListener('change', function() {
+        // Cambiar el tema directamente
+        if (themeToggleMenu.checked) {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
         }
-        if (configMenu) {
-            configMenu.classList.add('hidden');
-        }
+        
+        // Actualizar el estado visual del toggle
+        updateThemeToggleState();
     });
 }
 
@@ -5001,10 +5000,10 @@ if (nextVerseBtn) {
         showNextVerse();
     });
 }
-
 // ===== INICIALIZACIÓN =====
 
 // Cargar configuración del versículo diario al cargar la página
 document.addEventListener('DOMContentLoaded', function() {
     loadDailyVerseSettings();
 });
+
