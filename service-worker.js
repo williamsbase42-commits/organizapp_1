@@ -1,6 +1,6 @@
 // Service Worker para OrganizApp PWA - Sistema de Actualización Automática
 // === CONFIGURACIÓN DE VERSIONADO AUTOMÁTICO ===
-const CACHE_VERSION = 'v1.2.0'; // Incrementar para nuevas versiones
+const CACHE_VERSION = 'v1.3.0'; // Incrementar para nuevas versiones
 const CACHE_NAME = `organizapp-${CACHE_VERSION}`;
 const STATIC_CACHE_NAME = `organizapp-static-${CACHE_VERSION}`;
 const DYNAMIC_CACHE_NAME = `organizapp-dynamic-${CACHE_VERSION}`;
@@ -36,6 +36,7 @@ const CACHE_FIRST_PATTERNS = [
 ];
 
 // === INSTALACIÓN DEL SERVICE WORKER ===
+// Este evento se ejecuta cuando se instala una nueva versión del Service Worker
 self.addEventListener('install', event => {
   console.log(`[SW] Instalando Service Worker ${CACHE_VERSION}...`);
   
@@ -43,16 +44,18 @@ self.addEventListener('install', event => {
     caches.open(STATIC_CACHE_NAME)
       .then(cache => {
         console.log('[SW] Cacheando archivos estáticos críticos...');
+        // Cachear todos los archivos estáticos necesarios para funcionar offline
         return cache.addAll(STATIC_FILES);
       })
       .then(() => {
         console.log('[SW] Instalación completada exitosamente');
-        // Forzar activación inmediata para aplicar cambios
+        // CRÍTICO: Forzar activación inmediata para aplicar cambios sin esperar
+        // Esto permite que la nueva versión se active automáticamente
         return self.skipWaiting();
       })
       .catch(error => {
         console.error('[SW] Error durante la instalación:', error);
-        // Intentar cachear archivos individualmente si falla addAll
+        // Fallback: Intentar cachear archivos individualmente si falla addAll
         return cacheFilesIndividually();
       })
   );
@@ -73,19 +76,23 @@ async function cacheFilesIndividually() {
 }
 
 // === ACTIVACIÓN DEL SERVICE WORKER ===
+// Este evento se ejecuta cuando se activa una nueva versión del Service Worker
 self.addEventListener('activate', event => {
   console.log(`[SW] Activando Service Worker ${CACHE_VERSION}...`);
   
   event.waitUntil(
     Promise.all([
-      // Limpiar todas las cachés antiguas
+      // CRÍTICO: Limpiar todas las cachés antiguas para evitar conflictos
+      // Esto elimina archivos de versiones anteriores y libera espacio
       cleanOldCaches(),
-      // Tomar control inmediato de todos los clientes
+      // CRÍTICO: Tomar control inmediato de todos los clientes (pestañas abiertas)
+      // Esto asegura que la nueva versión se aplique inmediatamente
       self.clients.claim()
     ]).then(() => {
       console.log('[SW] Activación completada exitosamente');
       
-      // Notificar a todos los clientes sobre la nueva versión
+      // CRÍTICO: Notificar a todos los clientes sobre la nueva versión
+      // Esto desencadena la recarga automática de la página
       notifyClientsAboutUpdate();
     }).catch(error => {
       console.error('[SW] Error durante la activación:', error);
@@ -107,18 +114,24 @@ async function cleanOldCaches() {
 }
 
 // Función para notificar clientes sobre actualización y recargar automáticamente
+// CRÍTICO: Esta función es la clave para la actualización automática sin Ctrl+F5
 async function notifyClientsAboutUpdate() {
   try {
+    // Obtener todas las pestañas/ventanas abiertas de la aplicación
     const clients = await self.clients.matchAll();
+    
+    // Enviar mensaje a cada cliente (pestaña) sobre la nueva versión
     clients.forEach(client => {
       client.postMessage({
         type: 'NEW_VERSION_AVAILABLE',
         version: CACHE_VERSION,
         message: 'Nueva versión disponible. Recargando automáticamente...',
         timestamp: Date.now(),
-        autoReload: true // Flag para recarga automática
+        autoReload: true // Flag crítico: indica que debe recargar automáticamente
       });
     });
+    
+    console.log(`[SW] Notificación enviada a ${clients.length} cliente(s)`);
   } catch (error) {
     console.error('[SW] Error notificando clientes:', error);
   }

@@ -2633,21 +2633,26 @@ function fallbackShare(text) {
     });
 }
 
-/** Inicializa el sistema de Service Worker y actualizaciones automáticas */
+/** Inicializa el sistema de Service Worker y actualizaciones automáticas - CRÍTICO */
 async function initializeServiceWorker() {
+    // Verificación de compatibilidad del navegador
     if ('serviceWorker' in navigator && navigator.serviceWorker) {
         try {
-            // Registrar el Service Worker
+            // CRÍTICO: Registrar el Service Worker para habilitar PWA
+            // Esto permite que la app funcione offline y se actualice automáticamente
             serviceWorkerRegistration = await navigator.serviceWorker.register('./service-worker.js');
             console.log('[PWA] Service Worker registrado:', serviceWorkerRegistration);
             
-            // Escuchar mensajes del Service Worker
+            // CRÍTICO: Escuchar mensajes del Service Worker
+            // Esto permite recibir notificaciones sobre nuevas versiones
             navigator.serviceWorker.addEventListener('message', handleServiceWorkerMessage);
             
-            // Verificar actualizaciones cada 30 segundos
+            // CRÍTICO: Verificar actualizaciones cada 30 segundos
+            // Esto asegura que se detecten nuevas versiones automáticamente
             updateCheckInterval = setInterval(checkForServiceWorkerUpdate, 30000);
             
-            // Verificar actualización inmediatamente (con delay para asegurar que esté listo)
+            // CRÍTICO: Verificar actualización inmediatamente (con delay para asegurar que esté listo)
+            // Esto detecta actualizaciones disponibles al abrir la app
             setTimeout(async () => {
                 await checkForServiceWorkerUpdate();
             }, 1000);
@@ -2660,7 +2665,7 @@ async function initializeServiceWorker() {
     }
 }
 
-/** Maneja mensajes del Service Worker */
+/** Maneja mensajes del Service Worker - CRÍTICO para actualización automática */
 function handleServiceWorkerMessage(event) {
     const { data } = event.data;
     
@@ -2669,10 +2674,17 @@ function handleServiceWorkerMessage(event) {
             console.log('[PWA] Nueva versión disponible:', data.version);
             isUpdateAvailable = true;
             
+            // Mostrar notificación al usuario sobre la actualización
+            showSystemMessage(`🚀 Nueva versión ${data.version} disponible. Recargando automáticamente...`);
+            
             if (data.autoReload) {
-                // Recargar automáticamente después de un breve delay
+                // CRÍTICO: Recargar automáticamente después de un breve delay
+                // Esto elimina completamente la necesidad de presionar Ctrl+F5
+                // El delay permite que el usuario vea la notificación antes de la recarga
                 setTimeout(() => {
                     console.log('[PWA] Recargando automáticamente para aplicar actualización...');
+                    // window.location.reload() carga la nueva versión desde el servidor
+                    // Los datos del usuario se mantienen porque están en localStorage/IndexedDB
                     window.location.reload();
                 }, 2000);
             }
@@ -2688,22 +2700,25 @@ function handleServiceWorkerMessage(event) {
     }
 }
 
-/** Verifica si hay actualizaciones del Service Worker */
+/** Verifica si hay actualizaciones del Service Worker - CRÍTICO para detección automática */
 async function checkForServiceWorkerUpdate() {
+    // Verificación robusta: asegurar que el Service Worker esté disponible
     if (!serviceWorkerRegistration || !serviceWorkerRegistration.update) {
         console.log('[PWA] Service Worker no disponible para verificación');
         return;
     }
     
     try {
-        // Forzar verificación de actualizaciones
+        // CRÍTICO: Forzar verificación de actualizaciones en el servidor
+        // Esto compara la versión actual con la del servidor
         await serviceWorkerRegistration.update();
         
-        // Verificar si hay un nuevo Service Worker esperando
+        // Verificar si hay un nuevo Service Worker esperando activación
         if (serviceWorkerRegistration.waiting) {
             console.log('[PWA] Nuevo Service Worker esperando activación');
             
-            // Notificar al Service Worker que active la nueva versión
+            // CRÍTICO: Notificar al Service Worker que active la nueva versión
+            // Esto desencadena el proceso de actualización automática
             serviceWorkerRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
         }
         
