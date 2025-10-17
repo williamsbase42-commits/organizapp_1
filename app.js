@@ -22,6 +22,10 @@ let weeklyStats = {
 let lastLoginDate = null; // Último día que el usuario abrió la app
 let streakCount = 0; // Días consecutivos de uso
 
+// Variables del sistema de actualizaciones
+const APP_VERSION = '1.2.0'; // Versión actual de la app
+let lastKnownVersion = null; // Última versión conocida por el usuario
+
 // Variables del calendario
 let currentDate = new Date();
 let selectedDate = null;
@@ -2489,6 +2493,98 @@ function fallbackShare(text) {
     });
 }
 
+/** Verifica si hay una nueva versión disponible */
+function checkForUpdates() {
+    const savedVersion = localStorage.getItem('organizappVersion');
+    
+    if (!savedVersion) {
+        // Primera vez usando la app
+        localStorage.setItem('organizappVersion', APP_VERSION);
+        return;
+    }
+    
+    if (savedVersion !== APP_VERSION) {
+        // Hay una nueva versión
+        showUpdateNotification();
+    }
+}
+
+/** Muestra la notificación de actualización */
+function showUpdateNotification() {
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+    modal.innerHTML = `
+        <div class="bg-white dark:bg-surface-dark rounded-xl p-6 w-full max-w-md shadow-2xl transition-all duration-300 transform scale-100">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-bold dark:text-gray-100 flex items-center">
+                    <span class="text-3xl mr-3">🔄</span>
+                    Nueva Actualización
+                </h3>
+                <button onclick="this.closest('.fixed').remove()" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                    <p class="text-blue-700 dark:text-blue-300 font-medium text-center">
+                        ¡Hay una nueva versión disponible! 🎉
+                    </p>
+                </div>
+                
+                <div class="space-y-3">
+                    <h4 class="font-semibold text-gray-900 dark:text-gray-100">Nuevas características:</h4>
+                    <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                        <li class="flex items-center">
+                            <span class="text-green-500 mr-2">✅</span>
+                            Sistema de racha diaria de productividad
+                        </li>
+                        <li class="flex items-center">
+                            <span class="text-blue-500 mr-2">📊</span>
+                            Modal de estadísticas semanales
+                        </li>
+                        <li class="flex items-center">
+                            <span class="text-purple-500 mr-2">📤</span>
+                            Compartir métricas de productividad
+                        </li>
+                        <li class="flex items-center">
+                            <span class="text-yellow-500 mr-2">🎯</span>
+                            Interfaz más limpia y organizada
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4">
+                    <h4 class="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">Para actualizar:</h4>
+                    <ol class="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
+                        <li>1. Presiona <strong>Ctrl + F5</strong> (Windows) o <strong>Cmd + Shift + R</strong> (Mac)</li>
+                        <li>2. O ve a Configuración → Actualizar página</li>
+                        <li>3. O cierra y vuelve a abrir la aplicación</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <div class="flex justify-center mt-6">
+                <button onclick="this.closest('.fixed').remove(); localStorage.setItem('organizappVersion', '${APP_VERSION}');" class="px-6 py-3 text-sm font-semibold rounded-xl text-white bg-blue-500 hover:bg-blue-600 transition-colors">
+                    Entendido, actualizaré
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Cerrar modal al hacer clic fuera
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+            localStorage.setItem('organizappVersion', APP_VERSION);
+        }
+    });
+}
+
 /** Actualiza la visibilidad del botón de productividad */
 function updateProductivityButton() {
     const buttonContainer = document.getElementById('productivity-button-container');
@@ -4494,6 +4590,9 @@ function initializeApp() {
     // Inicializar sistema de racha diaria
     loadStreakData();
     updateDailyStreak();
+    
+    // Verificar actualizaciones
+    checkForUpdates();
     
     // Inicializar estado del toggle de tema
     updateThemeToggleState();
