@@ -1,6 +1,6 @@
-// Service Worker para OrganizApp PWA
+// Service Worker para OrganizApp PWA - Sistema de Actualización Automática
 // === CONFIGURACIÓN DE VERSIONADO AUTOMÁTICO ===
-const CACHE_VERSION = 'v1.3.0'; // Incrementar para nuevas versiones
+const CACHE_VERSION = 'v1.2.0'; // Incrementar para nuevas versiones
 const CACHE_NAME = `organizapp-${CACHE_VERSION}`;
 const STATIC_CACHE_NAME = `organizapp-static-${CACHE_VERSION}`;
 const DYNAMIC_CACHE_NAME = `organizapp-dynamic-${CACHE_VERSION}`;
@@ -15,13 +15,11 @@ const STATIC_FILES = [
   './versiculos.json',
   './icons/logo-1.png',
   './icons/icon-192.png',
-  './icons/logo-1.png',
-  './icons/logo-1.png',
-  './icons/logo-1.png',
+  './icons/icon-512.png',
   'https://cdn.tailwindcss.com/3.4.0/tailwind.min.js'
 ];
 
-// URLs que siempre deben ir a la red primero
+// URLs que siempre deben ir a la red primero (datos dinámicos)
 const NETWORK_FIRST_PATTERNS = [
   /\/api\//,
   /\/auth\//,
@@ -29,7 +27,7 @@ const NETWORK_FIRST_PATTERNS = [
   /\/data\//
 ];
 
-// URLs que deben usar caché primero
+// URLs que deben usar caché primero (recursos estáticos)
 const CACHE_FIRST_PATTERNS = [
   /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/,
   /\.(?:css|js)$/,
@@ -49,7 +47,7 @@ self.addEventListener('install', event => {
       })
       .then(() => {
         console.log('[SW] Instalación completada exitosamente');
-        // Forzar activación inmediata
+        // Forzar activación inmediata para aplicar cambios
         return self.skipWaiting();
       })
       .catch(error => {
@@ -95,7 +93,7 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Función para limpiar cachés antiguas
+// Función para limpiar cachés antiguas (mantiene solo la versión actual)
 async function cleanOldCaches() {
   const cacheNames = await caches.keys();
   const deletePromises = cacheNames
@@ -108,7 +106,7 @@ async function cleanOldCaches() {
   return Promise.all(deletePromises);
 }
 
-// Función para notificar clientes sobre actualización
+// Función para notificar clientes sobre actualización y recargar automáticamente
 async function notifyClientsAboutUpdate() {
   try {
     const clients = await self.clients.matchAll();
@@ -117,7 +115,8 @@ async function notifyClientsAboutUpdate() {
         type: 'NEW_VERSION_AVAILABLE',
         version: CACHE_VERSION,
         message: 'Nueva versión disponible. Recargando automáticamente...',
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        autoReload: true // Flag para recarga automática
       });
     });
   } catch (error) {
@@ -140,7 +139,7 @@ self.addEventListener('fetch', event => {
     return;
   }
   
-  // Determinar estrategia de caché
+  // Determinar estrategia de caché según el tipo de recurso
   if (shouldUseNetworkFirst(url)) {
     event.respondWith(networkFirstStrategy(request));
   } else if (shouldUseCacheFirst(url)) {
@@ -150,19 +149,19 @@ self.addEventListener('fetch', event => {
   }
 });
 
-// Verificar si debe usar Network First
+// Verificar si debe usar Network First (para datos dinámicos)
 function shouldUseNetworkFirst(url) {
   return NETWORK_FIRST_PATTERNS.some(pattern => pattern.test(url.pathname));
 }
 
-// Verificar si debe usar Cache First
+// Verificar si debe usar Cache First (para recursos estáticos)
 function shouldUseCacheFirst(url) {
   return CACHE_FIRST_PATTERNS.some(pattern => pattern.test(url.pathname));
 }
 
 // === ESTRATEGIAS DE CACHÉ ===
 
-// Estrategia: Network First (para datos dinámicos)
+// Estrategia: Network First (para datos dinámicos - siempre intenta red primero)
 async function networkFirstStrategy(request) {
   try {
     const networkResponse = await fetch(request);
@@ -190,7 +189,7 @@ async function networkFirstStrategy(request) {
   }
 }
 
-// Estrategia: Cache First (para recursos estáticos)
+// Estrategia: Cache First (para recursos estáticos - usa caché primero)
 async function cacheFirstStrategy(request) {
   const cachedResponse = await caches.match(request);
   
@@ -210,7 +209,7 @@ async function cacheFirstStrategy(request) {
   } catch (error) {
     console.error('[SW] Error en cache first:', error);
     
-    // Para imágenes, devolver una imagen placeholder si no hay caché
+    // Para imágenes, devolver una respuesta vacía si no hay caché
     if (request.destination === 'image') {
       return new Response('', { status: 404 });
     }
@@ -219,7 +218,7 @@ async function cacheFirstStrategy(request) {
   }
 }
 
-// Estrategia: Stale While Revalidate (para contenido mixto)
+// Estrategia: Stale While Revalidate (para contenido mixto - usa caché y actualiza en background)
 async function staleWhileRevalidateStrategy(request) {
   const cache = await caches.open(DYNAMIC_CACHE_NAME);
   const cachedResponse = await cache.match(request);
@@ -275,6 +274,16 @@ self.addEventListener('message', event => {
         });
       });
       break;
+      
+    case 'FORCE_UPDATE':
+      // Forzar actualización inmediata
+      forceUpdate().then(() => {
+        event.ports[0]?.postMessage({
+          type: 'UPDATE_FORCED',
+          success: true
+        });
+      });
+      break;
   }
 });
 
@@ -298,6 +307,23 @@ async function checkForUpdate() {
     return registration.waiting !== null;
   } catch (error) {
     console.error('[SW] Error verificando actualización:', error);
+    return false;
+  }
+}
+
+// Forzar actualización inmediata
+async function forceUpdate() {
+  try {
+    const registration = await self.registration;
+    await registration.update();
+    
+    if (registration.waiting) {
+      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('[SW] Error forzando actualización:', error);
     return false;
   }
 }

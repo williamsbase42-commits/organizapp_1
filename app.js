@@ -26,6 +26,11 @@ let streakCount = 0; // Días consecutivos de uso
 const APP_VERSION = '1.2.0'; // Versión actual de la app
 let lastKnownVersion = null; // Última versión conocida por el usuario
 
+// Variables del sistema de PWA y Service Worker
+let serviceWorkerRegistration = null;
+let isUpdateAvailable = false;
+let updateCheckInterval = null;
+
 // Variables del calendario
 let currentDate = new Date();
 let selectedDate = null;
@@ -2493,7 +2498,86 @@ function fallbackShare(text) {
     });
 }
 
-/** Verifica si hay una nueva versión disponible */
+/** Inicializa el sistema de Service Worker y actualizaciones automáticas */
+async function initializeServiceWorker() {
+    if ('serviceWorker' in navigator) {
+        try {
+            // Registrar el Service Worker
+            serviceWorkerRegistration = await navigator.serviceWorker.register('./service-worker.js');
+            console.log('[PWA] Service Worker registrado:', serviceWorkerRegistration);
+            
+            // Escuchar mensajes del Service Worker
+            navigator.serviceWorker.addEventListener('message', handleServiceWorkerMessage);
+            
+            // Verificar actualizaciones cada 30 segundos
+            updateCheckInterval = setInterval(checkForServiceWorkerUpdate, 30000);
+            
+            // Verificar actualización inmediatamente
+            await checkForServiceWorkerUpdate();
+            
+        } catch (error) {
+            console.error('[PWA] Error registrando Service Worker:', error);
+        }
+    } else {
+        console.log('[PWA] Service Worker no soportado en este navegador');
+    }
+}
+
+/** Maneja mensajes del Service Worker */
+function handleServiceWorkerMessage(event) {
+    const { data } = event.data;
+    
+    switch (data?.type) {
+        case 'NEW_VERSION_AVAILABLE':
+            console.log('[PWA] Nueva versión disponible:', data.version);
+            isUpdateAvailable = true;
+            
+            if (data.autoReload) {
+                // Recargar automáticamente después de un breve delay
+                setTimeout(() => {
+                    console.log('[PWA] Recargando automáticamente para aplicar actualización...');
+                    window.location.reload();
+                }, 2000);
+            }
+            break;
+            
+        case 'VERSION_INFO':
+            console.log('[PWA] Información de versión:', data);
+            break;
+            
+        case 'UPDATE_CHECK_RESULT':
+            console.log('[PWA] Resultado de verificación:', data);
+            break;
+    }
+}
+
+/** Verifica si hay actualizaciones del Service Worker */
+async function checkForServiceWorkerUpdate() {
+    if (!serviceWorkerRegistration) return;
+    
+    try {
+        // Forzar verificación de actualizaciones
+        await serviceWorkerRegistration.update();
+        
+        // Verificar si hay un nuevo Service Worker esperando
+        if (serviceWorkerRegistration.waiting) {
+            console.log('[PWA] Nuevo Service Worker esperando activación');
+            
+            // Notificar al Service Worker que active la nueva versión
+            serviceWorkerRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+        
+        // Verificar si hay un Service Worker instalándose
+        if (serviceWorkerRegistration.installing) {
+            console.log('[PWA] Service Worker instalándose...');
+        }
+        
+    } catch (error) {
+        console.error('[PWA] Error verificando actualizaciones:', error);
+    }
+}
+
+/** Verifica si hay una nueva versión disponible (sistema legacy) */
 function checkForUpdates() {
     const savedVersion = localStorage.getItem('organizappVersion');
     
@@ -4593,6 +4677,16 @@ function initializeApp() {
     
     // Verificar actualizaciones
     checkForUpdates();
+    
+    // Inicializar Service Worker y sistema de actualizaciones automáticas
+    initializeServiceWorker();
+    
+    // Limpiar intervalo de verificación de actualizaciones al cerrar la página
+    window.addEventListener('beforeunload', () => {
+        if (updateCheckInterval) {
+            clearInterval(updateCheckInterval);
+        }
+    });
     
     // Inicializar estado del toggle de tema
     updateThemeToggleState();
