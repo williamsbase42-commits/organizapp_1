@@ -1069,17 +1069,27 @@ function createBulkActionsBar() {
     const existingBar = document.getElementById('bulk-actions-bar');
     if (existingBar) return;
     
+    // Cargar posición guardada o usar posición por defecto
+    const savedPosition = localStorage.getItem('bulkMenuPosition');
+    const defaultPosition = savedPosition ? JSON.parse(savedPosition) : { top: '12rem', left: '1rem', right: '1rem' };
+    
     const bar = document.createElement('div');
     bar.id = 'bulk-actions-bar';
-    bar.className = 'fixed bottom-20 left-4 right-4 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-4 z-40 hidden';
+    bar.className = 'fixed bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-4 z-40 hidden cursor-move';
+    bar.style.top = defaultPosition.top;
+    bar.style.left = defaultPosition.left;
+    bar.style.right = defaultPosition.right;
     
     bar.innerHTML = `
         <div class="flex flex-col space-y-3">
             <div class="flex items-center justify-between">
                 <span id="selected-count" class="text-base font-bold text-gray-900 dark:text-gray-100">0 elementos</span>
-                <button onclick="clearAllSelections()" class="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 underline">
-                    Limpiar
-                </button>
+                <div class="flex items-center space-x-2">
+                    <span class="text-xs text-gray-500 dark:text-gray-400">📱 Arrastra para mover</span>
+                    <button onclick="clearAllSelections()" class="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 underline">
+                        Limpiar
+                    </button>
+                </div>
             </div>
             <div class="flex items-center space-x-2 overflow-x-auto pb-1">
                 <button onclick="bulkDeleteItems()" class="flex-shrink-0 px-4 py-2.5 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors whitespace-nowrap">
@@ -1098,7 +1108,132 @@ function createBulkActionsBar() {
         </div>
     `;
     
+    // Hacer el menú draggable
+    makeDraggable(bar);
+    
     document.body.appendChild(bar);
+}
+
+/** Hace un elemento draggable */
+function makeDraggable(element) {
+    let isDragging = false;
+    let startX, startY, startLeft, startTop;
+    
+    // Event listener para el mouse
+    element.addEventListener('mousedown', (e) => {
+        // Solo permitir arrastrar desde el área del menú, no desde los botones
+        if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+            return;
+        }
+        
+        isDragging = true;
+        element.style.cursor = 'grabbing';
+        
+        startX = e.clientX;
+        startY = e.clientY;
+        startLeft = parseInt(element.style.left) || 0;
+        startTop = parseInt(element.style.top) || 0;
+        
+        e.preventDefault();
+    });
+    
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        
+        const deltaX = e.clientX - startX;
+        const deltaY = e.clientY - startY;
+        
+        let newLeft = startLeft + deltaX;
+        let newTop = startTop + deltaY;
+        
+        // Limitar el movimiento dentro de la ventana
+        const maxLeft = window.innerWidth - element.offsetWidth;
+        const maxTop = window.innerHeight - element.offsetHeight;
+        
+        newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+        newTop = Math.max(0, Math.min(newTop, maxTop));
+        
+        element.style.left = newLeft + 'px';
+        element.style.top = newTop + 'px';
+        element.style.right = 'auto'; // Remover right cuando se arrastra
+    });
+    
+    document.addEventListener('mouseup', () => {
+        if (isDragging) {
+            isDragging = false;
+            element.style.cursor = 'move';
+            
+            // Guardar la nueva posición
+            saveMenuPosition(element);
+        }
+    });
+    
+    // Event listeners para touch (dispositivos móviles) con opciones pasivas
+    element.addEventListener('touchstart', (e) => {
+        if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+            return;
+        }
+        
+        isDragging = true;
+        const touch = e.touches[0];
+        startX = touch.clientX;
+        startY = touch.clientY;
+        startLeft = parseInt(element.style.left) || 0;
+        startTop = parseInt(element.style.top) || 0;
+        
+        // Solo prevenir default si no es pasivo
+        try {
+            e.preventDefault();
+        } catch (error) {
+            // Ignorar error si el evento es pasivo
+        }
+    }, { passive: false });
+    
+    document.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
+        
+        const touch = e.touches[0];
+        const deltaX = touch.clientX - startX;
+        const deltaY = touch.clientY - startY;
+        
+        let newLeft = startLeft + deltaX;
+        let newTop = startTop + deltaY;
+        
+        // Limitar el movimiento dentro de la ventana
+        const maxLeft = window.innerWidth - element.offsetWidth;
+        const maxTop = window.innerHeight - element.offsetHeight;
+        
+        newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+        newTop = Math.max(0, Math.min(newTop, maxTop));
+        
+        element.style.left = newLeft + 'px';
+        element.style.top = newTop + 'px';
+        element.style.right = 'auto';
+        
+        // Solo prevenir default si no es pasivo
+        try {
+            e.preventDefault();
+        } catch (error) {
+            // Ignorar error si el evento es pasivo
+        }
+    }, { passive: false });
+    
+    document.addEventListener('touchend', () => {
+        if (isDragging) {
+            isDragging = false;
+            saveMenuPosition(element);
+        }
+    });
+}
+
+/** Guarda la posición del menú en localStorage */
+function saveMenuPosition(element) {
+    const position = {
+        top: element.style.top,
+        left: element.style.left,
+        right: element.style.right
+    };
+    localStorage.setItem('bulkMenuPosition', JSON.stringify(position));
 }
 
 /** Elimina múltiples elementos seleccionados */
@@ -2500,7 +2635,7 @@ function fallbackShare(text) {
 
 /** Inicializa el sistema de Service Worker y actualizaciones automáticas */
 async function initializeServiceWorker() {
-    if ('serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator && navigator.serviceWorker) {
         try {
             // Registrar el Service Worker
             serviceWorkerRegistration = await navigator.serviceWorker.register('./service-worker.js');
@@ -2512,8 +2647,10 @@ async function initializeServiceWorker() {
             // Verificar actualizaciones cada 30 segundos
             updateCheckInterval = setInterval(checkForServiceWorkerUpdate, 30000);
             
-            // Verificar actualización inmediatamente
-            await checkForServiceWorkerUpdate();
+            // Verificar actualización inmediatamente (con delay para asegurar que esté listo)
+            setTimeout(async () => {
+                await checkForServiceWorkerUpdate();
+            }, 1000);
             
         } catch (error) {
             console.error('[PWA] Error registrando Service Worker:', error);
@@ -2553,7 +2690,10 @@ function handleServiceWorkerMessage(event) {
 
 /** Verifica si hay actualizaciones del Service Worker */
 async function checkForServiceWorkerUpdate() {
-    if (!serviceWorkerRegistration) return;
+    if (!serviceWorkerRegistration || !serviceWorkerRegistration.update) {
+        console.log('[PWA] Service Worker no disponible para verificación');
+        return;
+    }
     
     try {
         // Forzar verificación de actualizaciones
@@ -4408,26 +4548,6 @@ function registerServiceWorker() {
             });
         });
     }
-}
-
-/** Verifica si hay una actualización del Service Worker disponible */
-function checkForServiceWorkerUpdate(registration) {
-    registration.addEventListener('updatefound', () => {
-        const newWorker = registration.installing;
-        
-        newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed') {
-                if (navigator.serviceWorker.controller) {
-                    // Hay una nueva versión disponible
-                    console.log('[PWA] Nueva versión disponible');
-                    showUpdateNotification();
-                } else {
-                    // Primera instalación
-                    console.log('[PWA] Service Worker instalado por primera vez');
-                }
-            }
-        });
-    });
 }
 
 /** Configura el manejo de actualizaciones del Service Worker */
