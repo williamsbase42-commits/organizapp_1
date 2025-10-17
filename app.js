@@ -9,6 +9,19 @@ let currentFolderView = 'list'; // 'list' para lista de carpetas, 'content' para
 let authReady = false; // Flag para asegurar que la app está lista
 const userId = 'local_user_default'; // ID de usuario local para localStorage
 
+// Variables del sistema de archivo automático
+let lastArchiveDate = null; // Fecha del último archivo automático
+let weeklyStats = {
+    tasksCompleted: 0,
+    tasksArchived: 0,
+    currentStreak: 0,
+    lastWeekDate: null
+};
+
+// Variables del sistema de racha diaria
+let lastLoginDate = null; // Último día que el usuario abrió la app
+let streakCount = 0; // Días consecutivos de uso
+
 // Variables del calendario
 let currentDate = new Date();
 let selectedDate = null;
@@ -401,7 +414,8 @@ function generateWelcomeMessage() {
             <p class="font-medium text-blue-800 dark:text-blue-200 mb-2">📋 Tareas pendientes:</p>
             <ul class="space-y-1">`;
         pendingTasks.slice(0, 2).forEach(task => {
-            message += `<li class="text-sm text-blue-700 dark:text-blue-300">• ${task.content}</li>`;
+            const truncatedTask = truncateText(task.content, 60);
+            message += `<li class="text-sm text-blue-700 dark:text-blue-300">• ${truncatedTask.displayText}</li>`;
         });
         if (pendingTasks.length > 2) {
             message += `<li class="text-sm text-blue-600 dark:text-blue-400 font-medium">... y ${pendingTasks.length - 2} más</li>`;
@@ -415,7 +429,8 @@ function generateWelcomeMessage() {
             <p class="font-medium text-red-800 dark:text-red-200 mb-2">⏰ Recordatorios:</p>
             <ul class="space-y-1">`;
         reminders.slice(0, 2).forEach(reminder => {
-            message += `<li class="text-sm text-red-700 dark:text-red-300">• ${reminder.content}</li>`;
+            const truncatedReminder = truncateText(reminder.content, 60);
+            message += `<li class="text-sm text-red-700 dark:text-red-300">• ${truncatedReminder.displayText}</li>`;
         });
         if (reminders.length > 2) {
             message += `<li class="text-sm text-red-600 dark:text-red-400 font-medium">... y ${reminders.length - 2} más</li>`;
@@ -611,6 +626,9 @@ function generateSpecialMessage() {
 function showDailyWelcome() {
     const message = generateWelcomeMessage();
     const specialMessage = generateSpecialMessage();
+    
+    // Dejar el título vacío
+    welcomeTitle.textContent = '';
     
     if (message) {
         let fullMessage = message;
@@ -951,6 +969,596 @@ function deleteItem(id) {
     showSystemMessage("Elemento eliminado.");
 }
 
+// --- Sistema de Selección Múltiple ---
+
+/** Almacena los elementos seleccionados */
+let selectedItems = new Set();
+let selectedFolders = new Set();
+
+/** Modo de selección activado/desactivado */
+let isSelectionModeActive = false;
+
+/** Activa/desactiva el modo de selección de elementos */
+function toggleSelectionMode() {
+    isSelectionModeActive = !isSelectionModeActive;
+    
+    const selectBtn = document.getElementById('select-items-mode-btn');
+    
+    if (isSelectionModeActive) {
+        // Modo selección activado
+        if (selectBtn) {
+            selectBtn.textContent = '✖️ Cancelar';
+            selectBtn.classList.remove('bg-blue-500', 'hover:bg-blue-600');
+            selectBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+        }
+    } else {
+        // Modo selección desactivado
+        if (selectBtn) {
+            selectBtn.textContent = '✏️ Seleccionar';
+            selectBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
+            selectBtn.classList.add('bg-blue-500', 'hover:bg-blue-600');
+        }
+        clearAllSelections();
+    }
+    
+    // Re-renderizar para mostrar/ocultar checkboxes
+    renderList();
+}
+
+/** Alterna la selección de un elemento */
+function toggleItemSelection(itemId) {
+    if (selectedItems.has(itemId)) {
+        selectedItems.delete(itemId);
+    } else {
+        selectedItems.add(itemId);
+    }
+    updateSelectionUI();
+}
+
+/** Limpia todas las selecciones */
+function clearAllSelections() {
+    selectedItems.clear();
+    selectedFolders.clear();
+    updateSelectionUI();
+}
+
+/** Actualiza la UI de selección múltiple */
+function updateSelectionUI() {
+    const count = selectedItems.size;
+    const bulkActionsBar = document.getElementById('bulk-actions-bar');
+    
+    if (count > 0 && isSelectionModeActive) {
+        if (!bulkActionsBar) {
+            createBulkActionsBar();
+        }
+        const selectedCountElement = document.getElementById('selected-count');
+        if (selectedCountElement) {
+            selectedCountElement.textContent = `${count} elemento${count !== 1 ? 's' : ''}`;
+        }
+        const updatedBulkActionsBar = document.getElementById('bulk-actions-bar');
+        if (updatedBulkActionsBar) {
+            updatedBulkActionsBar.classList.remove('hidden');
+        }
+    } else {
+        if (bulkActionsBar) {
+            bulkActionsBar.classList.add('hidden');
+        }
+    }
+    
+    // Actualizar checkboxes visuales
+    document.querySelectorAll('[data-item-id]').forEach(element => {
+        const itemId = element.getAttribute('data-item-id');
+        const checkbox = element.querySelector('.item-checkbox');
+        if (checkbox) {
+            checkbox.checked = selectedItems.has(itemId);
+        }
+    });
+}
+
+/** Crea la barra de acciones masivas para elementos */
+function createBulkActionsBar() {
+    const existingBar = document.getElementById('bulk-actions-bar');
+    if (existingBar) return;
+    
+    const bar = document.createElement('div');
+    bar.id = 'bulk-actions-bar';
+    bar.className = 'fixed bottom-20 left-4 right-4 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-4 z-40 hidden';
+    
+    bar.innerHTML = `
+        <div class="flex flex-col space-y-3">
+            <div class="flex items-center justify-between">
+                <span id="selected-count" class="text-base font-bold text-gray-900 dark:text-gray-100">0 elementos</span>
+                <button onclick="clearAllSelections()" class="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 underline">
+                    Limpiar
+                </button>
+            </div>
+            <div class="flex items-center space-x-2 overflow-x-auto pb-1">
+                <button onclick="bulkDeleteItems()" class="flex-shrink-0 px-4 py-2.5 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors whitespace-nowrap">
+                    🗑️ Eliminar
+                </button>
+                <button onclick="bulkMoveItems()" class="flex-shrink-0 px-4 py-2.5 text-sm font-semibold text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors whitespace-nowrap">
+                    📁 Mover
+                </button>
+                <button onclick="bulkChangeColor()" class="flex-shrink-0 px-4 py-2.5 text-sm font-semibold text-white bg-purple-500 hover:bg-purple-600 rounded-lg transition-colors whitespace-nowrap">
+                    🎨 Color
+                </button>
+                <button onclick="bulkChangeStatus()" class="flex-shrink-0 px-4 py-2.5 text-sm font-semibold text-white bg-green-500 hover:bg-green-600 rounded-lg transition-colors whitespace-nowrap">
+                    ✅ Estado
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(bar);
+}
+
+/** Elimina múltiples elementos seleccionados */
+function bulkDeleteItems() {
+    if (selectedItems.size === 0) return;
+    
+    const count = selectedItems.size;
+    if (confirm(`¿Estás seguro de que quieres eliminar ${count} elemento${count !== 1 ? 's' : ''}?`)) {
+        selectedItems.forEach(itemId => {
+            deleteItem(itemId);
+        });
+        clearAllSelections();
+        showSystemMessage(`${count} elemento${count !== 1 ? 's' : ''} eliminado${count !== 1 ? 's' : ''} correctamente.`);
+    }
+}
+
+/** Mueve múltiples elementos a una carpeta */
+function bulkMoveItems() {
+    if (selectedItems.size === 0) return;
+    
+    // Crear modal para seleccionar carpeta destino
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+    modal.innerHTML = `
+        <div class="bg-white dark:bg-surface-dark rounded-xl p-6 w-full max-w-md shadow-2xl">
+            <h3 class="text-xl font-bold mb-4 dark:text-gray-100">Mover Elementos</h3>
+            <p class="text-gray-600 dark:text-gray-300 mb-4">Selecciona la carpeta destino para ${selectedItems.size} elemento${selectedItems.size !== 1 ? 's' : ''}:</p>
+            
+            <select id="destination-folder" class="w-full p-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-blue-500 focus:border-blue-500 mb-4">
+                <option value="">📁 Sin carpeta</option>
+            </select>
+            
+            <div class="flex justify-end space-x-3">
+                <button onclick="this.closest('.fixed').remove()" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600">
+                    Cancelar
+                </button>
+                <button onclick="confirmBulkMove()" class="px-4 py-2 text-sm font-medium rounded-lg bg-blue-500 text-white hover:bg-blue-600">
+                    Mover
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Poblar selector de carpetas
+    const folderSelect = document.getElementById('destination-folder');
+    folders.forEach(folder => {
+        const option = document.createElement('option');
+        option.value = folder.id;
+        option.textContent = `📁 ${folder.name}`;
+        folderSelect.appendChild(option);
+    });
+}
+
+/** Confirma el movimiento masivo */
+function confirmBulkMove() {
+    const folderId = document.getElementById('destination-folder').value || null;
+    const count = selectedItems.size;
+    
+    selectedItems.forEach(itemId => {
+        const item = items.find(i => i.id === itemId);
+        if (item) {
+            item.folderId = folderId;
+            item.updatedAt = Date.now();
+        }
+    });
+    
+    saveItems();
+    renderList();
+    clearAllSelections();
+    
+    // Cerrar todos los modales
+    document.querySelectorAll('.fixed').forEach(modal => modal.remove());
+    
+    showSystemMessage(`${count} elemento${count !== 1 ? 's' : ''} movido${count !== 1 ? 's' : ''} correctamente.`);
+}
+
+/** Cambia el color de múltiples elementos */
+function bulkChangeColor() {
+    if (selectedItems.size === 0) return;
+    
+    // Crear modal para seleccionar color
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+    modal.innerHTML = `
+        <div class="bg-white dark:bg-surface-dark rounded-xl p-6 w-full max-w-md shadow-2xl">
+            <h3 class="text-xl font-bold mb-4 dark:text-gray-100">Cambiar Color</h3>
+            <p class="text-gray-600 dark:text-gray-300 mb-4">Selecciona un color para ${selectedItems.size} elemento${selectedItems.size !== 1 ? 's' : ''}:</p>
+            
+            <div id="bulk-color-selector" class="grid grid-cols-4 gap-2 mb-4">
+                <!-- Los colores se generarán dinámicamente -->
+            </div>
+            
+            <!-- Color personalizado -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Color personalizado:</label>
+                <div class="flex items-center space-x-2">
+                    <input type="color" id="custom-color-input" class="w-12 h-10 rounded border border-gray-300 dark:border-gray-600 cursor-pointer">
+                    <input type="text" id="custom-color-text" placeholder="#000000" class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-100">
+                </div>
+            </div>
+            
+            <div class="flex justify-end space-x-3">
+                <button onclick="this.closest('.fixed').remove()" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600">
+                    Cancelar
+                </button>
+                <button onclick="confirmBulkColorChange()" class="px-4 py-2 text-sm font-medium rounded-lg bg-purple-500 text-white hover:bg-purple-600">
+                    Cambiar Color
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Generar colores
+    const colorSelector = document.getElementById('bulk-color-selector');
+    const colors = ['blue', 'green', 'yellow', 'red', 'purple', 'pink', 'indigo', 'gray'];
+    colors.forEach(color => {
+        const colorBtn = document.createElement('button');
+        colorBtn.className = `w-8 h-8 rounded-full bg-${color}-500 hover:scale-110 transition-transform`;
+        colorBtn.setAttribute('data-color', color);
+        colorBtn.onclick = () => {
+            document.querySelectorAll('#bulk-color-selector button').forEach(btn => btn.classList.remove('ring-2', 'ring-blue-500'));
+            colorBtn.classList.add('ring-2', 'ring-blue-500');
+            // Limpiar color personalizado cuando se selecciona un color predefinido
+            document.getElementById('custom-color-input').value = '';
+            document.getElementById('custom-color-text').value = '';
+        };
+        colorSelector.appendChild(colorBtn);
+    });
+    
+    // Sincronizar color picker con input de texto
+    const colorInput = document.getElementById('custom-color-input');
+    const colorText = document.getElementById('custom-color-text');
+    
+    colorInput.addEventListener('input', () => {
+        colorText.value = colorInput.value;
+        // Limpiar selección de colores predefinidos
+        document.querySelectorAll('#bulk-color-selector button').forEach(btn => btn.classList.remove('ring-2', 'ring-blue-500'));
+    });
+    
+    colorText.addEventListener('input', () => {
+        if (colorText.value.match(/^#[0-9A-Fa-f]{6}$/)) {
+            colorInput.value = colorText.value;
+            // Limpiar selección de colores predefinidos
+            document.querySelectorAll('#bulk-color-selector button').forEach(btn => btn.classList.remove('ring-2', 'ring-blue-500'));
+        }
+    });
+}
+
+/** Confirma el cambio de color masivo */
+function confirmBulkColorChange() {
+    const selectedColorBtn = document.querySelector('#bulk-color-selector button.ring-2');
+    const customColorInput = document.getElementById('custom-color-input');
+    let color;
+    
+    if (selectedColorBtn) {
+        color = selectedColorBtn.getAttribute('data-color');
+    } else if (customColorInput && customColorInput.value) {
+        color = customColorInput.value;
+    } else {
+        return; // No hay color seleccionado
+    }
+    
+    const count = selectedItems.size;
+    
+    selectedItems.forEach(itemId => {
+        const item = items.find(i => i.id === itemId);
+        if (item) {
+            item.color = color;
+            item.updatedAt = Date.now();
+        }
+    });
+    
+    saveItems();
+    renderList();
+    clearAllSelections();
+    
+    // Cerrar todos los modales
+    document.querySelectorAll('.fixed').forEach(modal => modal.remove());
+    
+    showSystemMessage(`Color cambiado para ${count} elemento${count !== 1 ? 's' : ''}.`);
+}
+
+/** Cambia el estado de múltiples elementos */
+function bulkChangeStatus() {
+    if (selectedItems.size === 0) return;
+    
+    // Crear modal para seleccionar estado
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+    modal.innerHTML = `
+        <div class="bg-white dark:bg-surface-dark rounded-xl p-6 w-full max-w-md shadow-2xl">
+            <h3 class="text-xl font-bold mb-4 dark:text-gray-100">Cambiar Estado</h3>
+            <p class="text-gray-600 dark:text-gray-300 mb-4">Selecciona un estado para ${selectedItems.size} elemento${selectedItems.size !== 1 ? 's' : ''}:</p>
+            
+            <select id="bulk-status-selector" class="w-full p-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-green-500 focus:border-green-500 mb-4">
+                <option value="pending">⏳ Pendiente</option>
+                <option value="done">✅ Realizado</option>
+                <option value="completed">🎉 Terminado</option>
+            </select>
+            
+            <div class="flex justify-end space-x-3">
+                <button onclick="this.closest('.fixed').remove()" class="px-4 py-2 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600">
+                    Cancelar
+                </button>
+                <button onclick="confirmBulkStatusChange()" class="px-4 py-2 text-sm font-medium rounded-lg bg-green-500 text-white hover:bg-green-600">
+                    Cambiar Estado
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+/** Confirma el cambio de estado masivo */
+function confirmBulkStatusChange() {
+    const status = document.getElementById('bulk-status-selector').value;
+    const count = selectedItems.size;
+    
+    selectedItems.forEach(itemId => {
+        const item = items.find(i => i.id === itemId);
+        if (item) {
+            item.status = status;
+            item.updatedAt = Date.now();
+        }
+    });
+    
+    saveItems();
+    renderList();
+    clearAllSelections();
+    
+    // Cerrar todos los modales
+    document.querySelectorAll('.fixed').forEach(modal => modal.remove());
+    
+    const statusNames = {
+        'pending': 'Pendiente',
+        'done': 'Realizado',
+        'completed': 'Terminado'
+    };
+    
+    showSystemMessage(`Estado cambiado a "${statusNames[status]}" para ${count} elemento${count !== 1 ? 's' : ''}.`);
+}
+
+// --- Sistema de Archivo Automático Semanal ---
+
+/** Verifica si necesita hacer archivo automático semanal */
+function checkWeeklyArchive() {
+    const now = new Date();
+    const lastArchive = lastArchiveDate ? new Date(lastArchiveDate) : null;
+    
+    // Si nunca se ha hecho archivo o han pasado más de 7 días
+    if (!lastArchive || (now - lastArchive) >= 7 * 24 * 60 * 60 * 1000) {
+        performWeeklyArchive();
+    }
+}
+
+/** Realiza el archivo automático semanal */
+function performWeeklyArchive() {
+    const now = new Date();
+    const archivedCount = items.filter(item => item.status === 'done').length;
+    
+    // Cambiar todos los elementos "Realizado" a "Terminado"
+    items.forEach(item => {
+        if (item.status === 'done') {
+            item.status = 'completed';
+            item.archivedAt = now.getTime();
+        }
+    });
+    
+    // Actualizar estadísticas
+    weeklyStats.tasksArchived += archivedCount;
+    weeklyStats.lastWeekDate = now.getTime();
+    lastArchiveDate = now.getTime();
+    
+    // Guardar cambios
+    saveItems();
+    saveWeeklyStats();
+    
+    // Mostrar notificación
+    if (archivedCount > 0) {
+        showSystemMessage(`📦 Archivo semanal completado: ${archivedCount} tareas movidas a "Terminado"`);
+    }
+}
+
+/** Calcula las métricas de productividad */
+function calculateProductivityMetrics() {
+    const now = new Date();
+    const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+    const weekEnd = new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000);
+    
+    // Contar elementos por estado (excluyendo carpetas bloqueadas)
+    const metrics = {
+        pending: 0,
+        completed: 0,
+        done: 0,
+        archived: 0,
+        weeklyCompleted: 0,
+        streak: streakCount // Usar la racha de días consecutivos
+    };
+    
+    items.forEach(item => {
+        // Excluir elementos de carpetas bloqueadas
+        if (item.folderId && hasFolderAccessKey(item.folderId) && !isFolderUnlocked(item.folderId)) {
+            return;
+        }
+        
+        switch (item.status) {
+            case 'pending':
+                metrics.pending++;
+                break;
+            case 'done':
+                metrics.done++;
+                break;
+            case 'completed':
+                metrics.completed++;
+                // Verificar si fue completado esta semana
+                if (item.updatedAt && item.updatedAt >= weekStart.getTime()) {
+                    metrics.weeklyCompleted++;
+                }
+                break;
+        }
+    });
+    
+    return metrics;
+}
+
+/** Calcula y actualiza la racha de días consecutivos de uso */
+function updateDailyStreak() {
+    const today = new Date();
+    const todayString = today.toDateString();
+    
+    // Si es la primera vez que abre la app
+    if (!lastLoginDate) {
+        streakCount = 1;
+        lastLoginDate = todayString;
+        saveStreakData();
+        showSystemMessage('🔥 ¡Bienvenido! Tu racha de productividad ha comenzado');
+        return;
+    }
+    
+    const lastLogin = new Date(lastLoginDate);
+    const daysDifference = Math.floor((today - lastLogin) / (1000 * 60 * 60 * 24));
+    
+    if (daysDifference === 0) {
+        // Mismo día - no hacer nada
+        return;
+    } else if (daysDifference === 1) {
+        // Día siguiente - incrementar racha
+        streakCount++;
+        lastLoginDate = todayString;
+        saveStreakData();
+        showSystemMessage(`🔥 ¡Excelente! Racha activa: ${streakCount} días seguidos`);
+    } else {
+        // Más de un día - reiniciar racha
+        streakCount = 1;
+        lastLoginDate = todayString;
+        saveStreakData();
+        showSystemMessage('😢 Racha reiniciada — vuelve a empezar');
+    }
+}
+
+/** Guarda los datos de la racha en localStorage */
+function saveStreakData() {
+    const streakData = {
+        lastLoginDate,
+        streakCount
+    };
+    localStorage.setItem('organizappStreakData', JSON.stringify(streakData));
+}
+
+/** Carga los datos de la racha desde localStorage */
+function loadStreakData() {
+    const saved = localStorage.getItem('organizappStreakData');
+    if (saved) {
+        const data = JSON.parse(saved);
+        lastLoginDate = data.lastLoginDate;
+        streakCount = data.streakCount || 0;
+    }
+}
+
+/** Guarda las estadísticas semanales */
+function saveWeeklyStats() {
+    const statsData = {
+        lastArchiveDate,
+        weeklyStats
+    };
+    localStorage.setItem('organizappWeeklyStats', JSON.stringify(statsData));
+}
+
+/** Carga las estadísticas semanales */
+function loadWeeklyStats() {
+    const saved = localStorage.getItem('organizappWeeklyStats');
+    if (saved) {
+        const data = JSON.parse(saved);
+        lastArchiveDate = data.lastArchiveDate;
+        weeklyStats = { ...weeklyStats, ...data.weeklyStats };
+    }
+}
+
+// --- Funciones para Truncado de Texto ---
+
+/** Trunca el texto si es muy largo y agrega botón "ver más" */
+function truncateText(text, maxLength = 100) {
+    if (!text || text.length <= maxLength) {
+        return {
+            displayText: text,
+            isTruncated: false,
+            fullText: text
+        };
+    }
+    
+    const truncatedText = text.substring(0, maxLength).trim();
+    const lastSpaceIndex = truncatedText.lastIndexOf(' ');
+    const finalText = lastSpaceIndex > maxLength * 0.8 ? 
+        truncatedText.substring(0, lastSpaceIndex) : 
+        truncatedText;
+    
+    return {
+        displayText: finalText + '...',
+        isTruncated: true,
+        fullText: text
+    };
+}
+
+/** Muestra el contenido completo en un modal */
+function showFullContent(itemId, fullText, itemType) {
+    // Crear modal dinámicamente
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+    modal.innerHTML = `
+        <div class="bg-white dark:bg-surface-dark rounded-xl p-6 w-full max-w-2xl shadow-2xl transition-all duration-300 transform scale-100">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-bold dark:text-gray-100 flex items-center">
+                    <span class="text-2xl mr-3">${getTypeIcon(itemType)}</span>
+                    Contenido Completo
+                </h3>
+                <button onclick="this.closest('.fixed').remove()" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="mb-6">
+                <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 max-h-96 overflow-y-auto">
+                    <p class="text-gray-900 dark:text-gray-100 whitespace-pre-wrap leading-relaxed">${fullText}</p>
+                </div>
+            </div>
+            <div class="flex justify-end">
+                <button onclick="this.closest('.fixed').remove()" class="px-6 py-3 text-sm font-semibold rounded-xl text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Cerrar modal al hacer clic fuera
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+}
+
 // --- Funciones para Sistema de Carpetas Jerárquico ---
 
 /** Carga las carpetas desde localStorage. */
@@ -1246,6 +1854,7 @@ function createFolderCardHtml(folder, itemsCount) {
     
     return `
         <div class="folder-card group bg-gradient-to-br from-white via-gray-50/50 to-gray-100/50 dark:from-gray-800 dark:via-gray-700/50 dark:to-gray-600/50 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600" data-folder-id="${folder.id}">
+            
             <div class="flex items-center justify-between mb-4">
                 <div class="folder-icon p-3 rounded-xl shadow-md relative" style="${getIconColorStyle(folderColor)}">
                     <span class="text-2xl">${folder.emoji || '📁'}</span>
@@ -1627,25 +2236,32 @@ function showCalendarView() {
 
 /** Actualiza los botones de navegación según la vista actual */
 function updateNavigationButtons() {
-    // Resetear todos los botones
+    console.log('Actualizando botones de navegación, vista actual:', currentView);
+    
+    // Resetear todos los botones usando SOLO estilos directos
     [homeViewBtn, calendarViewBtn, foldersViewBtn].forEach(btn => {
-        btn.classList.remove('bg-primary-blue', 'text-white');
-        btn.classList.add('bg-gray-200', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300');
+        btn.style.backgroundColor = '#6b7280'; // gray-500 - más oscuro
+        btn.style.color = '#ffffff'; // blanco
+        btn.style.border = 'none';
+        btn.style.transition = 'all 0.3s ease';
     });
     
-    // Activar el botón correspondiente
+    // Activar el botón correspondiente usando SOLO estilos directos
     switch (currentView) {
         case 'todo':
-            homeViewBtn.classList.add('bg-primary-blue', 'text-white');
-            homeViewBtn.classList.remove('bg-gray-200', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300');
+            homeViewBtn.style.backgroundColor = '#2563eb'; // blue-600 - más oscuro
+            homeViewBtn.style.color = '#ffffff'; // blanco
+            console.log('Activando botón Inicio');
             break;
         case 'calendar':
-            calendarViewBtn.classList.add('bg-primary-blue', 'text-white');
-            calendarViewBtn.classList.remove('bg-gray-200', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300');
+            calendarViewBtn.style.backgroundColor = '#2563eb'; // blue-600 - más oscuro
+            calendarViewBtn.style.color = '#ffffff'; // blanco
+            console.log('Activando botón Calendario');
             break;
         case 'folders':
-            foldersViewBtn.classList.add('bg-primary-blue', 'text-white');
-            foldersViewBtn.classList.remove('bg-gray-200', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300');
+            foldersViewBtn.style.backgroundColor = '#2563eb'; // blue-600 - más oscuro
+            foldersViewBtn.style.color = '#ffffff'; // blanco
+            console.log('Activando botón Carpetas');
             break;
     }
     
@@ -1734,6 +2350,159 @@ function showFolderDetails(folder) {
     folderDetails.classList.remove('hidden');
 }
 
+/** Muestra el modal de productividad semanal */
+function showProductivityModal() {
+    const metrics = calculateProductivityMetrics();
+    const today = new Date();
+    const weekStart = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay());
+    const weekEnd = new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000);
+    
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+    modal.innerHTML = `
+        <div class="bg-white dark:bg-surface-dark rounded-xl p-6 w-full max-w-md shadow-2xl transition-all duration-300 transform scale-100">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-bold dark:text-gray-100 flex items-center">
+                    <span class="text-3xl mr-3">📊</span>
+                    Productividad Semanal
+                </h3>
+                <button onclick="this.closest('.fixed').remove()" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="space-y-6">
+                <!-- Período de la semana -->
+                <div class="text-center">
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        ${weekStart.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} - 
+                        ${weekEnd.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </p>
+                </div>
+                
+                <!-- Métricas -->
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="text-center bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+                        <div class="text-3xl font-bold text-green-600 dark:text-green-400">${metrics.completed}</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">✅ Terminadas</div>
+                    </div>
+                    <div class="text-center bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4">
+                        <div class="text-3xl font-bold text-yellow-600 dark:text-yellow-400">${metrics.pending}</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">⏳ Pendientes</div>
+                    </div>
+                    <div class="text-center bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
+                        <div class="text-3xl font-bold text-purple-600 dark:text-purple-400">${metrics.streak}</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">🔥 Días Seguidos</div>
+                    </div>
+                </div>
+                
+                <!-- Mensaje motivacional -->
+                <div class="text-center bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                    <p class="text-sm text-blue-700 dark:text-blue-300 font-medium">
+                        ${getMotivationalMessage(metrics)}
+                    </p>
+                </div>
+            </div>
+            
+            <div class="flex justify-center mt-6">
+                <button onclick="shareProductivityStats()" class="px-6 py-3 text-sm font-semibold rounded-xl text-white bg-blue-500 hover:bg-blue-600 transition-colors flex items-center space-x-2">
+                    <span>📤</span>
+                    <span>Compartir Estadísticas</span>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Cerrar modal al hacer clic fuera
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+}
+
+/** Genera un mensaje motivacional basado en las métricas */
+function getMotivationalMessage(metrics) {
+    if (metrics.streak >= 7) {
+        return "🔥 ¡Increíble! Llevas más de una semana consecutiva";
+    } else if (metrics.streak >= 3) {
+        return "💪 ¡Excelente! Mantén la constancia";
+    } else if (metrics.completed > metrics.pending) {
+        return "✅ ¡Bien hecho! Más tareas completadas que pendientes";
+    } else if (metrics.pending > 0) {
+        return "🎯 ¡Sigue así! Cada paso cuenta";
+    } else {
+        return "🌟 ¡Perfecto! Todo al día";
+    }
+}
+
+/** Comparte las estadísticas de productividad */
+function shareProductivityStats() {
+    const metrics = calculateProductivityMetrics();
+    const today = new Date();
+    const weekStart = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay());
+    const weekEnd = new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000);
+    
+    const shareText = `📊 Mi Productividad Semanal - OrganizApp
+
+📅 Período: ${weekStart.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} - ${weekEnd.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
+
+✅ Tareas Terminadas: ${metrics.completed}
+⏳ Tareas Pendientes: ${metrics.pending}
+🔥 Días Consecutivos: ${metrics.streak}
+
+${getMotivationalMessage(metrics)}
+
+#Productividad #OrganizApp #ProductividadSemanal`;
+
+    if (navigator.share) {
+        navigator.share({
+            title: 'Mi Productividad Semanal - OrganizApp',
+            text: shareText,
+            url: window.location.href
+        }).catch(err => {
+            console.log('Error al compartir:', err);
+            fallbackShare(shareText);
+        });
+    } else {
+        fallbackShare(shareText);
+    }
+}
+
+/** Compartir usando el método alternativo (copiar al portapapeles) */
+function fallbackShare(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        showSystemMessage('📋 Estadísticas copiadas al portapapeles');
+    }).catch(() => {
+        // Fallback para navegadores más antiguos
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showSystemMessage('📋 Estadísticas copiadas al portapapeles');
+    });
+}
+
+/** Actualiza la visibilidad del botón de productividad */
+function updateProductivityButton() {
+    const buttonContainer = document.getElementById('productivity-button-container');
+    
+    if (buttonContainer) {
+        // Mostrar/ocultar según la vista
+        if (currentView === 'todo' && currentCategory !== 'notes') {
+            buttonContainer.classList.remove('hidden');
+        } else {
+            buttonContainer.classList.add('hidden');
+        }
+    }
+}
+
 /** Renderiza la lista completa de elementos, aplicando el filtro de búsqueda y categoría. */
 function renderList() {
     const filterText = searchInput.value.toLowerCase().trim();
@@ -1753,7 +2522,7 @@ function renderList() {
         filteredItems = filteredItems.filter(item => item.type === categoryMap[currentCategory]);
     }
 
-    // Filtrar elementos de carpetas protegidas
+    // Filtrar elementos de carpetas protegidas - OCULTAR COMPLETAMENTE en vista principal
     filteredItems = filteredItems.filter(item => {
         if (!item.folderId) {
             return true; // Elementos sin carpeta siempre se muestran
@@ -1773,6 +2542,16 @@ function renderList() {
         filteredItems = filteredItems.filter(item => !item.folderId);
     }
 
+    // Mostrar/ocultar encabezado principal según la vista
+    const mainItemsHeader = document.getElementById('main-items-header');
+    if (mainItemsHeader) {
+        if (currentView === 'todo' && currentCategory !== 'notes') {
+            mainItemsHeader.classList.remove('hidden');
+        } else {
+            mainItemsHeader.classList.add('hidden');
+        }
+    }
+    
     itemList.innerHTML = ''; // Limpia la lista
 
     if (filteredItems.length === 0) {
@@ -1813,16 +2592,39 @@ function renderList() {
 
         // Obtener información de la carpeta si existe
         let folderInfo = '';
+        let displayContent = item.content;
+        let isProtected = false;
+        
         if (item.folderId) {
             const folder = getFolderById(item.folderId);
             if (folder) {
                 folderInfo = `<span class="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">📁 de carpeta ${folder.name}</span>`;
+                
+                // Si la carpeta está protegida y no está desbloqueada, mostrar mensaje genérico
+                if (hasFolderAccessKey(item.folderId) && !isFolderUnlocked(item.folderId)) {
+                    displayContent = `Elemento oculto, ver en "${folder.name}"`;
+                    isProtected = true;
+                }
             }
+        }
+        
+        // Truncar texto si no está protegido
+        let textInfo = { displayText: displayContent, isTruncated: false, fullText: displayContent };
+        if (!isProtected) {
+            textInfo = truncateText(displayContent, 100);
         }
 
         // Genera el HTML del elemento
         const itemHtml = `
-            <div id="item-${item.id}" class="${containerClasses}">
+            <div id="item-${item.id}" class="${containerClasses}" data-item-id="${item.id}">
+                
+                <!-- Checkbox de selección -->
+                ${isSelectionModeActive ? `
+                <div class="flex-shrink-0 mr-3 mt-1">
+                    <input type="checkbox" class="item-checkbox w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" 
+                           onchange="toggleItemSelection('${item.id}')">
+                </div>
+                ` : ''}
                 
                 <!-- Columna de Icono/Estado (Izquierda) -->
                 <div class="flex-shrink-0 mr-4 mt-1">
@@ -1837,12 +2639,19 @@ function renderList() {
                         <span class="text-xs text-gray-500 dark:text-gray-400">${formattedDate}</span>
                         ${folderInfo}
                     </div>
-                    <p class="font-medium ${colorConfig.text} break-words" 
-                        data-id="${item.id}" 
-                        contenteditable="false"
-                        data-original-content="${item.content}">
-                        ${item.content}
-                    </p>
+                    <div class="font-medium ${colorConfig.text} break-words">
+                        <span data-id="${item.id}" 
+                            contenteditable="false"
+                            data-original-content="${item.content}">
+                            ${textInfo.displayText}
+                        </span>
+                        ${textInfo.isTruncated ? `
+                            <button data-action="show-full" data-item-id="${item.id}" data-full-text="${encodeURIComponent(textInfo.fullText)}" data-item-type="${item.type}"
+                                class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-semibold ml-1 transition-colors">
+                                ver más
+                            </button>
+                        ` : ''}
+                    </div>
                 </div>
 
                 <!-- Columna de Acciones (Derecha) -->
@@ -1905,6 +2714,7 @@ function renderList() {
         itemList.insertAdjacentHTML('beforeend', itemHtml);
     });
     updateSummary();
+    updateProductivityButton();
 }
 
 /** Actualiza el cuadro de resumen diario. */
@@ -2074,10 +2884,17 @@ function createDayItemHTML(item) {
     
     // Obtener información de la carpeta si existe
     let folderInfo = '';
+    let displayContent = item.content;
+    
     if (item.folderId) {
         const folder = getFolderById(item.folderId);
         if (folder) {
             folderInfo = `<span class="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">📁 ${folder.name}</span>`;
+            
+            // Si la carpeta está protegida y no está desbloqueada, mostrar mensaje genérico
+            if (hasFolderAccessKey(item.folderId) && !isFolderUnlocked(item.folderId)) {
+                displayContent = `Elemento oculto, ver en "${folder.name}"`;
+            }
         }
     }
     
@@ -2102,7 +2919,7 @@ function createDayItemHTML(item) {
                     ${timeInfo}
                     ${folderInfo}
                 </div>
-                <p class="font-medium ${colorConfig.text} text-sm">${item.content}</p>
+                <p class="font-medium ${colorConfig.text} text-sm">${displayContent}</p>
             </div>
             <div class="flex-shrink-0 flex space-x-1 ml-3">
                 <button data-action="edit" data-id="${item.id}" title="Editar" class="text-gray-500 dark:text-gray-400 hover:text-primary-blue dark:hover:text-primary-blue transition-colors p-1 rounded hover:bg-white dark:hover:bg-gray-700">
@@ -2494,6 +3311,12 @@ fab.addEventListener('click', () => {
             colorSelector.firstChild.classList.add('ring-2', 'ring-blue-500');
         }
         
+        // Cargar carpetas en el selector
+        if (folders.length === 0) {
+            loadFolders();
+        }
+        populateFolderSelector();
+        
         modal.classList.remove('hidden');
         universalInput.focus();
     }
@@ -2561,6 +3384,11 @@ colorSelector.addEventListener('change', (e) => {
 
 /** Manejador de eventos delegados para la lista (completar, editar, eliminar) */
 itemList.addEventListener('click', (e) => {
+    // Ignorar clicks en checkboxes
+    if (e.target.type === 'checkbox') {
+        return;
+    }
+    
     console.log('Click en itemList:', e.target);
     const target = e.target.closest('button[data-action]');
     if (!target) {
@@ -2589,6 +3417,11 @@ itemList.addEventListener('click', (e) => {
             break;
         case 'share':
             shareNote(id);
+            break;
+        case 'show-full':
+            const fullText = decodeURIComponent(target.getAttribute('data-full-text'));
+            const itemType = target.getAttribute('data-item-type');
+            showFullContent(id, fullText, itemType);
             break;
     }
 });
@@ -2786,6 +3619,20 @@ foldersViewBtn.addEventListener('click', showFoldersView);
 
 /** Event listeners para botones de carpetas */
 createFolderBtn.addEventListener('click', openCreateFolderModal);
+
+/** Event listeners para botones de selección */
+const selectItemsModeBtn = document.getElementById('select-items-mode-btn');
+
+if (selectItemsModeBtn) {
+    selectItemsModeBtn.addEventListener('click', toggleSelectionMode);
+}
+
+/** Event listener para botón de productividad */
+const productivityButton = document.getElementById('productivity-button');
+
+if (productivityButton) {
+    productivityButton.addEventListener('click', showProductivityModal);
+}
 
 /** Event listeners para importar/exportar/compartir */
 // El botón de importar ahora está en el menú de configuración
@@ -3639,6 +4486,14 @@ function initializeApp() {
     
     // Cargar configuración del versículo diario
     loadDailyVerseSettings();
+    
+    // Inicializar sistema de archivo automático
+    loadWeeklyStats();
+    checkWeeklyArchive();
+    
+    // Inicializar sistema de racha diaria
+    loadStreakData();
+    updateDailyStreak();
     
     // Inicializar estado del toggle de tema
     updateThemeToggleState();
