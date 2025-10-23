@@ -1,6 +1,6 @@
 // Service Worker para OrganizApp PWA - Sistema de Actualización Automática
 // === CONFIGURACIÓN DE VERSIONADO AUTOMÁTICO ===
-const CACHE_VERSION = '2.0.3'; // Incrementar para nuevas versiones - Sistema de actualización automática mejorado
+const CACHE_VERSION = '2.0.4'; // Incrementar para nuevas versiones - Sistema de actualización automática mejorado
 const CACHE_NAME = `organizapp-${CACHE_VERSION}`;
 const STATIC_CACHE_NAME = `organizapp-static-${CACHE_VERSION}`;
 const DYNAMIC_CACHE_NAME = `organizapp-dynamic-${CACHE_VERSION}`;

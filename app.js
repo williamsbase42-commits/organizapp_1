@@ -481,45 +481,7 @@ function getDailyTip() {
     const lastTipDate = localStorage.getItem('lastTipDate');
     const lastTipIndex = localStorage.getItem('lastTipIndex');
     
-    // Si es un nuevo día o no hay tip guardado, generar uno nuevo
-    if (lastTipDate !== today || !lastTipIndex) {
-        const dailyTips = [
-            '💡 <strong>Tip del día:</strong> Organiza tus tareas por prioridad para ser más eficiente.',
-            '💡 <strong>Tip del día:</strong> Toma descansos regulares para mantener tu energía.',
-            '💡 <strong>Tip del día:</strong> Celebra cada logro, por pequeño que sea.',
-            '💡 <strong>Tip del día:</strong> Mantén tu espacio de trabajo organizado.',
-            '💡 <strong>Tip del día:</strong> Una tarea a la vez, un día a la vez.',
-            '💡 <strong>Tip del día:</strong> La consistencia es más importante que la perfección.',
-            '💡 <strong>Tip del día:</strong> Anota tus ideas inmediatamente para no olvidarlas.',
-            '💡 <strong>Tip del día:</strong> Dedica tiempo a planificar tu día cada mañana.',
-            '💡 <strong>Tip del día:</strong> Elimina distracciones durante las tareas importantes.',
-            '💡 <strong>Tip del día:</strong> Revisa tu progreso al final del día.',
-            '💡 <strong>Tip del día:</strong> Mantén una actitud positiva ante los desafíos.',
-            '💡 <strong>Tip del día:</strong> Aprende algo nuevo cada día.',
-            '💡 <strong>Tip del día:</strong> Practica la gratitud por lo que has logrado.',
-            '💡 <strong>Tip del día:</strong> Establece metas realistas y alcanzables.',
-            '💡 <strong>Tip del día:</strong> Usa la técnica Pomodoro para mantener el enfoque.',
-            '💡 <strong>Tip del día:</strong> Delega tareas cuando sea posible.',
-            '💡 <strong>Tip del día:</strong> Mantén un equilibrio entre trabajo y descanso.',
-            '💡 <strong>Tip del día:</strong> Visualiza el éxito antes de empezar.',
-            '💡 <strong>Tip del día:</strong> Aprende de los errores y sigue adelante.',
-            '💡 <strong>Tip del día:</strong> Rodéate de personas que te inspiren.'
-        ];
-        
-        // Seleccionar un tip aleatorio diferente al anterior
-        let newTipIndex;
-        do {
-            newTipIndex = Math.floor(Math.random() * dailyTips.length);
-        } while (newTipIndex === parseInt(lastTipIndex) && dailyTips.length > 1);
-        
-        // Guardar el nuevo tip para el día
-        localStorage.setItem('lastTipDate', today);
-        localStorage.setItem('lastTipIndex', newTipIndex.toString());
-        
-        return dailyTips[newTipIndex];
-    }
-    
-    // Si es el mismo día, devolver el tip guardado
+    // Array completo de tips (50 tips únicos y motivadores)
     const dailyTips = [
         '💡 <strong>Tip del día:</strong> Organiza tus tareas por prioridad para ser más eficiente.',
         '💡 <strong>Tip del día:</strong> Toma descansos regulares para mantener tu energía.',
@@ -535,14 +497,63 @@ function getDailyTip() {
         '💡 <strong>Tip del día:</strong> Aprende algo nuevo cada día.',
         '💡 <strong>Tip del día:</strong> Practica la gratitud por lo que has logrado.',
         '💡 <strong>Tip del día:</strong> Establece metas realistas y alcanzables.',
-        '💡 <strong>Tip del día:</strong> Usa la técnica Pomodoro para mantener el enfoque.',
+        '💡 <strong>Tip del día:</strong> Usa la técnica Pomodoro: 25 min trabajo, 5 min descanso.',
         '💡 <strong>Tip del día:</strong> Delega tareas cuando sea posible.',
-        '💡 <strong>Tip del día:</strong> Mantén un equilibrio entre trabajo y descanso.',
+        '💡 <strong>Tip del día:</strong> Mantén un equilibrio saludable entre trabajo y descanso.',
         '💡 <strong>Tip del día:</strong> Visualiza el éxito antes de empezar.',
         '💡 <strong>Tip del día:</strong> Aprende de los errores y sigue adelante.',
-        '💡 <strong>Tip del día:</strong> Rodéate de personas que te inspiren.'
+        '💡 <strong>Tip del día:</strong> Rodéate de personas que te inspiren.',
+        '💡 <strong>Tip del día:</strong> El primer paso es siempre el más importante.',
+        '💡 <strong>Tip del día:</strong> Divide grandes proyectos en tareas pequeñas.',
+        '💡 <strong>Tip del día:</strong> Escucha más de lo que hablas.',
+        '💡 <strong>Tip del día:</strong> Invierte en tu desarrollo personal constantemente.',
+        '💡 <strong>Tip del día:</strong> La paciencia es clave para el éxito duradero.',
+        '💡 <strong>Tip del día:</strong> Haz ejercicio regularmente para mejorar tu concentración.',
+        '💡 <strong>Tip del día:</strong> Lee al menos 15 minutos al día.',
+        '💡 <strong>Tip del día:</strong> Duerme entre 7-8 horas para rendir al máximo.',
+        '💡 <strong>Tip del día:</strong> Hidrátate constantemente durante el día.',
+        '💡 <strong>Tip del día:</strong> Evita el multitasking, enfócate en una cosa a la vez.',
+        '💡 <strong>Tip del día:</strong> Crea rutinas matutinas que te ayuden a ser productivo.',
+        '💡 <strong>Tip del día:</strong> Aprende a decir "no" a lo que no es prioritario.',
+        '💡 <strong>Tip del día:</strong> Medita unos minutos para reducir el estrés.',
+        '💡 <strong>Tip del día:</strong> Celebra el progreso, no solo los resultados finales.',
+        '💡 <strong>Tip del día:</strong> Busca retroalimentación constructiva para mejorar.',
+        '💡 <strong>Tip del día:</strong> Mantén tu teléfono en silencio durante tareas importantes.',
+        '💡 <strong>Tip del día:</strong> Usa listas de tareas para no olvidar nada importante.',
+        '💡 <strong>Tip del día:</strong> Revisa tus objetivos semanalmente para mantenerte enfocado.',
+        '💡 <strong>Tip del día:</strong> Mantén una mentalidad de crecimiento siempre.',
+        '💡 <strong>Tip del día:</strong> La calidad supera a la cantidad en todo.',
+        '💡 <strong>Tip del día:</strong> Aprende de las personas exitosas que admiras.',
+        '💡 <strong>Tip del día:</strong> Sé agradecido por lo que tienes hoy.',
+        '💡 <strong>Tip del día:</strong> Sal de tu zona de confort regularmente.',
+        '💡 <strong>Tip del día:</strong> Mantén tu escritorio limpio y ordenado para pensar mejor.',
+        '💡 <strong>Tip del día:</strong> Escribe tus metas y revísalas a diario.',
+        '💡 <strong>Tip del día:</strong> Conecta con personas positivas y motivadas.',
+        '💡 <strong>Tip del día:</strong> Toma aire fresco para despejar la mente.',
+        '💡 <strong>Tip del día:</strong> Aprende a gestionar tu tiempo efectivamente.',
+        '💡 <strong>Tip del día:</strong> No temas pedir ayuda cuando la necesites.',
+        '💡 <strong>Tip del día:</strong> El éxito es la suma de pequeños esfuerzos diarios.'
     ];
     
+    // Si es un nuevo día o no hay tip guardado, generar uno nuevo
+    if (lastTipDate !== today || !lastTipIndex) {
+        // Seleccionar un tip aleatorio diferente al anterior
+        let newTipIndex;
+        do {
+            newTipIndex = Math.floor(Math.random() * dailyTips.length);
+        } while (newTipIndex === parseInt(lastTipIndex) && dailyTips.length > 1);
+        
+        // Guardar el nuevo tip para el día (se mantiene todo el día)
+        localStorage.setItem('lastTipDate', today);
+        localStorage.setItem('lastTipIndex', newTipIndex.toString());
+        
+        console.log(`✨ Nuevo tip del día seleccionado: ${newTipIndex + 1}/${dailyTips.length}`);
+        
+        return dailyTips[newTipIndex];
+    }
+    
+    // Si es el mismo día, devolver el tip guardado (NO cambia hasta mañana)
+    console.log(`📌 Tip del día actual: ${parseInt(lastTipIndex) + 1}/${dailyTips.length}`);
     return dailyTips[parseInt(lastTipIndex)];
 }
 
