@@ -1,0 +1,375 @@
+/* ================================================================
+   ORGANIZAPP - ESTILOS DEL SISTEMA DE IMÁGENES
+   ================================================================ */
+
+/* ===== BOTONES DE SUBIR IMAGEN ===== */
+#image-upload-btn,
+#edit-image-upload-btn,
+#folder-image-upload-btn,
+#edit-folder-image-upload-btn {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#image-upload-btn::before,
+#edit-image-upload-btn::before,
+#folder-image-upload-btn::before,
+#edit-folder-image-upload-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+    transition: all 0.3s ease;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+}
+
+#image-upload-btn:hover::before,
+#edit-image-upload-btn:hover::before,
+#folder-image-upload-btn:hover::before,
+#edit-folder-image-upload-btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+#image-upload-btn:hover,
+#edit-image-upload-btn:hover,
+#folder-image-upload-btn:hover,
+#edit-folder-image-upload-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== CONTENEDORES DE PREVISUALIZACIÓN ===== */
+#image-preview-container,
+#edit-image-preview-container,
+#folder-image-preview-container,
+#edit-folder-image-preview-container {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== IMÁGENES DE PREVISUALIZACIÓN ===== */
+#image-preview,
+#edit-image-preview,
+#folder-image-preview,
+#edit-folder-image-preview {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#image-preview:hover,
+#edit-image-preview:hover,
+#folder-image-preview:hover,
+#edit-folder-image-preview:hover {
+    transform: scale(1.02);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+}
+
+/* ===== BOTONES DE REMOVER ===== */
+#remove-image-btn,
+#edit-remove-image-btn,
+#folder-remove-image-btn,
+#edit-folder-remove-image-btn {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#remove-image-btn:hover,
+#edit-remove-image-btn:hover,
+#folder-remove-image-btn:hover,
+#edit-folder-remove-image-btn:hover {
+    transform: scale(1.1) rotate(90deg);
+}
+
+/* ===== MODAL VISOR DE IMÁGENES ===== */
+#image-viewer-modal {
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+#image-viewer-modal img {
+    animation: scaleIn 0.3s ease-out;
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ===== MINIATURAS EN TARJETAS ===== */
+.item-image-thumbnail {
+    display: block !important;
+    width: 100% !important;
+    margin-top: 0.75rem;
+    clear: both;
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.75rem;
+}
+
+.item-image-thumbnail img {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 8rem;
+    object-fit: cover;
+    transition: all 0.3s ease;
+}
+
+.item-image-thumbnail:hover img {
+    transform: scale(1.05);
+}
+
+.item-image-thumbnail .image-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0.75rem;
+}
+
+.item-image-thumbnail:hover .image-overlay {
+    opacity: 1;
+}
+
+/* ===== DRAG AND DROP ===== */
+.dragging-over {
+    border-color: #3B82F6 !important;
+    border-style: dashed !important;
+    background-color: rgba(59, 130, 246, 0.05) !important;
+}
+
+.dark .dragging-over {
+    background-color: rgba(59, 130, 246, 0.1) !important;
+}
+
+/* ===== RESPONSIVE PARA MÓVILES ===== */
+@media (max-width: 640px) {
+    #image-preview,
+    #edit-image-preview,
+    #folder-image-preview,
+    #edit-folder-image-preview {
+        max-height: 10rem;
+    }
+
+    #image-upload-btn,
+    #edit-image-upload-btn,
+    #folder-image-upload-btn,
+    #edit-folder-image-upload-btn {
+        padding: 0.75rem 1rem;
+    }
+
+    .item-image-thumbnail img {
+        height: 6rem;
+    }
+}
+
+/* ===== LOADING SPINNER ===== */
+.image-loading {
+    position: relative;
+}
+
+.image-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 24px;
+    height: 24px;
+    border: 3px solid #f3f4f6;
+    border-top-color: #3B82F6;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    transform: translate(-50%, -50%);
+}
+
+@keyframes spin {
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* ===== ESTILOS ADICIONALES PARA CARPETAS CON IMÁGENES ===== */
+.folder-with-image {
+    position: relative;
+}
+
+.folder-image-preview {
+    width: 100%;
+    height: 6rem;
+    object-fit: cover;
+    border-radius: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+/* ===== PORTADA DE CARPETA (IMAGEN CUADRADA) ===== */
+.folder-cover-image {
+    width: 48px !important;
+    height: 48px !important;
+    object-fit: cover;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    display: block;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.folder-cover-image:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Ajustar contenedor de ícono cuando tiene imagen */
+.folder-icon {
+    position: relative;
+}
+
+.folder-icon:has(.folder-cover-image) {
+    padding: 0 !important;
+    overflow: hidden;
+}
+
+/* ===== ANIMACIONES SUAVES ===== */
+.fade-enter {
+    opacity: 0;
+}
+
+.fade-enter-active {
+    opacity: 1;
+    transition: opacity 0.3s ease-in;
+}
+
+.fade-exit {
+    opacity: 1;
+}
+
+.fade-exit-active {
+    opacity: 0;
+    transition: opacity 0.3s ease-out;
+}
+
+/* ===== ESTILOS PARA MODALES CON SCROLL ===== */
+/* Asegurar que los modales tengan scroll suave y padding adecuado */
+#input-modal > div,
+#edit-modal > div {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(139, 92, 246, 0.5) rgba(0, 0, 0, 0.1);
+}
+
+#input-modal > div::-webkit-scrollbar,
+#edit-modal > div::-webkit-scrollbar {
+    width: 8px;
+}
+
+#input-modal > div::-webkit-scrollbar-track,
+#edit-modal > div::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+}
+
+#input-modal > div::-webkit-scrollbar-thumb,
+#edit-modal > div::-webkit-scrollbar-thumb {
+    background: rgba(139, 92, 246, 0.5);
+    border-radius: 10px;
+}
+
+#input-modal > div::-webkit-scrollbar-thumb:hover,
+#edit-modal > div::-webkit-scrollbar-thumb:hover {
+    background: rgba(139, 92, 246, 0.7);
+}
+
+/* Asegurar que la lista de compras tenga scroll suave */
+#shopping-items-list,
+#edit-shopping-items-list {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(34, 197, 94, 0.5) rgba(0, 0, 0, 0.1);
+}
+
+#shopping-items-list::-webkit-scrollbar,
+#edit-shopping-items-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+#shopping-items-list::-webkit-scrollbar-track,
+#edit-shopping-items-list::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+}
+
+#shopping-items-list::-webkit-scrollbar-thumb,
+#edit-shopping-items-list::-webkit-scrollbar-thumb {
+    background: rgba(34, 197, 94, 0.5);
+    border-radius: 10px;
+}
+
+#shopping-items-list::-webkit-scrollbar-thumb:hover,
+#edit-shopping-items-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(34, 197, 94, 0.7);
+}
+
+/* ===== ESTILOS PARA LISTA DE COMPRAS EN TARJETAS ===== */
+.shopping-list-preview {
+    display: block !important;
+    width: 100% !important;
+    margin-top: 0.75rem;
+    clear: both;
+    position: relative;
+}
+
+.shopping-list-preview .space-y-1\.5 > div {
+    transition: all 0.2s ease;
+}
+
+.shopping-list-preview .space-y-1\.5 > div:hover {
+    transform: translateX(4px);
+}
+
+/* Scrollbar para modal de visualización */
+#view-shopping-list-items {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(34, 197, 94, 0.5) rgba(0, 0, 0, 0.1);
+}
+
+#view-shopping-list-items::-webkit-scrollbar {
+    width: 8px;
+}
+
+#view-shopping-list-items::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+}
+
+#view-shopping-list-items::-webkit-scrollbar-thumb {
+    background: rgba(34, 197, 94, 0.5);
+    border-radius: 10px;
+}
+
+#view-shopping-list-items::-webkit-scrollbar-thumb:hover {
+    background: rgba(34, 197, 94, 0.7);
+}
+

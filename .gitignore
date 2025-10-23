@@ -1,0 +1,39 @@
+# Archivos del sistema
+.gradle/
+gradle/
+gradlew
+gradlew.bat
+node_modules/
+*.log
+*.tmp
+*.temp
+
+# Archivos del IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Archivos temporales
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Build outputs
+build/
+out/
+
+# Solo incluir archivos específicos del proyecto
+!index.html
+!style.css
+!app.js
+!manifest.json
+!service-worker.js
+!icons/
+!README.md

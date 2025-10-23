@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>OrganizApp</title>
+    
+    <!-- ENLACE PWA MANIFEST -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3A7AFE">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="OrganizApp">
+    <meta name="msapplication-TileColor" content="#3A7AFE">
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="icons/logo-1.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="icons/logo-1.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/logo-1.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="icons/logo-1.png">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="icons/logo-1.png">
+    <link rel="shortcut icon" href="icons/logo-1.png">
+
+    <!-- Carga de Tailwind CSS para el diseño moderno y responsive -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configuración para usar la fuente Inter y colores base -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class', // Habilitar modo oscuro basado en la clase 'dark' en <html>
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary-blue': '#3B82F6',
+                        'primary-dark': '#111827',
+                        'surface-light': '#F9FAFB',
+                        'surface-dark': '#1F2937',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Enlace al archivo CSS externo -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="image-styles.css">
+</head>
+<body class="min-h-screen bg-surface-light text-gray-900 dark:bg-primary-dark dark:text-gray-100 p-4 sm:p-6 transition-colors duration-300 safe-area-top safe-area-bottom standalone-enhanced ios-scroll">
+
+    <!-- Mensaje del Sistema -->
+    <div id="system-message" class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-lg text-white font-semibold shadow-lg transition-all duration-300 hidden opacity-0">
+        Mensaje del sistema
+    </div>
+
+    <!-- Contenedor Principal -->
+    <div class="max-w-3xl mx-auto">
+        
+        <!-- Encabezado y Navegación -->
+        <header class="mb-4 sm:mb-8">
+            <!-- Header Principal -->
+            <div class="bg-gradient-to-r from-white via-blue-50/30 to-purple-50/30 dark:from-gray-800 dark:via-blue-900/20 dark:to-purple-900/20 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-sm">
+                
+                <!-- Primera fila: Logo, título y botones de utilidad -->
+                <div class="flex justify-between items-center mb-4 sm:mb-6">
+                    <!-- Logo y título -->
+                    <div class="flex items-center space-x-2 sm:space-x-4 flex-1 min-w-0">
+                        <div class="relative flex-shrink-0">
+                            <img src="icons/logo-1.png" alt="OrganizApp Logo" class="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl shadow-lg ring-2 ring-blue-500/20">
+                            <div class="absolute -top-1 -right-1 w-2 h-2 sm:w-4 sm:h-4 bg-green-500 rounded-full border-2 border-white dark:border-gray-800 animate-pulse"></div>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <h1 class="text-lg sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent truncate">OrganizApp</h1>
+                            <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium hidden sm:block">Tu organizador personal</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Botones de utilidad -->
+            <div class="flex items-center space-x-1 sm:space-x-3">
+                        <button id="config-btn" class="p-2 sm:p-3 rounded-lg sm:rounded-xl bg-gradient-to-r from-purple-500 to-indigo-600 text-white hover:from-purple-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105" aria-label="Configuración" title="Configuración">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                        </button>
+                    </div>
+            </div>
+            
+                <!-- Segunda fila: Navegación y filtros -->
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                    <!-- Botones de navegación -->
+                    <div class="flex space-x-1 sm:space-x-2">
+                        <button id="home-view-btn" class="group px-3 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                            <div class="flex items-center space-x-1 sm:space-x-2">
+                                <span class="text-sm sm:text-lg">🏠</span>
+                                <span class="text-sm sm:text-base">Inicio</span>
+                            </div>
+                        </button>
+                        
+                        <button id="calendar-view-btn" class="group px-3 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                            <div class="flex items-center space-x-1 sm:space-x-2">
+                                <span class="text-sm sm:text-lg">📅</span>
+                                <span class="text-sm sm:text-base">Calendario</span>
+                            </div>
+                </button>
+                        
+                        <button id="folders-view-btn" class="group px-3 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                            <div class="flex items-center space-x-1 sm:space-x-2">
+                                <span class="text-sm sm:text-lg">📁</span>
+                                <span class="text-sm sm:text-base">Carpetas</span>
+                            </div>
+                </button>
+            </div>
+
+                    <!-- Filtros -->
+                    <div id="filter-dropdown-container" class="flex items-center space-x-2 sm:space-x-3">
+                        <label class="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400">Filtrar:</label>
+                        <div class="relative">
+                            <select id="category-filter" class="appearance-none px-2 sm:px-4 py-1 sm:py-2 pr-6 sm:pr-8 rounded-lg sm:rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-lg hover:shadow-xl cursor-pointer text-xs sm:text-sm">
+                        <option value="all">🔄 Todo</option>
+                        <option value="notes">📝 Notas</option>
+                        <option value="tasks">✅ Tareas</option>
+                                <option value="reminders">⏰ Recordatorios</option>
+                        <option value="shopping">🛒 Compras</option>
+                    </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-2 sm:pr-3 pointer-events-none">
+                                <svg class="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Resumen Diario -->
+        <div id="summary-box" class="p-4 bg-surface-dark dark:bg-surface-light rounded-xl shadow-md mb-6 transition-colors duration-300">
+            <p class="text-white dark:text-gray-900 font-semibold" id="daily-summary">
+                Cargando resumen...
+            </p>
+        </div>
+
+        <!-- Barra de Búsqueda -->
+        <div class="mb-6">
+            <input type="text" id="search-input" placeholder="Buscar tareas, notas o recordatorios..."
+                class="w-full p-3 rounded-lg border-2 border-gray-300 bg-white dark:bg-surface-dark dark:border-gray-700 dark:text-gray-100 focus:ring-primary-blue focus:border-primary-blue transition-colors duration-300 shadow-sm ios-input android-input">
+        </div>
+
+        <!-- Vista de Lista -->
+        <div id="list-view" class="space-y-4">
+            <!-- Vista de Carpetas (para la categoría de Notas) -->
+            <div id="folders-view" class="space-y-4">
+                <div class="flex items-center justify-end mb-4">
+                    <button id="back-to-folders-btn" class="hidden px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                        ← Volver a Carpetas
+                    </button>
+                </div>
+                <div id="folders-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-visible">
+                    <!-- Las carpetas se renderizarán aquí -->
+                </div>
+            </div>
+
+            <!-- Vista de Notas dentro de una Carpeta -->
+            <div id="notes-view" class="space-y-4 hidden">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 id="folder-title" class="text-xl font-bold text-gray-900 dark:text-gray-100">📝 Notas</h2>
+                    <button id="back-to-folders-btn" class="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                        ← Volver a Carpetas
+                    </button>
+                </div>
+                <div id="notes-container" class="space-y-4">
+                    <!-- Las notas de la carpeta se renderizarán aquí -->
+                </div>
+            </div>
+
+            <!-- Lista Unificada de Elementos (para otras categorías) -->
+            <div id="main-items-view" class="space-y-4">
+                <div id="main-items-header" class="mb-4 hidden">
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-3">📋 Mis Elementos</h2>
+                    <div class="flex items-center space-x-2">
+                        <button id="select-all-btn" class="px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium hidden">
+                            ✅ Seleccionar Todo
+                        </button>
+                        <button id="select-items-mode-btn" class="px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium">
+                            ✏️ Seleccionar
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Botón de Productividad Semanal -->
+                <div id="productivity-button-container" class="mb-6 hidden">
+                    <button id="productivity-button" class="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-3">
+                        <span class="text-2xl">📊</span>
+                        <span class="text-lg">Productividad Semanal</span>
+                        <span class="text-sm opacity-90">Ver estadísticas</span>
+                    </button>
+                </div>
+                
+                <div id="item-list" class="space-y-4">
+                    <!-- Los elementos se renderizarán aquí -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Vista de Calendario -->
+        <div id="calendar-view" class="hidden">
+            <!-- Navegación del calendario -->
+            <div class="flex justify-between items-center mb-6">
+                <button id="prev-month" class="calendar-nav-btn">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+                <h2 id="calendar-month-year" class="calendar-title"></h2>
+                <button id="next-month" class="calendar-nav-btn">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Calendario -->
+            <div id="calendar-grid" class="bg-white dark:bg-surface-dark rounded-xl shadow-lg overflow-hidden">
+                <!-- Los días del calendario se generarán dinámicamente -->
+            </div>
+
+            <!-- Detalles del día seleccionado -->
+            <div id="day-details" class="mt-6 p-6 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+                <h3 id="selected-day-title" class="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"></h3>
+                <div id="selected-day-items" class="space-y-3">
+                    <!-- Los elementos del día seleccionado aparecerán aquí -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Vista de Carpetas -->
+        <div id="folders-main-view" class="hidden">
+            <!-- Navegación de carpetas -->
+            <div class="flex justify-between items-center mb-6">
+                <div class="flex items-center space-x-4">
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">📁 Carpetas</h2>
+                </div>
+                <div class="flex space-x-2">
+                    <button id="create-folder-btn" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium">
+                        📁 Nueva Carpeta
+                    </button>
+                </div>
+            </div>
+
+            <!-- Lista de carpetas -->
+            <div class="bg-white dark:bg-surface-dark rounded-xl shadow-lg p-6 overflow-visible">
+                <div id="folders-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-visible">
+                    <!-- Las carpetas se generarán dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Contenido de la carpeta seleccionada -->
+            <div id="folder-content" class="mt-6 hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 id="selected-folder-title" class="text-xl font-bold text-gray-900 dark:text-gray-100"></h3>
+                    <button id="back-to-folders-btn" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium">
+                        ← Volver a Carpetas
+                    </button>
+                </div>
+                
+                <!-- Lista de elementos en la carpeta -->
+                <div class="bg-white dark:bg-surface-dark rounded-xl shadow-lg p-6">
+                    <div id="folder-items-list" class="space-y-3">
+                        <!-- Los elementos de la carpeta aparecerán aquí -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Footer con mensaje de apoyo -->
+    <footer class="mt-8 mb-4">
+        <div class="max-w-3xl mx-auto">
+            <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl p-4 border border-green-200 dark:border-green-800 shadow-sm">
+                <div class="flex flex-col sm:flex-row items-center justify-between space-y-3 sm:space-y-0">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">💝</span>
+                        <div class="text-center sm:text-left">
+                            <p class="text-sm font-semibold text-green-700 dark:text-green-300">¿Te gusta OrganizApp?</p>
+                            <p class="text-xs text-green-600 dark:text-green-400">Apoya al creador para seguir mejorando la app</p>
+                        </div>
+                    </div>
+                    <a href="https://www.flow.cl/btn.php?token=b1192571f4cf912c8ff3f62788f0642b24a91f0e" target="_blank" class="px-4 py-2 text-sm font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-300 shadow-sm hover:shadow-md transform hover:scale-105 whitespace-nowrap">
+                        💝 Apoyar al creador
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Botón de Acción Flotante (FAB) -->
+    <button id="fab" class="bg-primary-blue text-white w-14 h-14 rounded-full flex items-center justify-center text-3xl font-bold shadow-lg hover:bg-blue-600 transition-colors duration-200 ios-button android-button" aria-label="Agregar nuevo elemento">
+        +
+    </button>
+
+    <!-- Modal de Entrada Universal (Inicialmente Oculto) -->
+    <div id="input-modal" class="fixed inset-0 bg-gradient-to-br from-black/60 via-purple-900/20 to-blue-900/20 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-gradient-to-br from-white via-blue-50/50 to-purple-50/50 dark:from-gray-800 dark:via-blue-900/20 dark:to-purple-900/20 rounded-2xl p-6 w-full max-w-md shadow-2xl border border-white/20 dark:border-gray-700/30 transition-all duration-500 transform scale-100 hover:shadow-3xl my-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-center mb-4">
+                <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <span class="text-xl">✨</span>
+                </div>
+                <h3 class="text-xl font-bold ml-3 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Nuevo Elemento</h3>
+            </div>
+            
+            <!-- Contenido -->
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">📝 Contenido</label>
+                <textarea id="universal-input" rows="2" placeholder="Escribe tu contenido aquí..."
+                    class="w-full p-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 ios-input android-input shadow-sm hover:shadow-md"></textarea>
+            </div>
+            
+            <!-- Selectores -->
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <!-- Tipo -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">🎯 Tipo</label>
+                    <select id="type-selector" class="w-full p-2 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-sm hover:shadow-md">
+                        <option value="Nota">📝 Nota</option>
+                        <option value="Tarea">✅ Tarea</option>
+                        <option value="Compra">🛒 Compra</option>
+                        <option value="Recordatorio">⏰ Recordatorio</option>
+                    </select>
+                </div>
+
+                <!-- Estado -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">📊 Estado</label>
+                    <select id="status-selector" class="w-full p-2 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-sm hover:shadow-md">
+                        <option value="pending">⏳ Pendiente</option>
+                        <option value="done">✅ Realizado</option>
+                        <option value="completed">🎉 Terminado</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Carpeta -->
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">📁 Carpeta (opcional)</label>
+                <select id="folder-selector" class="w-full p-2 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-sm hover:shadow-md">
+                    <option value="">📁 Sin carpeta</option>
+                    <!-- Las carpetas se generarán dinámicamente -->
+                </select>
+            </div>
+
+            <!-- Color y Fecha -->
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <!-- Color -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">🎨 Color</label>
+                    <div id="color-selector" class="flex flex-wrap gap-2 p-2 rounded-xl bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm border border-gray-200 dark:border-gray-600">
+                        <!-- Los colores se generarán dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- Fecha -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">📅 Fecha</label>
+                    <input type="date" id="date-selector" class="w-full p-2 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-sm hover:shadow-md">
+                </div>
+            </div>
+
+            <!-- Hora (solo para Recordatorios) -->
+            <div id="time-selector-container" class="mb-6 hidden">
+                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">🕐 Hora (opcional)</label>
+                <div class="flex items-center gap-3">
+                    <input type="time" id="time-selector" class="flex-1 p-2 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-sm hover:shadow-md">
+                    <button type="button" id="clear-time-btn" class="px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 bg-gray-100 dark:bg-gray-700 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30 transition-all duration-200" title="Quitar hora">
+                        ✕
+                    </button>
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Deja vacío para recordatorio sin hora específica</p>
+            </div>
+
+            <!-- Lista de Compras (solo para tipo Compra) -->
+            <div id="shopping-list-container" class="mb-6 hidden">
+                <button type="button" id="toggle-shopping-list-btn" class="w-full px-4 py-3 text-sm font-semibold rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+                    <span class="text-lg">🛒</span>
+                    <span>Lista de compras</span>
+                    <span id="shopping-list-toggle-icon">▼</span>
+                </button>
+                
+                <div id="shopping-list-content" class="mt-3 hidden">
+                    <div class="bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm rounded-xl p-4 border-2 border-green-200 dark:border-green-800">
+                        <!-- Input para agregar items -->
+                        <div class="flex gap-2 mb-3">
+                            <input type="text" id="shopping-item-input" placeholder="Ej: Leche, Pan, etc..." class="flex-1 p-2 rounded-lg border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-sm min-w-0">
+                            <button type="button" id="add-shopping-item-btn" class="flex-shrink-0 px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium text-sm whitespace-nowrap">
+                                ➕<span class="hidden sm:inline ml-1">Agregar</span>
+                            </button>
+                        </div>
+                        
+                        <!-- Lista de items -->
+                        <div id="shopping-items-list" class="space-y-2 max-h-32 overflow-y-auto">
+                            <!-- Los items se agregarán aquí dinámicamente -->
+                        </div>
+                        
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">💡 Agrega artículos a tu lista de compras</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Imagen (opcional) -->
+            <div class="mb-6">
+                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">🖼️ Imagen (opcional)</label>
+                <div class="w-full">
+                    <input type="file" id="image-input" accept="image/*" class="hidden">
+                    <button type="button" id="image-upload-btn" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 hover:border-blue-500 dark:hover:border-blue-400 focus:ring-2 focus:ring-blue-500 transition-all duration-300 shadow-sm hover:shadow-md flex items-center justify-center gap-2">
+                        <span class="text-2xl">📷</span>
+                        <span class="text-sm font-medium">Seleccionar imagen</span>
+                    </button>
+                </div>
+                <div id="image-preview-container" class="mt-3 hidden w-full">
+                    <div class="relative inline-block w-full">
+                        <img id="image-preview" src="" alt="Vista previa" class="w-full max-h-48 rounded-xl shadow-lg border-2 border-gray-200 dark:border-gray-600 object-cover">
+                        <button type="button" id="remove-image-btn" class="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center shadow-lg transition-all duration-200 transform hover:scale-110" title="Quitar imagen">
+                            ✕
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2" id="image-file-name"></p>
+                </div>
+            </div>
+
+            <div class="flex justify-between">
+                <button id="cancel-btn" class="px-6 py-3 text-sm font-semibold rounded-2xl text-gray-600 dark:text-gray-300 bg-gray-100/80 dark:bg-gray-700/80 backdrop-blur-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 shadow-sm hover:shadow-md">Cancelar</button>
+                <button id="add-btn" class="px-6 py-3 text-sm font-semibold rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 ios-button android-button">✨ Agregar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Edición (Inicialmente Oculto) -->
+    <div id="edit-modal" class="fixed inset-0 bg-gradient-to-br from-black/60 via-purple-900/20 to-blue-900/20 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-gradient-to-br from-white via-blue-50/50 to-purple-50/50 dark:from-gray-800 dark:via-blue-900/20 dark:to-purple-900/20 rounded-2xl p-6 w-full max-w-md shadow-2xl border border-white/20 dark:border-gray-700/30 transition-all duration-500 transform scale-100 hover:shadow-3xl my-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-center mb-4">
+                <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <span class="text-xl">✏️</span>
+                </div>
+                <h3 class="text-xl font-bold ml-3 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">Editar Elemento</h3>
+            </div>
+            
+            <!-- Contenido -->
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">📝 Contenido</label>
+                <textarea id="edit-content-input" rows="2" placeholder="Escribe tu contenido aquí..."
+                    class="w-full p-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 shadow-sm hover:shadow-md"></textarea>
+            </div>
+            
+            <!-- Selectores -->
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <!-- Tipo -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">🎯 Tipo</label>
+                    <select id="edit-type-selector" class="w-full p-2 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 shadow-sm hover:shadow-md">
+                        <option value="Nota">📝 Nota</option>
+                        <option value="Tarea">✅ Tarea</option>
+                        <option value="Compra">🛒 Compra</option>
+                        <option value="Recordatorio">⏰ Recordatorio</option>
+                    </select>
+                </div>
+
+                <!-- Estado -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">📊 Estado</label>
+                    <select id="edit-status-selector" class="w-full p-2 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 shadow-sm hover:shadow-md">
+                        <option value="pending">⏳ Pendiente</option>
+                        <option value="done">✅ Realizado</option>
+                        <option value="completed">🎉 Terminado</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Carpeta -->
+            <div class="mb-4">
+                <label id="edit-folder-label" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">📁 Carpeta</label>
+                <select id="edit-folder-selector" class="w-full p-2 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 shadow-sm hover:shadow-md">
+                    <option value="">📁 Sin carpeta</option>
+                    <!-- Las carpetas se generarán dinámicamente -->
+                </select>
+            </div>
+
+            <!-- Color y Fecha -->
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <!-- Color -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">🎨 Color</label>
+                    <div id="edit-color-selector" class="flex flex-wrap gap-2 p-2 rounded-xl bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm border border-gray-200 dark:border-gray-600">
+                        <!-- Los colores se generarán dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- Fecha -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">📅 Fecha</label>
+                    <input type="date" id="edit-date-selector" class="w-full p-2 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 shadow-sm hover:shadow-md">
+                </div>
+            </div>
+
+            <!-- Hora (solo para Recordatorios) -->
+            <div id="edit-time-selector-container" class="mb-6 hidden">
+                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">🕐 Hora (opcional)</label>
+                <div class="flex items-center gap-3">
+                    <input type="time" id="edit-time-selector" class="flex-1 p-2 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 shadow-sm hover:shadow-md">
+                    <button type="button" id="clear-edit-time-btn" class="px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 bg-gray-100 dark:bg-gray-700 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30 transition-all duration-200" title="Quitar hora">
+                        ✕
+                    </button>
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Deja vacío para recordatorio sin hora específica</p>
+            </div>
+
+            <!-- Lista de Compras (solo para tipo Compra) -->
+            <div id="edit-shopping-list-container" class="mb-6 hidden">
+                <button type="button" id="edit-toggle-shopping-list-btn" class="w-full px-4 py-3 text-sm font-semibold rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+                    <span class="text-lg">🛒</span>
+                    <span>Lista de compras</span>
+                    <span id="edit-shopping-list-toggle-icon">▼</span>
+                </button>
+                
+                <div id="edit-shopping-list-content" class="mt-3 hidden">
+                    <div class="bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm rounded-xl p-4 border-2 border-green-200 dark:border-green-800">
+                        <!-- Input para agregar items -->
+                        <div class="flex gap-2 mb-3">
+                            <input type="text" id="edit-shopping-item-input" placeholder="Ej: Leche, Pan, etc..." class="flex-1 p-2 rounded-lg border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-sm min-w-0">
+                            <button type="button" id="edit-add-shopping-item-btn" class="flex-shrink-0 px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium text-sm whitespace-nowrap">
+                                ➕<span class="hidden sm:inline ml-1">Agregar</span>
+                            </button>
+                        </div>
+                        
+                        <!-- Lista de items -->
+                        <div id="edit-shopping-items-list" class="space-y-2 max-h-32 overflow-y-auto">
+                            <!-- Los items se agregarán aquí dinámicamente -->
+                        </div>
+                        
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">💡 Agrega artículos a tu lista de compras</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Imagen (opcional) -->
+            <div class="mb-6">
+                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">🖼️ Imagen (opcional)</label>
+                <div class="w-full">
+                    <input type="file" id="edit-image-input" accept="image/*" class="hidden">
+                    <button type="button" id="edit-image-upload-btn" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 hover:border-purple-500 dark:hover:border-purple-400 focus:ring-2 focus:ring-purple-500 transition-all duration-300 shadow-sm hover:shadow-md flex items-center justify-center gap-2">
+                        <span class="text-2xl">📷</span>
+                        <span class="text-sm font-medium">Seleccionar imagen</span>
+                    </button>
+                </div>
+                <div id="edit-image-preview-container" class="mt-3 hidden w-full">
+                    <div class="relative inline-block w-full">
+                        <img id="edit-image-preview" src="" alt="Vista previa" class="w-full max-h-48 rounded-xl shadow-lg border-2 border-gray-200 dark:border-gray-600 object-cover">
+                        <button type="button" id="edit-remove-image-btn" class="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center shadow-lg transition-all duration-200 transform hover:scale-110" title="Quitar imagen">
+                            ✕
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2" id="edit-image-file-name"></p>
+                </div>
+            </div>
+
+            <div class="flex justify-between">
+                <button id="edit-cancel-btn" class="px-6 py-3 text-sm font-semibold rounded-2xl text-gray-600 dark:text-gray-300 bg-gray-100/80 dark:bg-gray-700/80 backdrop-blur-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 shadow-sm hover:shadow-md">Cancelar</button>
+                <button id="edit-save-btn" class="px-6 py-3 text-sm font-semibold rounded-2xl bg-gradient-to-r from-purple-500 to-pink-600 text-white hover:from-purple-600 hover:to-pink-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">💾 Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Registro de Usuario (Primera vez) -->
+    <div id="user-registration-modal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-surface-dark rounded-xl p-6 w-full max-w-md shadow-2xl transition-all duration-300 transform scale-100">
+            <h3 class="text-xl font-bold mb-4 dark:text-gray-100">¡Bienvenido a tu Asistente Diario! 👋</h3>
+            <p class="text-gray-600 dark:text-gray-300 mb-4">Para personalizar tu experiencia, por favor ingresa tu nombre:</p>
+            
+            <input type="text" id="user-name-input" placeholder="Tu nombre aquí..." 
+                class="w-full p-3 rounded-lg border-2 border-gray-300 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 focus:ring-primary-blue focus:border-primary-blue transition-colors duration-300 mb-4">
+            
+            <div class="flex justify-end space-x-3">
+                <button id="save-name-btn" class="px-4 py-2 text-sm font-medium rounded-lg bg-primary-blue text-white hover:bg-blue-600 transition-colors">¡Empezar!</button>
+            </div>
+        </div>
+                        </div>
+
+    <!-- Modal de Bienvenida Diaria -->
+    <div id="daily-welcome-modal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+        <div class="bg-white dark:bg-surface-dark rounded-xl p-4 sm:p-6 w-full max-w-lg shadow-2xl transition-all duration-300 transform scale-100 my-4 sm:my-0 max-h-[90vh] overflow-y-auto">
+            <h3 class="text-xl font-bold mb-4 dark:text-gray-100" id="welcome-title"></h3>
+            <div id="welcome-message" class="text-gray-700 dark:text-gray-300 mb-6">
+                <!-- Mensaje personalizado se generará aquí -->
+                        </div>
+
+            <!-- Versículo del Día -->
+            <div id="verse-widget" class="mb-6 p-4 bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 dark:from-amber-900/20 dark:via-yellow-900/20 dark:to-orange-900/20 rounded-xl border border-amber-200 dark:border-amber-800 shadow-lg hidden">
+                <div class="flex items-start justify-between mb-3">
+                    <h4 class="text-md font-semibold text-amber-800 dark:text-amber-200 flex items-center">
+                        <span class="text-xl mr-2">📖</span>
+                        Versículo del Día
+                    </h4>
+                    <button id="share-verse-btn" class="p-1.5 text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/30 rounded-lg transition-all duration-200" title="Compartir versículo">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                        </svg>
+                    </button>
+                </div>
+                <div id="verse-content" class="text-gray-700 dark:text-gray-300">
+                    <div class="text-center py-4">
+                        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-amber-600 mx-auto"></div>
+                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">Cargando versículo...</p>
+                    </div>
+                </div>
+                        </div>
+
+            <div class="flex justify-end space-x-3">
+                <button id="close-welcome-btn" class="px-4 py-2 text-sm font-medium rounded-lg bg-primary-blue text-white hover:bg-blue-600 transition-colors">¡Perfecto!</button>
+            </div>
+                        </div>
+                    </div>
+
+    <!-- Menú de Configuración -->
+    <div id="config-menu" class="fixed top-20 right-4 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 hidden z-50 min-w-64">
+        <div class="p-4">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Configuración
+            </h3>
+            
+            <div class="space-y-3">
+                <!-- Tema -->
+                <div class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    <div class="flex items-center">
+                        <span id="theme-icon" class="text-lg mr-3">🌙</span>
+                        <span id="theme-text" class="text-gray-700 dark:text-gray-300">Cambiar a Modo Oscuro</span>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="theme-toggle-switch" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-500 dark:peer-checked:bg-blue-500"></div>
+                    </label>
+                </div>
+                
+                <!-- Versículo Diario -->
+                <div class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    <div class="flex items-center">
+                        <span class="text-lg mr-3">📖</span>
+                        <span class="text-gray-700 dark:text-gray-300">Versículo Diario</span>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="daily-verse-toggle" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 dark:peer-focus:ring-purple-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-purple-500 dark:peer-checked:bg-purple-500"></div>
+                    </label>
+                </div>
+                
+                <!-- Found My Verse -->
+                <button id="found-my-verse-btn" class="w-full flex items-center justify-between p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    <div class="flex items-center">
+                        <span class="text-lg mr-3">📖</span>
+                        <span class="text-gray-700 dark:text-gray-300">Encontrar Versículo</span>
+                    </div>
+                    <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+                
+                <!-- Importar -->
+                <button id="import-btn-menu" class="w-full flex items-center justify-between p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    <div class="flex items-center">
+                        <span class="text-lg mr-3">📂</span>
+                        <span class="text-gray-700 dark:text-gray-300">Importar Datos</span>
+                    </div>
+                    <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+                
+                <!-- Donaciones -->
+                <a href="https://www.flow.cl/btn.php?token=b1192571f4cf912c8ff3f62788f0642b24a91f0e" target="_blank" class="w-full flex items-center justify-between p-3 rounded-lg hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 dark:hover:from-green-900/20 dark:hover:to-emerald-900/20 transition-all duration-300 group">
+                    <div class="flex items-center">
+                        <span class="text-lg mr-3 group-hover:scale-110 transition-transform duration-300">💝</span>
+                        <span class="text-gray-700 dark:text-gray-300 group-hover:text-green-700 dark:group-hover:text-green-300 transition-colors duration-300">Apoyar con Donación</span>
+                    </div>
+                    <svg class="w-4 h-4 text-gray-400 group-hover:text-green-500 transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Encontrar Versículo -->
+    <div id="found-my-verse-modal" class="fixed inset-0 bg-gradient-to-br from-black/60 via-purple-900/20 to-indigo-900/20 backdrop-blur-md hidden z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+        <div class="bg-gradient-to-br from-white via-purple-50/50 to-indigo-50/50 dark:from-gray-800 dark:via-purple-900/20 dark:to-indigo-900/20 rounded-xl sm:rounded-2xl w-full max-w-4xl shadow-2xl border border-white/20 dark:border-gray-700/30 transition-all duration-500 transform scale-100 hover:shadow-3xl my-2 sm:my-4 mx-2 max-h-[90vh] flex flex-col">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <span class="text-xl sm:text-2xl">📖</span>
+                    </div>
+                    <h3 class="text-xl sm:text-2xl font-bold ml-3 sm:ml-4 bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">Encontrar Versículo</h3>
+                </div>
+                <button id="close-found-verse-btn" class="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-200">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Contenido -->
+            <div class="flex-1 overflow-y-auto p-4 sm:p-6">
+                <!-- Barra de búsqueda de versículos -->
+                <div class="mb-6">
+                    <div class="relative">
+                        <input type="text" id="verse-search-input" placeholder="Buscar versículos por contenido..."
+                            class="w-full p-3 pl-10 rounded-xl border-2 border-purple-200 dark:border-purple-700 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 shadow-sm hover:shadow-md">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="w-5 h-5 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+                        <button id="clear-verse-search-btn" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors hidden">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Vista de Temas -->
+                <div id="themes-view" class="space-y-4">
+                    <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Selecciona un tema:</h4>
+                    <div id="themes-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                        <!-- Los temas se cargarán dinámicamente -->
+                    </div>
+                </div>
+                
+                <!-- Vista de Versículos -->
+                <div id="verses-view" class="hidden space-y-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <button id="back-to-themes-btn" class="flex items-center text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-200 transition-colors">
+                            <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                            </svg>
+                            <span class="font-medium">Volver a temas</span>
+                        </button>
+                        <h4 id="current-theme-title" class="text-lg font-semibold text-gray-800 dark:text-gray-200"></h4>
+                    </div>
+                    <div id="verses-list" class="space-y-3">
+                        <!-- Los versículos se cargarán dinámicamente -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Crear Carpeta -->
+    <div id="create-folder-modal" class="fixed inset-0 bg-gradient-to-br from-black/60 via-green-900/20 to-emerald-900/20 backdrop-blur-md hidden z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+        <div class="bg-gradient-to-br from-white via-green-50/50 to-emerald-50/50 dark:from-gray-800 dark:via-green-900/20 dark:to-emerald-900/20 rounded-xl sm:rounded-2xl w-full max-w-sm sm:max-w-md shadow-2xl border border-white/20 dark:border-gray-700/30 transition-all duration-500 transform scale-100 hover:shadow-3xl my-2 sm:my-4 mx-2 max-h-[90vh] flex flex-col">
+            <!-- Header fijo -->
+            <div class="flex items-center justify-center p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg">
+                    <span class="text-lg sm:text-xl">📁</span>
+                </div>
+                <h3 class="text-lg sm:text-xl font-bold ml-2 sm:ml-3 bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">Nueva Carpeta</h3>
+            </div>
+            
+            <!-- Contenido con scroll -->
+            <div class="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
+                <!-- Información básica -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">📝 Nombre de la carpeta</label>
+                    <input type="text" id="folder-name-input" placeholder="Ej: Trabajo, Estudio, Personal..."
+                        class="w-full p-2 sm:p-3 rounded-lg sm:rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300 shadow-sm hover:shadow-md text-sm sm:text-base">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">📄 Descripción (opcional)</label>
+                    <textarea id="folder-description-input" rows="2" placeholder="Describe el propósito de esta carpeta..."
+                        class="w-full p-2 rounded-lg sm:rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300 shadow-sm hover:shadow-md text-sm sm:text-base"></textarea>
+                </div>
+
+                <!-- Emojis con scroll horizontal -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">😊 Emoji de la carpeta</label>
+                    <div class="overflow-x-auto">
+                        <div id="folder-emoji-selector" class="flex gap-2 p-2 rounded-lg sm:rounded-xl bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm border border-gray-200 dark:border-gray-600 min-w-max">
+                            <button type="button" class="folder-emoji-option w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-green-500 dark:hover:border-green-400 transition-all duration-200 flex items-center justify-center text-base sm:text-lg hover:scale-105 flex-shrink-0" data-emoji="📁" title="Carpeta">
+                                📁
+                            </button>
+                            <button type="button" class="folder-emoji-option w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-green-500 dark:hover:border-green-400 transition-all duration-200 flex items-center justify-center text-base sm:text-lg hover:scale-105 flex-shrink-0" data-emoji="💼" title="Trabajo">
+                                💼
+                            </button>
+                            <button type="button" class="folder-emoji-option w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-green-500 dark:hover:border-green-400 transition-all duration-200 flex items-center justify-center text-base sm:text-lg hover:scale-105 flex-shrink-0" data-emoji="🏠" title="Casa">
+                                🏠
+                            </button>
+                            <button type="button" class="folder-emoji-option w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-green-500 dark:hover:border-green-400 transition-all duration-200 flex items-center justify-center text-base sm:text-lg hover:scale-105 flex-shrink-0" data-emoji="🎓" title="Estudios">
+                                🎓
+                            </button>
+                            <button type="button" class="folder-emoji-option w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-green-500 dark:hover:border-green-400 transition-all duration-200 flex items-center justify-center text-base sm:text-lg hover:scale-105 flex-shrink-0" data-emoji="❤️" title="Personal">
+                                ❤️
+                            </button>
+                            <button type="button" class="folder-emoji-option w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-green-500 dark:hover:border-green-400 transition-all duration-200 flex items-center justify-center text-base sm:text-lg hover:scale-105 flex-shrink-0" data-emoji="🎯" title="Metas">
+                                🎯
+                            </button>
+                            <button type="button" class="folder-emoji-option w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-green-500 dark:hover:border-green-400 transition-all duration-200 flex items-center justify-center text-base sm:text-lg hover:scale-105 flex-shrink-0" data-emoji="💰" title="Finanzas">
+                                💰
+                            </button>
+                            <button type="button" class="folder-emoji-option w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-green-500 dark:hover:border-green-400 transition-all duration-200 flex items-center justify-center text-base sm:text-lg hover:scale-105 flex-shrink-0" data-emoji="🏥" title="Salud">
+                                🏥
+                            </button>
+                            <button type="button" class="folder-emoji-option w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-green-500 dark:hover:border-green-400 transition-all duration-200 flex items-center justify-center text-base sm:text-lg hover:scale-105 flex-shrink-0" data-emoji="✈️" title="Viajes">
+                                ✈️
+                            </button>
+                            <button type="button" class="folder-emoji-option w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-green-500 dark:hover:border-green-400 transition-all duration-200 flex items-center justify-center text-base sm:text-lg hover:scale-105 flex-shrink-0" data-emoji="🎨" title="Creatividad">
+                                🎨
+                            </button>
+                            <button type="button" class="folder-emoji-option w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-green-500 dark:hover:border-green-400 transition-all duration-200 flex items-center justify-center text-base sm:text-lg hover:scale-105 flex-shrink-0" data-emoji="✝️" title="Religión">
+                                ✝️
+                            </button>
+                            <button type="button" class="folder-emoji-option w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-green-500 dark:hover:border-green-400 transition-all duration-200 flex items-center justify-center text-base sm:text-lg hover:scale-105 flex-shrink-0" data-emoji="📝" title="Notas">
+                                📝
+                            </button>
+                            <button type="button" class="folder-emoji-option w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-green-500 dark:hover:border-green-400 transition-all duration-200 flex items-center justify-center text-base sm:text-lg hover:scale-105 flex-shrink-0" data-emoji="💻" title="Programación">
+                                💻
+                            </button>
+                            <button type="button" class="folder-emoji-option w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-green-500 dark:hover:border-green-400 transition-all duration-200 flex items-center justify-center text-base sm:text-lg hover:scale-105 flex-shrink-0" data-emoji="📚" title="Estudio">
+                                📚
+                            </button>
+                            <button type="button" class="folder-emoji-option w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-green-500 dark:hover:border-green-400 transition-all duration-200 flex items-center justify-center text-base sm:text-lg hover:scale-105 flex-shrink-0" data-emoji="🛒" title="Compras">
+                                🛒
+                            </button>
+                            <button type="button" class="folder-emoji-option w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-green-500 dark:hover:border-green-400 transition-all duration-200 flex items-center justify-center text-base sm:text-lg hover:scale-105 flex-shrink-0" data-emoji="💡" title="Ideas">
+                                💡
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Colores con scroll horizontal -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">🎨 Color</label>
+                    <div class="overflow-x-auto">
+                        <div id="folder-color-selector" class="flex gap-2 p-2 rounded-lg sm:rounded-xl bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm border border-gray-200 dark:border-gray-600 min-w-max">
+                            <!-- Los colores se generarán dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Clave de acceso -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">🔐 Clave de acceso (opcional)</label>
+                    <div class="space-y-2 sm:space-y-3">
+                        <input type="password" id="folder-access-key-input" placeholder="Ingresa una clave para proteger esta carpeta..."
+                            class="w-full p-2 sm:p-3 rounded-lg sm:rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300 shadow-sm hover:shadow-md text-sm sm:text-base">
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="folder-has-access-key" class="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                            <label for="folder-has-access-key" class="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Proteger esta carpeta con clave de acceso</label>
+                        </div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Si activas esta opción, los elementos dentro de esta carpeta no se mostrarán en la vista principal hasta que ingreses la clave.</p>
+                    </div>
+                </div>
+
+                <!-- Imagen (opcional) -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">🖼️ Imagen (opcional)</label>
+                    <div class="w-full">
+                        <input type="file" id="folder-image-input" accept="image/*" class="hidden">
+                        <button type="button" id="folder-image-upload-btn" class="w-full px-4 py-2 sm:py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 hover:border-green-500 dark:hover:border-green-400 focus:ring-2 focus:ring-green-500 transition-all duration-300 shadow-sm hover:shadow-md flex items-center justify-center gap-2">
+                            <span class="text-xl sm:text-2xl">📷</span>
+                            <span class="text-xs sm:text-sm font-medium">Seleccionar imagen</span>
+                        </button>
+                    </div>
+                    <div id="folder-image-preview-container" class="mt-3 hidden w-full">
+                        <div class="relative inline-block w-full">
+                            <img id="folder-image-preview" src="" alt="Vista previa" class="w-full max-h-40 sm:max-h-48 rounded-xl shadow-lg border-2 border-gray-200 dark:border-gray-600 object-cover">
+                            <button type="button" id="folder-remove-image-btn" class="absolute -top-2 -right-2 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center shadow-lg transition-all duration-200 transform hover:scale-110" title="Quitar imagen">
+                                ✕
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2" id="folder-image-file-name"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer fijo -->
+            <div class="flex justify-end space-x-2 sm:space-x-4 p-3 sm:p-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
+                <button id="cancel-folder-btn" class="px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold rounded-xl sm:rounded-2xl text-gray-600 dark:text-gray-300 bg-gray-100/80 dark:bg-gray-700/80 backdrop-blur-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 shadow-sm hover:shadow-md">Cancelar</button>
+                <button id="create-folder-confirm-btn" class="px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold rounded-xl sm:rounded-2xl bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">✨ Crear Carpeta</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modal para Editar Carpeta -->
+    <div id="edit-folder-modal" class="fixed inset-0 bg-gradient-to-br from-black/60 via-orange-900/20 to-red-900/20 backdrop-blur-md hidden z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+        <div class="bg-gradient-to-br from-white via-orange-50/50 to-red-50/50 dark:from-gray-800 dark:via-orange-900/20 dark:to-red-900/20 rounded-xl sm:rounded-2xl w-full max-w-sm sm:max-w-md shadow-2xl border border-white/20 dark:border-gray-700/30 transition-all duration-500 transform scale-100 hover:shadow-3xl my-2 sm:my-4 mx-2 max-h-[90vh] flex flex-col">
+            <!-- Header fijo -->
+            <div class="flex items-center justify-center p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg">
+                    <span class="text-lg sm:text-xl">✏️</span>
+                </div>
+                <h3 class="text-lg sm:text-xl font-bold ml-2 sm:ml-3 bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">Editar Carpeta</h3>
+            </div>
+            
+            <!-- Contenido con scroll -->
+            <div class="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
+                <!-- Información básica -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">📝 Nombre de la carpeta</label>
+                    <input type="text" id="edit-folder-name-input" placeholder="Nombre de la carpeta..."
+                        class="w-full p-2 sm:p-3 rounded-lg sm:rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 shadow-sm hover:shadow-md text-sm sm:text-base">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">📄 Descripción</label>
+                    <textarea id="edit-folder-description-input" rows="2" placeholder="Descripción de la carpeta..."
+                        class="w-full p-2 rounded-lg sm:rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 shadow-sm hover:shadow-md text-sm sm:text-base"></textarea>
+                </div>
+
+                <!-- Emojis con scroll horizontal -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">😊 Emoji de la carpeta</label>
+                    <div class="overflow-x-auto">
+                        <div id="edit-folder-emoji-selector" class="flex gap-2 p-2 rounded-lg sm:rounded-xl bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm border border-gray-200 dark:border-gray-600 min-w-max">
+                            <button type="button" class="edit-folder-emoji-option w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-orange-500 dark:hover:border-orange-400 transition-all duration-200 flex items-center justify-center text-base sm:text-lg hover:scale-105 flex-shrink-0" data-emoji="📁" title="Carpeta">
+                                📁
+                            </button>
+                            <button type="button" class="edit-folder-emoji-option w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-orange-500 dark:hover:border-orange-400 transition-all duration-200 flex items-center justify-center text-base sm:text-lg hover:scale-105 flex-shrink-0" data-emoji="💼" title="Trabajo">
+                                💼
+                            </button>
+                            <button type="button" class="edit-folder-emoji-option w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-orange-500 dark:hover:border-orange-400 transition-all duration-200 flex items-center justify-center text-base sm:text-lg hover:scale-105 flex-shrink-0" data-emoji="🏠" title="Casa">
+                                🏠
+                            </button>
+                            <button type="button" class="edit-folder-emoji-option w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-orange-500 dark:hover:border-orange-400 transition-all duration-200 flex items-center justify-center text-base sm:text-lg hover:scale-105 flex-shrink-0" data-emoji="🎓" title="Estudios">
+                                🎓
+                            </button>
+                            <button type="button" class="edit-folder-emoji-option w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-orange-500 dark:hover:border-orange-400 transition-all duration-200 flex items-center justify-center text-base sm:text-lg hover:scale-105 flex-shrink-0" data-emoji="❤️" title="Personal">
+                                ❤️
+                            </button>
+                            <button type="button" class="edit-folder-emoji-option w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-orange-500 dark:hover:border-orange-400 transition-all duration-200 flex items-center justify-center text-base sm:text-lg hover:scale-105 flex-shrink-0" data-emoji="🎯" title="Metas">
+                                🎯
+                            </button>
+                            <button type="button" class="edit-folder-emoji-option w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-orange-500 dark:hover:border-orange-400 transition-all duration-200 flex items-center justify-center text-base sm:text-lg hover:scale-105 flex-shrink-0" data-emoji="💰" title="Finanzas">
+                                💰
+                            </button>
+                            <button type="button" class="edit-folder-emoji-option w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-orange-500 dark:hover:border-orange-400 transition-all duration-200 flex items-center justify-center text-base sm:text-lg hover:scale-105 flex-shrink-0" data-emoji="🏥" title="Salud">
+                                🏥
+                            </button>
+                            <button type="button" class="edit-folder-emoji-option w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-orange-500 dark:hover:border-orange-400 transition-all duration-200 flex items-center justify-center text-base sm:text-lg hover:scale-105 flex-shrink-0" data-emoji="✈️" title="Viajes">
+                                ✈️
+                            </button>
+                            <button type="button" class="edit-folder-emoji-option w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-orange-500 dark:hover:border-orange-400 transition-all duration-200 flex items-center justify-center text-base sm:text-lg hover:scale-105 flex-shrink-0" data-emoji="🎨" title="Creatividad">
+                                🎨
+                            </button>
+                            <button type="button" class="edit-folder-emoji-option w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-orange-500 dark:hover:border-orange-400 transition-all duration-200 flex items-center justify-center text-base sm:text-lg hover:scale-105 flex-shrink-0" data-emoji="✝️" title="Religión">
+                                ✝️
+                            </button>
+                            <button type="button" class="edit-folder-emoji-option w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-orange-500 dark:hover:border-orange-400 transition-all duration-200 flex items-center justify-center text-base sm:text-lg hover:scale-105 flex-shrink-0" data-emoji="📝" title="Notas">
+                                📝
+                            </button>
+                            <button type="button" class="edit-folder-emoji-option w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-orange-500 dark:hover:border-orange-400 transition-all duration-200 flex items-center justify-center text-base sm:text-lg hover:scale-105 flex-shrink-0" data-emoji="💻" title="Programación">
+                                💻
+                            </button>
+                            <button type="button" class="edit-folder-emoji-option w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-orange-500 dark:hover:border-orange-400 transition-all duration-200 flex items-center justify-center text-base sm:text-lg hover:scale-105 flex-shrink-0" data-emoji="📚" title="Estudio">
+                                📚
+                            </button>
+                            <button type="button" class="edit-folder-emoji-option w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-orange-500 dark:hover:border-orange-400 transition-all duration-200 flex items-center justify-center text-base sm:text-lg hover:scale-105 flex-shrink-0" data-emoji="🛒" title="Compras">
+                                🛒
+                            </button>
+                            <button type="button" class="edit-folder-emoji-option w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-orange-500 dark:hover:border-orange-400 transition-all duration-200 flex items-center justify-center text-base sm:text-lg hover:scale-105 flex-shrink-0" data-emoji="💡" title="Ideas">
+                                💡
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Colores con scroll horizontal -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">🎨 Color</label>
+                    <div class="overflow-x-auto">
+                        <div id="edit-folder-color-selector" class="flex gap-2 p-2 rounded-lg sm:rounded-xl bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm border border-gray-200 dark:border-gray-600 min-w-max">
+                            <!-- Los colores se generarán dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Imagen (opcional) -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">🖼️ Imagen (opcional)</label>
+                    <div class="w-full">
+                        <input type="file" id="edit-folder-image-input" accept="image/*" class="hidden">
+                        <button type="button" id="edit-folder-image-upload-btn" class="w-full px-4 py-2 sm:py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 hover:border-orange-500 dark:hover:border-orange-400 focus:ring-2 focus:ring-orange-500 transition-all duration-300 shadow-sm hover:shadow-md flex items-center justify-center gap-2">
+                            <span class="text-xl sm:text-2xl">📷</span>
+                            <span class="text-xs sm:text-sm font-medium">Seleccionar imagen</span>
+                        </button>
+                    </div>
+                    <div id="edit-folder-image-preview-container" class="mt-3 hidden w-full">
+                        <div class="relative inline-block w-full">
+                            <img id="edit-folder-image-preview" src="" alt="Vista previa" class="w-full max-h-40 sm:max-h-48 rounded-xl shadow-lg border-2 border-gray-200 dark:border-gray-600 object-cover">
+                            <button type="button" id="edit-folder-remove-image-btn" class="absolute -top-2 -right-2 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center shadow-lg transition-all duration-200 transform hover:scale-110" title="Quitar imagen">
+                                ✕
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2" id="edit-folder-image-file-name"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer fijo -->
+            <div class="flex justify-between p-3 sm:p-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
+                <button id="delete-folder-btn" class="px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold rounded-xl sm:rounded-2xl bg-gradient-to-r from-red-500 to-pink-600 text-white hover:from-red-600 hover:to-pink-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">🗑️ Eliminar</button>
+                <div class="flex space-x-2 sm:space-x-4">
+                    <button id="cancel-edit-folder-btn" class="px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold rounded-xl sm:rounded-2xl text-gray-600 dark:text-gray-300 bg-gray-100/80 dark:bg-gray-700/80 backdrop-blur-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 shadow-sm hover:shadow-md">Cancelar</button>
+                    <button id="save-folder-btn" class="px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold rounded-xl sm:rounded-2xl bg-gradient-to-r from-orange-500 to-red-600 text-white hover:from-orange-600 hover:to-red-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">💾 Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Ingresar Clave de Acceso -->
+    <div id="access-key-modal" class="fixed inset-0 bg-gradient-to-br from-black/60 via-yellow-900/20 to-orange-900/20 backdrop-blur-md hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-gradient-to-br from-white via-yellow-50/50 to-orange-50/50 dark:from-gray-800 dark:via-yellow-900/20 dark:to-orange-900/20 rounded-2xl p-3 sm:p-4 w-full max-w-xs sm:max-w-sm shadow-2xl border border-white/20 dark:border-gray-700/30 transition-all duration-500 transform scale-100 hover:shadow-3xl my-4 mx-2">
+            <div class="flex items-center justify-center mb-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <span class="text-xl">🔐</span>
+                </div>
+                <h3 class="text-xl font-bold ml-3 bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">Clave de Acceso</h3>
+            </div>
+            
+            <div class="mb-4">
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Esta carpeta está protegida. Ingresa la clave de acceso para ver su contenido:</p>
+                <input type="password" id="access-key-input" placeholder="Ingresa la clave de acceso..."
+                    class="w-full p-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all duration-300 shadow-sm hover:shadow-md">
+                <div id="access-key-error" class="mt-2 text-sm text-red-600 dark:text-red-400 hidden">
+                    ❌ Clave incorrecta. Inténtalo de nuevo.
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-4">
+                <button id="cancel-access-key-btn" class="px-6 py-3 text-sm font-semibold rounded-2xl text-gray-600 dark:text-gray-300 bg-gray-100/80 dark:bg-gray-700/80 backdrop-blur-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 shadow-sm hover:shadow-md">Cancelar</button>
+                <button id="confirm-access-key-btn" class="px-6 py-3 text-sm font-semibold rounded-2xl bg-gradient-to-r from-yellow-500 to-orange-600 text-white hover:from-yellow-600 hover:to-orange-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">🔓 Acceder</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Crear/Editar Clave de Acceso -->
+    <div id="create-access-key-modal" class="fixed inset-0 bg-gradient-to-br from-black/60 via-blue-900/20 to-purple-900/20 backdrop-blur-md hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-gradient-to-br from-white via-blue-50/50 to-purple-50/50 dark:from-gray-800 dark:via-blue-900/20 dark:to-purple-900/20 rounded-2xl p-3 sm:p-4 w-full max-w-xs sm:max-w-sm shadow-2xl border border-white/20 dark:border-gray-700/30 transition-all duration-500 transform scale-100 hover:shadow-3xl my-4 mx-2">
+            <div class="flex items-center justify-center mb-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <span class="text-xl">🔑</span>
+                </div>
+                <h3 class="text-xl font-bold ml-3 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Configurar Clave</h3>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">🔐 Nueva clave de acceso</label>
+                <input type="password" id="new-access-key-input" placeholder="Ingresa una clave para proteger esta carpeta..."
+                    class="w-full p-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-sm hover:shadow-md">
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">🔐 Confirmar clave</label>
+                <input type="password" id="confirm-access-key-input" placeholder="Confirma la clave de acceso..."
+                    class="w-full p-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-sm hover:shadow-md">
+                <div id="access-key-match-error" class="mt-2 text-sm text-red-600 dark:text-red-400 hidden">
+                    ❌ Las claves no coinciden.
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <div class="flex items-center space-x-2">
+                    <input type="checkbox" id="enable-access-key" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                    <label for="enable-access-key" class="text-sm text-gray-600 dark:text-gray-400">Activar protección con clave de acceso</label>
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Si activas esta opción, los elementos dentro de esta carpeta no se mostrarán en la vista principal hasta que ingreses la clave.</p>
+            </div>
+
+            <div class="flex justify-end space-x-4">
+                <button id="cancel-create-access-key-btn" class="px-6 py-3 text-sm font-semibold rounded-2xl text-gray-600 dark:text-gray-300 bg-gray-100/80 dark:bg-gray-700/80 backdrop-blur-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 shadow-sm hover:shadow-md">Cancelar</button>
+                <button id="save-access-key-btn" class="px-6 py-3 text-sm font-semibold rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">💾 Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Ver Lista de Compras Completa -->
+    <div id="view-shopping-list-modal" class="fixed inset-0 bg-gradient-to-br from-black/60 via-green-900/20 to-emerald-900/20 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-gradient-to-br from-white via-green-50/50 to-emerald-50/50 dark:from-gray-800 dark:via-green-900/20 dark:to-emerald-900/20 rounded-2xl p-6 w-full max-w-md shadow-2xl border border-white/20 dark:border-gray-700/30 transition-all duration-500 transform scale-100 hover:shadow-3xl my-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <span class="text-xl">🛒</span>
+                    </div>
+                    <h3 class="text-xl font-bold ml-3 bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">Lista de Compras</h3>
+                </div>
+                <button id="close-view-shopping-list-btn" class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 flex items-center justify-center transition-all duration-200" title="Cerrar">
+                    ✕
+                </button>
+            </div>
+            
+            <div id="view-shopping-list-title" class="mb-4 p-3 bg-white/50 dark:bg-gray-700/50 rounded-xl border border-green-200 dark:border-green-800">
+                <p class="text-sm font-semibold text-gray-700 dark:text-gray-300"></p>
+            </div>
+            
+            <div id="view-shopping-list-items" class="space-y-2 max-h-[60vh] overflow-y-auto">
+                <!-- Los items se mostrarán aquí -->
+            </div>
+            
+            <div id="view-shopping-list-stats" class="mt-4 p-3 bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 rounded-xl border border-green-200 dark:border-green-800">
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-700 dark:text-gray-300">✅ <strong id="completed-count">0</strong> de <strong id="total-count">0</strong> completados</span>
+                    <span class="text-gray-700 dark:text-gray-300" id="progress-percentage">0%</span>
+                </div>
+                <div class="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                    <div id="progress-bar" class="bg-gradient-to-r from-green-500 to-emerald-600 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <div class="flex justify-center mt-4">
+                <button id="close-view-shopping-list-btn-bottom" class="px-6 py-3 text-sm font-semibold rounded-2xl bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enlace al archivo JavaScript externo -->
+    <script src="app.js"></script>
+    
+    <!-- Sistema de lista de compras -->
+    <script src="shopping-list.js"></script>
+    
+    <!-- Sistema de imágenes -->
+    <script src="image-crop-modal.js"></script>
+    <script src="image-system.js"></script>
+    <script src="image-integration.js"></script>
+    
+    <!-- Registro del Service Worker para PWA -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registrado exitosamente:', registration.scope);
+                        
+                        // CRÍTICO: Verificar actualizaciones inmediatamente
+                        registration.update();
+                        
+                        // Verificar actualizaciones cada vez que se detecta una nueva versión
+                        registration.addEventListener('updatefound', function() {
+                            console.log('🔄 Nueva versión del Service Worker detectada');
+                            const newWorker = registration.installing;
+                            
+                            newWorker.addEventListener('statechange', function() {
+                                console.log('Estado del nuevo Service Worker:', newWorker.state);
+                                
+                                if (newWorker.state === 'installed') {
+                                    if (navigator.serviceWorker.controller) {
+                                        // Hay una versión anterior activa - actualizar automáticamente
+                                        console.log('🚀 Nueva versión instalada, activando automáticamente...');
+                                        
+                                        // Mostrar mensaje de actualización
+                                        if (typeof showSystemMessage === 'function') {
+                                            showSystemMessage('🔄 Nueva versión disponible. Actualizando...', 'info');
+                                        }
+                                        
+                                        // Activar nueva versión inmediatamente
+                                        newWorker.postMessage({ action: 'skipWaiting' });
+                                        
+                                        // Recargar automáticamente después de un breve delay
+                                        setTimeout(() => {
+                                            console.log('🔄 Recargando página con nueva versión...');
+                                            window.location.reload(true); // Forzar recarga desde servidor
+                                        }, 1500);
+                                    } else {
+                                        // Primera instalación
+                                        console.log('✅ Service Worker instalado por primera vez');
+                                    }
+                                }
+                            });
+                        });
+                        
+                        // Escuchar mensajes del Service Worker
+                        navigator.serviceWorker.addEventListener('message', function(event) {
+                            console.log('Mensaje del Service Worker:', event.data);
+                            
+                            if (event.data.type === 'NEW_VERSION_AVAILABLE') {
+                                console.log('🔄 Nueva versión detectada:', event.data.version);
+                                
+                                if (event.data.autoReload) {
+                                    // Mostrar mensaje de actualización
+                                    if (typeof showSystemMessage === 'function') {
+                                        showSystemMessage('🔄 Actualizando aplicación...', 'info');
+                                    }
+                                    
+                                    // Recargar automáticamente
+                                    setTimeout(() => {
+                                        console.log('🔄 Recargando automáticamente...');
+                                        window.location.reload(true);
+                                    }, 1000);
+                                }
+                            }
+                            
+                            if (event.data.type === 'FORCE_RELOAD') {
+                                console.log('🔄 Recarga forzada solicitada:', event.data.version);
+                                
+                                // Mostrar mensaje de actualización
+                                if (typeof showSystemMessage === 'function') {
+                                    showSystemMessage('🔄 Aplicando nueva versión...', 'info');
+                                }
+                                
+                                // Recargar inmediatamente
+                                setTimeout(() => {
+                                    console.log('🔄 Recarga forzada ejecutándose...');
+                                    window.location.reload(true);
+                                }, 500);
+                            }
+                        });
+                        
+                        // CRÍTICO: Verificar actualizaciones periódicamente
+                        setInterval(function() {
+                            registration.update();
+                        }, 30000); // Cada 30 segundos
+                        
+                    })
+                    .catch(function(error) {
+                        console.log('Error al registrar ServiceWorker:', error);
+                    });
+            });
+        }
+        
+        // Detectar si la app puede ser instalada
+        window.addEventListener('beforeinstallprompt', function(e) {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Mostrar botón de instalación si está disponible
+            const installBtn = document.createElement('button');
+            installBtn.textContent = '📱 Instalar App';
+            installBtn.className = 'fixed bottom-20 right-4 bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+            installBtn.addEventListener('click', function() {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(function(choiceResult) {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('Usuario aceptó la instalación');
+                    }
+                    deferredPrompt = null;
+                    installBtn.remove();
+                });
+            });
+            document.body.appendChild(installBtn);
+        });
+    </script>
+</body>
+</html>
+</html>

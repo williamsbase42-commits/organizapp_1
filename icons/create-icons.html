@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Crear Iconos PWA</title>
+</head>
+<body>
+    <canvas id="canvas192" width="192" height="192"></canvas>
+    <canvas id="canvas512" width="512" height="512"></canvas>
+    
+    <script>
+        function createIcon(canvasId, size) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            
+            // Fondo con gradiente
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#667eea');
+            gradient.addColorStop(1, '#764ba2');
+            
+            // Fondo redondeado
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            const radius = size * 0.22;
+            ctx.roundRect(0, 0, size, size, radius);
+            ctx.fill();
+            
+            // Lista principal
+            const listSize = size * 0.5;
+            const listX = size * 0.25;
+            const listY = size * 0.25;
+            
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.beginPath();
+            ctx.roundRect(listX, listY, listSize, listSize, size * 0.067);
+            ctx.fill();
+            
+            // Elementos de la lista
+            const itemHeight = listSize / 4;
+            const itemY = listY + itemHeight * 0.2;
+            
+            const colors = ['#22c55e', '#f59e0b', '#ef4444', '#8b5cf6'];
+            const icons = ['✓', '📝', '⏰', '🛒'];
+            
+            for (let i = 0; i < 4; i++) {
+                const y = itemY + i * itemHeight;
+                const circleX = listX + itemHeight * 0.4;
+                const circleY = y + itemHeight * 0.2;
+                const circleR = itemHeight * 0.15;
+                
+                // Círculo del icono
+                ctx.fillStyle = colors[i];
+                ctx.beginPath();
+                ctx.arc(circleX, circleY, circleR, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                // Icono
+                ctx.fillStyle = 'white';
+                ctx.font = `${circleR * 1.2}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(icons[i], circleX, circleY);
+                
+                // Barra de progreso
+                const barX = circleX + circleR * 2;
+                const barY = y + itemHeight * 0.1;
+                const barW = listSize * 0.45;
+                const barH = itemHeight * 0.2;
+                
+                ctx.fillStyle = colors[i];
+                ctx.beginPath();
+                ctx.roundRect(barX, barY, barW, barH, barH / 2);
+                ctx.fill();
+            }
+            
+            // Descargar como PNG
+            const link = document.createElement('a');
+            link.download = `icon-${size}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+        
+        // Crear iconos cuando se carga la página
+        window.onload = function() {
+            createIcon('canvas192', 192);
+            setTimeout(() => createIcon('canvas512', 512), 1000);
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,2730 @@
+/* Configuración de Tailwind CSS */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+/* Configuración personalizada de Tailwind */
+:root {
+  --primary-blue: #3B82F6;
+  --primary-dark: #111827;
+  --surface-light: #F9FAFB;
+  --surface-dark: #1F2937;
+}
+
+/* Estilos generales para transiciones suaves */
+body {
+    font-family: 'Inter', sans-serif;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+/* Posicionamiento y tamaño del Botón de Acción Flotante (FAB) */
+#fab {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 1000;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateY(0);
+    opacity: 1;
+}
+
+#fab:active {
+    transform: scale(0.95);
+    box-shadow: none;
+}
+
+/* Estilo para el modo de edición en la lista */
+[contenteditable]:focus {
+    outline: 2px solid var(--primary-blue);
+    outline-offset: 2px;
+    border-radius: 4px;
+    background-color: white;
+    padding: 2px;
+}
+
+.dark [contenteditable]:focus {
+    background-color: var(--surface-dark);
+}
+
+/* Estilos adicionales para mejor experiencia */
+.modal-backdrop {
+    backdrop-filter: blur(4px);
+}
+
+/* === MEJORAS DE LEGIBILIDAD Y RESPONSIVE === */
+
+/* Mejorar legibilidad del texto en elementos */
+#item-list .flex-grow {
+    min-width: 0;
+    width: 100%;
+}
+
+#item-list p {
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    line-height: 1.5;
+    max-width: 100%;
+}
+
+/* Mejorar el wrap de texto */
+.overflow-wrap-anywhere {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    hyphens: auto;
+}
+
+/* Asegurar que el contenido no se desborde */
+#item-list .flex {
+    min-width: 0;
+}
+
+#item-list .flex-grow {
+    flex: 1 1 0%;
+    min-width: 0;
+}
+
+/* Mejorar el layout de los elementos */
+#item-list .items-start {
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+/* Asegurar que los botones no se desborden */
+#item-list .flex-shrink-0 {
+    flex-shrink: 0;
+}
+
+/* === ARREGLOS AGRESIVOS PARA CALENDARIO === */
+
+/* Prevenir desbordamiento en el calendario */
+.calendar-item-preview {
+    max-width: 100% !important;
+    width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    font-size: 0.75rem;
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+    margin: 0.125rem 0;
+    box-sizing: border-box;
+}
+
+/* Asegurar que el calendario no se desborde */
+#calendar-grid {
+    overflow: hidden !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    box-sizing: border-box;
+}
+
+.calendar-day {
+    min-width: 0 !important;
+    overflow: hidden !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    box-sizing: border-box;
+}
+
+/* Forzar que los días del calendario no se desborden */
+.calendar-day > * {
+    max-width: 100% !important;
+    overflow: hidden !important;
+}
+
+/* Asegurar que el contenedor del calendario no se desborde */
+#calendar-view {
+    overflow-x: hidden !important;
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+/* Forzar que todos los elementos del calendario respeten el ancho */
+#calendar-view * {
+    max-width: 100% !important;
+    box-sizing: border-box;
+}
+
+/* Específico para elementos del calendario que se desbordan */
+.calendar-day {
+    position: relative !important;
+    overflow: hidden !important;
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+.calendar-day-number {
+    max-width: 100% !important;
+    overflow: hidden !important;
+}
+
+/* Forzar que los elementos dentro de los días no se desborden */
+.calendar-day div {
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+/* Específico para el grid del calendario */
+.grid.grid-cols-7 {
+    max-width: 100% !important;
+    overflow: hidden !important;
+}
+
+.grid.grid-cols-7 > div {
+    max-width: calc(100% / 7) !important;
+    overflow: hidden !important;
+}
+
+/* Mejorar responsive del calendario */
+@media (max-width: 640px) {
+    .calendar-item-preview {
+        font-size: 0.625rem;
+        padding: 0.125rem;
+        max-width: 100% !important;
+    }
+    
+    .calendar-day-number {
+        font-size: 0.875rem;
+    }
+    
+    .calendar-day {
+        padding: 0.25rem !important;
+    }
+}
+
+/* Forzar que el body y html no permitan scroll horizontal */
+body, html {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+}
+
+/* Asegurar que el contenedor principal no se desborde */
+.container, .max-w-7xl, main {
+    overflow-x: hidden !important;
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+/* === MEJORAS GENERALES DE RESPONSIVE === */
+
+/* Mejorar el layout de las tarjetas */
+.rounded-xl {
+    max-width: 100%;
+    overflow: hidden;
+}
+
+/* Asegurar que el contenido principal no se desborde */
+main {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.system-message {
+    animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Estilos para elementos completados */
+.item-completed {
+    opacity: 0.6;
+    text-decoration: line-through;
+}
+
+/* Estilos para hover en elementos de la lista */
+.list-item:hover {
+    transform: translateY(-1px);
+}
+
+/* Estilos para dropdown de estado */
+.status-dropdown {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 0.5rem;
+    border: 1px solid transparent;
+    transition: all 0.2s ease-in-out;
+    min-width: 100px;
+}
+
+.status-dropdown:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Colores contrastantes para cada color de elemento */
+.status-dropdown.blue-contrast {
+    background-color: #eff6ff;
+    border-color: #93c5fd;
+    color: #1e40af;
+}
+
+.status-dropdown.blue-contrast:hover {
+    background-color: #dbeafe;
+}
+
+.dark .status-dropdown.blue-contrast {
+    background-color: #1e3a8a;
+    border-color: #3b82f6;
+    color: #dbeafe;
+}
+
+.dark .status-dropdown.blue-contrast:hover {
+    background-color: #1e40af;
+}
+
+.status-dropdown.green-contrast {
+    background-color: #f0fdf4;
+    border-color: #86efac;
+    color: #166534;
+}
+
+.status-dropdown.green-contrast:hover {
+    background-color: #dcfce7;
+}
+
+.dark .status-dropdown.green-contrast {
+    background-color: #14532d;
+    border-color: #22c55e;
+    color: #dcfce7;
+}
+
+.dark .status-dropdown.green-contrast:hover {
+    background-color: #166534;
+}
+
+.status-dropdown.yellow-contrast {
+    background-color: #fefce8;
+    border-color: #fde047;
+    color: #a16207;
+}
+
+.status-dropdown.yellow-contrast:hover {
+    background-color: #fef3c7;
+}
+
+.dark .status-dropdown.yellow-contrast {
+    background-color: #713f12;
+    border-color: #eab308;
+    color: #fef3c7;
+}
+
+.dark .status-dropdown.yellow-contrast:hover {
+    background-color: #a16207;
+}
+
+.status-dropdown.red-contrast {
+    background-color: #fef2f2;
+    border-color: #fca5a5;
+    color: #dc2626;
+}
+
+.status-dropdown.red-contrast:hover {
+    background-color: #fee2e2;
+}
+
+.dark .status-dropdown.red-contrast {
+    background-color: #7f1d1d;
+    border-color: #ef4444;
+    color: #fee2e2;
+}
+
+.dark .status-dropdown.red-contrast:hover {
+    background-color: #dc2626;
+}
+
+.status-dropdown.purple-contrast {
+    background-color: #faf5ff;
+    border-color: #c4b5fd;
+    color: #7c3aed;
+}
+
+.status-dropdown.purple-contrast:hover {
+    background-color: #f3e8ff;
+}
+
+.dark .status-dropdown.purple-contrast {
+    background-color: #581c87;
+    border-color: #a855f7;
+    color: #f3e8ff;
+}
+
+.dark .status-dropdown.purple-contrast:hover {
+    background-color: #7c3aed;
+}
+
+.status-dropdown.pink-contrast {
+    background-color: #fdf2f8;
+    border-color: #f9a8d4;
+    color: #db2777;
+}
+
+.status-dropdown.pink-contrast:hover {
+    background-color: #fce7f3;
+}
+
+.dark .status-dropdown.pink-contrast {
+    background-color: #831843;
+    border-color: #ec4899;
+    color: #fce7f3;
+}
+
+.dark .status-dropdown.pink-contrast:hover {
+    background-color: #db2777;
+}
+
+.status-dropdown.gray-contrast {
+    background-color: #f9fafb;
+    border-color: #d1d5db;
+    color: #374151;
+}
+
+.status-dropdown.gray-contrast:hover {
+    background-color: #f3f4f6;
+}
+
+.dark .status-dropdown.gray-contrast {
+    background-color: #374151;
+    border-color: #6b7280;
+    color: #f3f4f6;
+}
+
+.dark .status-dropdown.gray-contrast:hover {
+    background-color: #4b5563;
+}
+
+.status-dropdown.indigo-contrast {
+    background-color: #eef2ff;
+    border-color: #a5b4fc;
+    color: #4338ca;
+}
+
+.status-dropdown.indigo-contrast:hover {
+    background-color: #e0e7ff;
+}
+
+.dark .status-dropdown.indigo-contrast {
+    background-color: #312e81;
+    border-color: #6366f1;
+    color: #e0e7ff;
+}
+
+.dark .status-dropdown.indigo-contrast:hover {
+    background-color: #4338ca;
+}
+
+/* Estilos para el calendario */
+.calendar-grid {
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.calendar-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.calendar-day-header {
+    background: linear-gradient(135deg, #274f4b 0%, #2e678e 100%);
+    color: white;
+    font-weight: 600;
+    text-align: center;
+    padding: 1rem 0.75rem;
+    font-size: 0.875rem;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.calendar-day-header:last-child {
+    border-right: none;
+}
+
+.calendar-day {
+    min-height: 6rem;
+    padding: 0.75rem 0.5rem;
+    border-right: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.calendar-day:hover {
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+}
+
+.calendar-day.today {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: white;
+    font-weight: 700;
+    box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+}
+
+.calendar-day.today:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
+}
+
+.calendar-day.selected {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    font-weight: 700;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+}
+
+.calendar-day.selected:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+}
+
+.calendar-day-number {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.calendar-day-number::after {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: transparent;
+    transition: all 0.3s ease;
+}
+
+.calendar-day.has-items .calendar-day-number::after {
+    background: #f59e0b;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3);
+}
+
+.calendar-day.today .calendar-day-number::after {
+    background: white;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+}
+
+.calendar-day.selected .calendar-day-number::after {
+    background: white;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+}
+
+.calendar-item-preview {
+    font-size: 0.75rem;
+    padding: 0.125rem 0.375rem;
+    margin: 0.125rem 0;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.calendar-item-preview:hover {
+    transform: scale(1.02);
+    z-index: 20;
+}
+
+/* Colores para diferentes tipos de elementos en el calendario */
+.calendar-item-preview.note {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    color: #92400e;
+    border-left: 3px solid #f59e0b;
+}
+
+.calendar-item-preview.task {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    color: #1e40af;
+    border-left: 3px solid #3b82f6;
+}
+
+.calendar-item-preview.shopping {
+    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+    color: #166534;
+    border-left: 3px solid #22c55e;
+}
+
+.calendar-item-preview.reminder {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    color: #dc2626;
+    border-left: 3px solid #ef4444;
+}
+
+.calendar-more-indicator {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-align: center;
+    padding: 0.125rem 0.375rem;
+    margin-top: 0.25rem;
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    border-radius: 0.375rem;
+    border: 1px solid #d1d5db;
+}
+
+.calendar-day.today .calendar-more-indicator {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.calendar-day.selected .calendar-more-indicator {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Estilos para modo oscuro */
+.dark .calendar-day {
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+    border-color: #374151;
+    color: #f9fafb;
+}
+
+.dark .calendar-day:hover {
+    background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+}
+
+.dark .calendar-day.today {
+    background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+}
+
+.dark .calendar-day.selected {
+    background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+}
+
+.dark .calendar-item-preview.note {
+    background: linear-gradient(135deg, #451a03 0%, #78350f 100%);
+    color: #fbbf24;
+    border-left-color: #f59e0b;
+}
+
+.dark .calendar-item-preview.task {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+    color: #93c5fd;
+    border-left-color: #3b82f6;
+}
+
+.dark .calendar-item-preview.shopping {
+    background: linear-gradient(135deg, #14532d 0%, #166534 100%);
+    color: #86efac;
+    border-left-color: #22c55e;
+}
+
+.dark .calendar-item-preview.reminder {
+    background: linear-gradient(135deg, #7f1d1d 0%, #dc2626 100%);
+    color: #fca5a5;
+    border-left-color: #ef4444;
+}
+
+.dark .calendar-more-indicator {
+    background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+    color: #d1d5db;
+    border-color: #6b7280;
+}
+
+/* Animaciones para el calendario */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.calendar-day {
+    animation: fadeInUp 0.3s ease forwards;
+}
+
+.calendar-day:nth-child(1) { animation-delay: 0.05s; }
+.calendar-day:nth-child(2) { animation-delay: 0.1s; }
+.calendar-day:nth-child(3) { animation-delay: 0.15s; }
+.calendar-day:nth-child(4) { animation-delay: 0.2s; }
+.calendar-day:nth-child(5) { animation-delay: 0.25s; }
+.calendar-day:nth-child(6) { animation-delay: 0.3s; }
+.calendar-day:nth-child(7) { animation-delay: 0.35s; }
+
+/* Navegación del calendario mejorada */
+.calendar-nav-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-nav-btn:hover {
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px -1px rgba(0, 0, 0, 0.2);
+}
+
+.calendar-nav-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-title {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 800;
+    font-size: 1.5rem;
+}
+
+/* Estilos responsivos adicionales */
+@media (max-width: 640px) {
+    #fab {
+        bottom: 20px;
+        right: 20px;
+        width: 56px;
+        height: 56px;
+        z-index: 1000;
+        /* Asegurar que sea visible en móviles */
+        display: flex !important;
+        visibility: visible !important;
+    }
+    
+    .modal-content {
+        margin: 16px;
+    }
+    
+    .status-dropdown {
+        min-width: 80px;
+        font-size: 0.7rem;
+        padding: 0.25rem 1.75rem 0.25rem 0.5rem;
+    }
+    
+    .calendar-day {
+        min-height: 4rem;
+        padding: 0.5rem 0.25rem;
+    }
+    
+    .calendar-day-number {
+        font-size: 1rem;
+    }
+    
+    .calendar-item-preview {
+        font-size: 0.625rem;
+        padding: 0.0625rem 0.25rem;
+        margin: 0.0625rem 0;
+    }
+    
+    .calendar-day-header {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.75rem;
+    }
+}
+
+/* Animaciones para PWA */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+}
+
+/* Estilos para notificaciones PWA */
+#update-notification {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* Botón de instalación PWA */
+#install-btn {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+#install-btn:hover {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Modo standalone */
+@media (display-mode: standalone) {
+    body {
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+    }
+    
+    /* Ocultar elementos que no son necesarios en modo standalone */
+    .browser-only {
+        display: none !important;
+    }
+}
+
+/* === RESPONSIVE DESIGN MEJORADO PARA iOS Y ANDROID === */
+
+/* Safe Area para iOS */
+@supports (padding: max(0px)) {
+  .safe-area-top {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+  
+  .safe-area-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  
+  .safe-area-left {
+    padding-left: max(1rem, env(safe-area-inset-left));
+  }
+  
+  .safe-area-right {
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+}
+
+/* Mejoras específicas para iOS Safari */
+@supports (-webkit-touch-callout: none) {
+  .ios-input {
+    -webkit-appearance: none;
+    border-radius: 0.5rem;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .ios-button {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+  }
+  
+  /* Mejorar el scroll en iOS */
+  .ios-scroll {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Evitar zoom en inputs en iOS */
+  .ios-input:focus {
+    font-size: 16px;
+  }
+}
+
+/* Mejoras específicas para Android Chrome */
+@supports not (-webkit-touch-callout: none) {
+  .android-input {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
+  
+  .android-button {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* === RESPONSIVE BREAKPOINTS MEJORADOS === */
+
+/* Móviles pequeños (iPhone SE, etc.) */
+@media (max-width: 375px) {
+  .container {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+  
+  .modal {
+    margin: 0.5rem;
+    max-height: calc(100vh - 1rem);
+  }
+  
+  .modal-content {
+    padding: 1rem;
+  }
+  
+  .fab {
+    bottom: 1rem;
+    right: 1rem;
+    width: 3rem;
+    height: 3rem;
+  }
+  
+  .calendar-grid {
+    font-size: 0.75rem;
+  }
+  
+  .calendar-day-header {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.75rem;
+  }
+  
+  .calendar-day {
+    min-height: 2.5rem;
+    padding: 0.25rem;
+  }
+  
+  .calendar-day-number {
+    font-size: 0.75rem;
+  }
+  
+  .calendar-item-preview {
+    font-size: 0.625rem;
+    padding: 0.125rem 0.25rem;
+    margin-bottom: 0.125rem;
+  }
+  
+  .calendar-more-indicator {
+    font-size: 0.625rem;
+    padding: 0.125rem 0.25rem;
+  }
+}
+
+/* Móviles medianos (iPhone 12, etc.) */
+@media (min-width: 376px) and (max-width: 414px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  .modal {
+    margin: 1rem;
+    max-height: calc(100vh - 2rem);
+  }
+  
+  .calendar-grid {
+    font-size: 0.875rem;
+  }
+  
+  .calendar-day-header {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.875rem;
+  }
+  
+  .calendar-day {
+    min-height: 3rem;
+    padding: 0.5rem;
+  }
+  
+  .calendar-day-number {
+    font-size: 0.875rem;
+  }
+  
+  .calendar-item-preview {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    margin-bottom: 0.25rem;
+  }
+}
+
+/* Móviles grandes (iPhone Pro Max, etc.) */
+@media (min-width: 415px) and (max-width: 480px) {
+  .container {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+  
+  .modal {
+    margin: 1.5rem;
+    max-height: calc(100vh - 3rem);
+  }
+  
+  .calendar-grid {
+    font-size: 1rem;
+  }
+  
+  .calendar-day-header {
+    padding: 1rem 0.75rem;
+    font-size: 1rem;
+  }
+  
+  .calendar-day {
+    min-height: 3.5rem;
+    padding: 0.75rem;
+  }
+  
+  .calendar-day-number {
+    font-size: 1rem;
+  }
+  
+  .calendar-item-preview {
+    font-size: 0.875rem;
+    padding: 0.375rem 0.75rem;
+    margin-bottom: 0.375rem;
+  }
+}
+
+/* Tablets pequeñas (iPad Mini) */
+@media (min-width: 481px) and (max-width: 768px) {
+  .container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+  
+  .modal {
+    margin: 2rem;
+    max-width: 28rem;
+  }
+  
+  .calendar-grid {
+    font-size: 1.125rem;
+  }
+  
+  .calendar-day-header {
+    padding: 1.25rem 1rem;
+    font-size: 1.125rem;
+  }
+  
+  .calendar-day {
+    min-height: 4rem;
+    padding: 1rem;
+  }
+  
+  .calendar-day-number {
+    font-size: 1.125rem;
+  }
+  
+  .calendar-item-preview {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* Tablets grandes (iPad Pro) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .container {
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
+  
+  .modal {
+    margin: 3rem;
+    max-width: 32rem;
+  }
+  
+  .calendar-grid {
+    font-size: 1.25rem;
+  }
+  
+  .calendar-day-header {
+    padding: 1.5rem 1.25rem;
+    font-size: 1.25rem;
+  }
+  
+  .calendar-day {
+    min-height: 4.5rem;
+    padding: 1.25rem;
+  }
+  
+  .calendar-day-number {
+    font-size: 1.25rem;
+  }
+  
+  .calendar-item-preview {
+    font-size: 1.125rem;
+    padding: 0.625rem 1.25rem;
+    margin-bottom: 0.625rem;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1025px) {
+  .container {
+    padding-left: 4rem;
+    padding-right: 4rem;
+  }
+  
+  .modal {
+    margin: 4rem;
+    max-width: 36rem;
+  }
+  
+  .calendar-grid {
+    font-size: 1.375rem;
+  }
+  
+  .calendar-day-header {
+    padding: 1.75rem 1.5rem;
+    font-size: 1.375rem;
+  }
+  
+  .calendar-day {
+    min-height: 5rem;
+    padding: 1.5rem;
+  }
+  
+  .calendar-day-number {
+    font-size: 1.375rem;
+  }
+  
+  .calendar-item-preview {
+    font-size: 1.25rem;
+    padding: 0.75rem 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+}
+
+/* === MEJORAS DE ACCESIBILIDAD Y USABILIDAD === */
+
+/* Mejorar el contraste en modo oscuro */
+@media (prefers-color-scheme: dark) {
+  .dark-mode-enhanced {
+    background-color: #0f172a;
+    color: #f1f5f9;
+  }
+  
+  .dark-mode-enhanced .modal {
+    background-color: #1e293b;
+    border-color: #334155;
+  }
+  
+  .dark-mode-enhanced .calendar-grid {
+    background-color: #1e293b;
+    border-color: #334155;
+  }
+  
+  .dark-mode-enhanced .calendar-day-header {
+    background: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%);
+  }
+}
+
+/* Mejorar el contraste en modo claro */
+@media (prefers-color-scheme: light) {
+  .light-mode-enhanced {
+    background-color: #ffffff;
+    color: #1f2937;
+  }
+  
+  .light-mode-enhanced .modal {
+    background-color: #ffffff;
+    border-color: #e5e7eb;
+  }
+  
+  .light-mode-enhanced .calendar-grid {
+    background-color: #ffffff;
+    border-color: #e5e7eb;
+  }
+  
+  .light-mode-enhanced .calendar-day-header {
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  }
+}
+
+/* === MEJORAS DE RENDIMIENTO === */
+
+/* Optimizar animaciones para dispositivos de bajo rendimiento */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Optimizar para pantallas de alta densidad */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .high-dpi-optimized {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* === ESTILOS PARA SISTEMA DE CARPETAS SIMPLIFICADO === */
+
+/* Estilos para tarjetas de carpetas */
+.folder-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.folder-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.folder-card:hover::before {
+    left: 100%;
+}
+
+.folder-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.folder-card:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Animación de entrada para carpetas */
+.folder-card {
+    animation: fadeInUp 0.5s ease forwards;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.folder-card:nth-child(1) { animation-delay: 0.1s; }
+.folder-card:nth-child(2) { animation-delay: 0.2s; }
+.folder-card:nth-child(3) { animation-delay: 0.3s; }
+.folder-card:nth-child(4) { animation-delay: 0.4s; }
+.folder-card:nth-child(5) { animation-delay: 0.5s; }
+.folder-card:nth-child(6) { animation-delay: 0.6s; }
+
+/* Estilos para el icono de carpeta */
+.folder-icon {
+    transition: all 0.3s ease;
+}
+
+.folder-card:hover .folder-icon {
+    transform: scale(1.1);
+}
+
+/* Estilos para botones de acción de carpetas */
+.edit-folder-btn,
+.delete-folder-btn {
+    transition: all 0.2s ease;
+}
+
+.edit-folder-btn:hover,
+.delete-folder-btn:hover {
+    transform: scale(1.1);
+}
+
+/* Estilos para el contenedor de carpetas */
+#folders-list {
+    min-height: 200px;
+}
+
+/* Estilos para el contenido de carpetas */
+#folder-content {
+    animation: slideInUp 0.3s ease-out;
+}
+
+/* Estilos para el botón de volver */
+#back-to-folders-btn {
+    transition: all 0.3s ease;
+}
+
+#back-to-folders-btn:hover {
+    transform: translateX(-2px);
+}
+
+/* Estilos responsivos para carpetas */
+@media (max-width: 768px) {
+    #folders-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .folder-card {
+        padding: 1rem;
+    }
+    
+    .folder-card h3 {
+        font-size: 1rem;
+    }
+    
+    .folder-card p {
+        font-size: 0.875rem;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    #folders-list {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1025px) {
+    #folders-list {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* === MEJORAS ESPECÍFICAS PARA PWA === */
+
+/* Mejorar la experiencia en modo standalone */
+@media (display-mode: standalone) {
+  .standalone-enhanced {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+  
+  .standalone-enhanced .fab {
+    bottom: calc(1.5rem + env(safe-area-inset-bottom));
+    right: calc(1.5rem + env(safe-area-inset-right));
+  }
+  
+  .standalone-enhanced .modal {
+    margin-top: calc(1rem + env(safe-area-inset-top));
+    margin-bottom: calc(1rem + env(safe-area-inset-bottom));
+  }
+}
+
+/* === ANIMACIONES PARA MODALES MEJORADOS === */
+
+/* Animación de entrada del modal */
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Animación de salida del modal */
+@keyframes modalSlideOut {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.8) translateY(-50px);
+  }
+}
+
+/* Aplicar animaciones a los modales */
+#input-modal:not(.hidden) > div,
+#edit-modal:not(.hidden) > div {
+  animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Animación para el fondo del modal */
+@keyframes backdropFadeIn {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(8px);
+  }
+}
+
+#input-modal:not(.hidden),
+#edit-modal:not(.hidden) {
+  animation: backdropFadeIn 0.3s ease-out;
+}
+
+/* Animación para los campos del formulario */
+@keyframes fieldSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+#input-modal:not(.hidden) .space-y-3,
+#edit-modal:not(.hidden) .space-y-3 {
+  animation: fieldSlideIn 0.5s ease-out;
+  animation-fill-mode: both;
+}
+
+#input-modal:not(.hidden) .space-y-3:nth-child(1) { animation-delay: 0.1s; }
+#input-modal:not(.hidden) .space-y-3:nth-child(2) { animation-delay: 0.2s; }
+#input-modal:not(.hidden) .space-y-3:nth-child(3) { animation-delay: 0.3s; }
+#input-modal:not(.hidden) .space-y-3:nth-child(4) { animation-delay: 0.4s; }
+
+#edit-modal:not(.hidden) .space-y-3:nth-child(1) { animation-delay: 0.1s; }
+#edit-modal:not(.hidden) .space-y-3:nth-child(2) { animation-delay: 0.2s; }
+#edit-modal:not(.hidden) .space-y-3:nth-child(3) { animation-delay: 0.3s; }
+#edit-modal:not(.hidden) .space-y-3:nth-child(4) { animation-delay: 0.4s; }
+
+/* Animación para los botones */
+@keyframes buttonSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#input-modal:not(.hidden) .flex.justify-end,
+#edit-modal:not(.hidden) .flex.justify-end {
+  animation: buttonSlideIn 0.6s ease-out;
+  animation-delay: 0.5s;
+  animation-fill-mode: both;
+}
+
+/* Efecto hover mejorado para los botones */
+#add-btn:hover,
+#edit-save-btn:hover {
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* Animación para el color picker personalizado */
+.color-option[type="color"],
+.edit-color-option[type="color"] {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+}
+
+.color-option[type="color"]:hover,
+.edit-color-option[type="color"]:hover {
+  transform: scale(1.15);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+}
+
+/* Mejorar el estilo del color picker nativo */
+.color-option[type="color"]::-webkit-color-swatch-wrapper,
+.edit-color-option[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.color-option[type="color"]::-webkit-color-swatch,
+.edit-color-option[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 50%;
+  width: 100%;
+  height: 100%;
+}
+
+/* Estilo para Firefox */
+.color-option[type="color"]::-moz-color-swatch,
+.edit-color-option[type="color"]::-moz-color-swatch {
+  border: none;
+  border-radius: 50%;
+}
+
+/* Efecto especial cuando está seleccionado */
+.color-option[type="color"].ring-2,
+.edit-color-option[type="color"].ring-2 {
+  animation: colorPickerPulse 2s infinite;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3), 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+@keyframes colorPickerPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3), 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.1), 0 12px 35px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* Efecto de pulso para elementos seleccionados */
+.color-option.ring-2,
+.edit-color-option.ring-2 {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+  }
+}
+
+/* Mejoras para el contenedor de colores */
+#color-selector,
+#edit-color-selector {
+  transition: all 0.3s ease;
+}
+
+#color-selector:hover,
+#edit-color-selector:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Animación para los iconos del header */
+#input-modal .w-12,
+#edit-modal .w-12 {
+  animation: iconBounce 0.6s ease-out;
+  animation-delay: 0.2s;
+}
+
+@keyframes iconBounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+/* === ESTILOS PARA TARJETAS DE CARPETAS === */
+
+/* Animación para las tarjetas de carpetas */
+.folder-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.folder-card:hover {
+  transform: translateY(-4px);
+}
+
+/* Estilos para los botones de acción en carpetas */
+.edit-folder-btn,
+.delete-folder-btn {
+  transition: all 0.2s ease;
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(4px);
+}
+
+.edit-folder-btn:hover {
+  transform: scale(1.1);
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.delete-folder-btn:hover {
+  transform: scale(1.1);
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+/* En modo oscuro */
+.dark .edit-folder-btn,
+.dark .delete-folder-btn {
+  background-color: rgba(31, 41, 55, 0.8);
+}
+
+.dark .edit-folder-btn:hover {
+  background-color: rgba(59, 130, 246, 0.2);
+}
+
+.dark .delete-folder-btn:hover {
+  background-color: rgba(239, 68, 68, 0.2);
+}
+
+/* Animación para el icono de carpeta */
+.folder-icon {
+  transition: all 0.3s ease;
+}
+
+.folder-card:hover .folder-icon {
+  transform: scale(1.1) rotate(5deg);
+}
+
+/* Estilos para el botón de editar dentro de la carpeta */
+#edit-folder-from-content-btn {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#edit-folder-from-content-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* En modo oscuro */
+.dark #edit-folder-from-content-btn {
+  background-color: rgba(31, 41, 55, 0.8) !important;
+}
+
+.dark #edit-folder-from-content-btn:hover {
+  background-color: var(--folder-color) !important;
+}
+
+/* === ESTILOS PARA EL HEADER MEJORADO === */
+
+/* Contenedor principal del header */
+header .bg-gradient-to-r {
+  background-attachment: fixed;
+  position: relative;
+  overflow: hidden;
+}
+
+header .bg-gradient-to-r::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 30%, rgba(59, 130, 246, 0.05) 50%, transparent 70%);
+  animation: shimmer 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes shimmer {
+  0%, 100% { transform: translateX(-100%); }
+  50% { transform: translateX(100%); }
+}
+
+/* Logo con indicador de estado */
+header .relative img {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+header .relative:hover img {
+  transform: scale(1.05) rotate(5deg);
+}
+
+/* Indicador de estado animado */
+header .animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Título con gradiente */
+header h1 {
+  background-size: 200% 200%;
+  animation: gradientShift 3s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Subtítulo */
+header p {
+  position: relative;
+}
+
+header p::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #3B82F6, #8B5CF6);
+  transition: width 0.3s ease;
+}
+
+header:hover p::after {
+  width: 100%;
+}
+
+/* Botones de utilidad mejorados */
+#import-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+#import-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+#import-btn:hover::before {
+  left: 100%;
+}
+
+/* Indicador de hover en botón de importar */
+#import-btn .absolute {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Botón de tema mejorado */
+#theme-toggle {
+  position: relative;
+  overflow: hidden;
+}
+
+#theme-toggle::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, transparent 70%);
+  transition: all 0.3s ease;
+  transform: translate(-50%, -50%);
+}
+
+#theme-toggle:hover::after {
+  width: 100px;
+  height: 100px;
+}
+
+/* Botones de navegación mejorados */
+#home-view-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+#home-view-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.6s ease;
+}
+
+#home-view-btn:hover::before {
+  left: 100%;
+}
+
+/* Botones inactivos con efecto de hover */
+#calendar-view-btn:hover,
+#folders-view-btn:hover {
+  background: linear-gradient(135deg, #F3F4F6, #E5E7EB);
+}
+
+.dark #calendar-view-btn:hover,
+.dark #folders-view-btn:hover {
+  background: linear-gradient(135deg, #374151, #4B5563);
+}
+
+/* Select de filtros mejorado */
+#category-filter {
+  position: relative;
+  background-image: linear-gradient(45deg, transparent 30%, rgba(59, 130, 246, 0.05) 50%, transparent 70%);
+  background-size: 200% 200%;
+  animation: subtleShimmer 4s ease-in-out infinite;
+}
+
+@keyframes subtleShimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+#category-filter:focus {
+  animation: none;
+  background: linear-gradient(45deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+}
+
+/* Icono del dropdown */
+#category-filter + div svg {
+  transition: transform 0.2s ease;
+}
+
+#category-filter:focus + div svg {
+  transform: rotate(180deg);
+}
+
+/* Modo nocturno para el dropdown */
+.dark #category-filter {
+  color: #f3f4f6 !important;
+}
+
+.dark #category-filter option {
+  background-color: #374151 !important;
+  color: #f3f4f6 !important;
+}
+
+/* Responsive mejoras */
+@media (max-width: 640px) {
+  header .flex-col {
+    gap: 1rem;
+  }
+  
+  header .flex.space-x-2 {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  header .flex.space-x-2 button {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  #verse-widget {
+    padding: 1rem;
+  }
+  
+  #verse-content .verse-text {
+    font-size: 1rem;
+  }
+}
+
+/* Estilos para el widget del Versículo del Día */
+#verse-widget {
+  position: relative;
+  overflow: hidden;
+}
+
+#verse-widget::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: shimmer 3s infinite;
+}
+
+.dark #verse-widget::before {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
+#verse-content {
+  position: relative;
+  z-index: 1;
+}
+
+#verse-content .verse-text {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  font-style: italic;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+#verse-content .verse-reference {
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+  color: #d97706;
+}
+
+.dark #verse-content .verse-reference {
+  color: #fbbf24;
+}
+
+#share-verse-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+#share-verse-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(217, 119, 6, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+#share-verse-btn:hover::before {
+  width: 100%;
+  height: 100%;
+}
+
+/* Animación de entrada para el versículo */
+@keyframes verseSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.verse-loaded {
+  animation: verseSlideIn 0.6s ease-out;
+}
+
+/* Animaciones de entrada */
+@keyframes headerSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+header {
+  animation: headerSlideIn 0.6s ease-out;
+}
+
+/* Mejoras responsive para móviles */
+@media (max-width: 640px) {
+    /* Modal de bienvenida scrolleable */
+    #daily-welcome-modal {
+        padding: 8px;
+        align-items: flex-start;
+        padding-top: 20px;
+    }
+    
+    #daily-welcome-modal > div {
+        margin-top: 0;
+        margin-bottom: 20px;
+        max-height: calc(100vh - 40px);
+    }
+    
+    /* Header más compacto en móviles */
+    header .bg-gradient-to-r {
+        padding: 12px 16px;
+    }
+    
+    /* Botones de navegación más pequeños */
+    #home-view-btn, #calendar-view-btn, #folders-view-btn {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+    
+    /* Indicador de notificaciones solo icono en móviles */
+    #notification-status {
+        padding: 6px 8px;
+    }
+    
+    #notification-text {
+        display: none;
+    }
+    
+    /* Mejorar legibilidad en móviles */
+    .text-sm {
+        font-size: 13px;
+    }
+    
+    .text-xs {
+        font-size: 11px;
+    }
+    
+    /* Espaciado más compacto */
+    .space-x-1 > * + * {
+        margin-left: 4px;
+    }
+    
+    .space-x-2 > * + * {
+        margin-left: 8px;
+    }
+    
+    /* Botones de utilidad más pequeños */
+    #import-btn, #theme-toggle {
+        padding: 8px;
+    }
+    
+    /* Filtro más compacto */
+    #category-filter {
+        font-size: 12px;
+        padding: 6px 8px;
+    }
+    
+    /* Mejorar contraste en móviles */
+    .dark #category-filter {
+        background-color: #374151 !important;
+        color: #f3f4f6 !important;
+        border-color: #4b5563 !important;
+    }
+    
+    .dark #category-filter option {
+        background-color: #374151 !important;
+        color: #f3f4f6 !important;
+    }
+}
+
+/* Mejoras para pantallas muy pequeñas */
+@media (max-width: 375px) {
+    /* Header ultra compacto */
+    header .bg-gradient-to-r {
+        padding: 8px 12px;
+    }
+    
+    /* Logo más pequeño */
+    header img {
+        width: 24px;
+        height: 24px;
+    }
+    
+    /* Título más pequeño */
+    header h1 {
+        font-size: 16px;
+    }
+    
+    /* Botones de navegación ultra compactos */
+    #home-view-btn, #calendar-view-btn, #folders-view-btn {
+        padding: 6px 8px;
+        font-size: 12px;
+    }
+    
+    /* Botones de utilidad ultra compactos */
+    #import-btn, #theme-toggle {
+        padding: 6px;
+    }
+    
+    /* Filtro ultra compacto */
+    #category-filter {
+        font-size: 11px;
+        padding: 4px 6px;
+    }
+}
+
+/* Botón flotante de agregar con transición suave */
+#add-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* Estado oculto del botón flotante */
+#add-btn.hidden {
+  transform: translateY(100px);
+  opacity: 0;
+  pointer-events: none;
+}
+
+header .shadow-xl {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Botón de importar en el header */
+#import-btn {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#import-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
+}
+
+/* Botones de opciones (tres puntos) */
+.folder-options-btn,
+.item-options-btn {
+  transition: all 0.2s ease;
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(4px);
+}
+
+.folder-options-btn:hover,
+.item-options-btn:hover {
+  transform: scale(1.1);
+  background-color: rgba(107, 114, 128, 0.1);
+}
+
+.dark .folder-options-btn,
+.dark .item-options-btn {
+  background-color: rgba(31, 41, 55, 0.8);
+}
+
+.dark .folder-options-btn:hover,
+.dark .item-options-btn:hover {
+  background-color: rgba(107, 114, 128, 0.2);
+}
+
+/* Menús desplegables */
+.folder-options-menu,
+.item-options-menu {
+  animation: menuSlideIn 0.2s ease-out;
+  backdrop-filter: blur(10px);
+}
+
+/* Menú de notas - posicionamiento mejorado */
+.item-options-menu {
+  position: fixed !important;
+  z-index: 9999 !important;
+  margin-top: 8px;
+  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  /* Asegurar que el menú sea visible */
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Asegurar que el contenedor de notas no corte el menú */
+#item-list,
+#folder-items-list {
+  overflow: visible !important;
+}
+
+/* Contenedor de cada elemento de nota */
+#item-list > div,
+#folder-items-list > div {
+  overflow: visible !important;
+  position: relative;
+}
+
+/* Mejorar el contenedor de botones de acción */
+.flex-shrink-0 {
+  overflow: visible !important;
+}
+
+/* Asegurar que el menú no se corte en ningún contenedor padre */
+.relative {
+  overflow: visible !important;
+}
+
+/* Específico para elementos dentro de carpetas */
+#folder-items-list .relative {
+  overflow: visible !important;
+  z-index: auto !important;
+}
+
+#folder-items-list .item-options-menu {
+  position: fixed !important;
+  z-index: 9999 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Asegurar que el contenedor padre de folder-items-list no corte el menú */
+#folder-content .bg-white,
+#folder-content .dark\\:bg-surface-dark {
+  overflow: visible !important;
+}
+
+/* Asegurar que todos los contenedores padres permitan overflow visible */
+#folder-content,
+#folder-content > div,
+#folder-content > div > div {
+  overflow: visible !important;
+}
+
+/* Estilos específicos para botones de opciones dentro de carpetas */
+#folder-items-list .item-options-btn {
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+#folder-items-list .item-options-btn:hover {
+  background-color: rgba(107, 114, 128, 0.1) !important;
+}
+
+/* Asegurar que los menús dentro de carpetas sean completamente visibles */
+#folder-items-list .item-options-menu {
+  position: fixed !important;
+  z-index: 99999 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  display: block !important;
+}
+
+/* Forzar visibilidad del menú cuando no está oculto */
+#folder-items-list .item-options-menu:not(.hidden) {
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: block !important;
+}
+
+/* Estilos adicionales para asegurar funcionamiento de menús en carpetas */
+#folder-items-list .item-options-btn {
+  position: relative !important;
+  z-index: 100 !important;
+  cursor: pointer !important;
+}
+
+#folder-items-list .item-options-btn:hover {
+  background-color: rgba(107, 114, 128, 0.1) !important;
+  transform: scale(1.05) !important;
+}
+
+/* Asegurar que el contenedor de botones tenga z-index alto */
+#folder-items-list .flex-shrink-0 {
+  position: relative !important;
+  z-index: 50 !important;
+}
+
+/* Forzar que los menús sean completamente visibles */
+#folder-items-list .item-options-menu {
+  position: fixed !important;
+  z-index: 99999 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  display: block !important;
+  transform: none !important;
+}
+
+/* Debug: hacer visible temporalmente todos los menús para testing */
+#folder-items-list .item-options-menu.hidden {
+  display: none !important;
+}
+
+/* Asegurar que los elementos dentro de carpetas tengan el comportamiento correcto */
+#folder-items-list > div {
+  position: relative !important;
+  z-index: auto !important;
+  overflow: visible !important;
+}
+
+/* Estilos específicos para el contenedor de cada elemento */
+#folder-items-list > div > div {
+  overflow: visible !important;
+  position: relative !important;
+}
+
+@keyframes menuSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Opciones del menú */
+.folder-menu-edit:hover,
+.folder-menu-export:hover,
+.folder-menu-share:hover,
+.folder-menu-delete:hover,
+.item-menu-export:hover,
+.item-menu-share:hover,
+.item-menu-delete:hover {
+  transform: translateX(4px);
+}
+
+/* Separador del menú */
+.folder-options-menu .border-t,
+.item-options-menu .border-t {
+  border-color: rgba(156, 163, 175, 0.3);
+}
+
+.dark .folder-options-menu .border-t,
+.dark .item-options-menu .border-t {
+  border-color: rgba(75, 85, 99, 0.5);
+}
+
+/* Animación para botones de acción */
+button[data-action] {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button[data-action]:hover {
+  transform: translateY(-1px);
+}
+
+/* Mejorar la experiencia en modo fullscreen */
+/* Estilos para secciones plegables del calendario */
+.calendar-section {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.calendar-section:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 25px -8px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-section-header {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+}
+
+.dark .calendar-section-header {
+    background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+    border-color: #4b5563;
+}
+
+.calendar-section-header:hover {
+    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+    border-color: #cbd5e1;
+}
+
+.dark .calendar-section-header:hover {
+    background: linear-gradient(135deg, #4b5563 0%, #6b7280 100%);
+    border-color: #6b7280;
+}
+
+.calendar-section-icon {
+    transition: transform 0.2s ease;
+}
+
+.calendar-section.open .calendar-section-icon {
+    transform: rotate(180deg);
+}
+
+.calendar-section-content {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Mejoras para elementos dentro de las secciones */
+.calendar-item {
+    transition: all 0.2s ease;
+    border-left: 4px solid transparent;
+}
+
+.calendar-item:hover {
+    transform: translateX(4px);
+    border-left-color: #3b82f6;
+    box-shadow: 0 4px 12px -4px rgba(59, 130, 246, 0.3);
+}
+
+/* Indicador de conteo mejorado */
+.element-count {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: white;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.dark .element-count {
+    background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+}
+
+/* Animación de entrada para secciones */
+.calendar-section {
+    animation: fadeInUp 0.4s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive para móviles - secciones del calendario */
+@media (max-width: 640px) {
+    .calendar-section-header {
+        padding: 12px 16px;
+    }
+    
+    .calendar-section-header .text-xl {
+        font-size: 1.125rem;
+    }
+    
+    .calendar-section-header .font-semibold {
+        font-size: 0.875rem;
+    }
+    
+    .element-count {
+        font-size: 0.75rem;
+        padding: 2px 6px;
+    }
+}
+
+/* ===== ESTILOS ADICIONALES PARA MENÚS DE OPCIONES ===== */
+/* Estilos globales para todos los menús de opciones */
+.item-options-menu {
+  position: fixed !important;
+  z-index: 99999 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  display: block !important;
+  transform: none !important;
+  margin-top: 8px;
+  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Forzar visibilidad del menú cuando no está oculto */
+.item-options-menu:not(.hidden) {
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: block !important;
+}
+
+/* Debug: hacer visible temporalmente todos los menús para testing */
+.item-options-menu.hidden {
+  display: none !important;
+}
+
+/* === ESTILOS PARA BOTÓN DE DONACIONES === */
+
+/* Botón de donaciones con efectos especiales */
+a[href*="flow.cl"] {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+a[href*="flow.cl"]::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(34, 197, 94, 0.1), transparent);
+  transition: left 0.6s ease;
+}
+
+a[href*="flow.cl"]:hover::before {
+  left: 100%;
+}
+
+a[href*="flow.cl"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(34, 197, 94, 0.15);
+}
+
+/* Efecto de pulso para el icono de donación */
+a[href*="flow.cl"] .group-hover\:scale-110 {
+  animation: donationPulse 2s infinite;
+}
+
+@keyframes donationPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* Efecto especial cuando se hace hover */
+a[href*="flow.cl"]:hover .group-hover\:scale-110 {
+  animation: donationBounce 0.6s ease-out;
+}
+
+@keyframes donationBounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.2);
+  }
+  60% {
+    transform: scale(1.1);
+  }
+}
+
+/* Mejorar el contraste en modo oscuro */
+.dark a[href*="flow.cl"]:hover {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.1));
+  box-shadow: 0 8px 25px rgba(34, 197, 94, 0.2);
+}
+
+/* Efecto de brillo sutil */
+a[href*="flow.cl"] {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(248, 250, 252, 0.8));
+  backdrop-filter: blur(4px);
+}
+
+.dark a[href*="flow.cl"] {
+  background: linear-gradient(135deg, rgba(31, 41, 55, 0.8), rgba(17, 24, 39, 0.8));
+}
+
+/* Animación de entrada para el botón de donaciones */
+a[href*="flow.cl"] {
+  animation: donationSlideIn 0.5s ease-out;
+  animation-delay: 0.3s;
+  animation-fill-mode: both;
+}
+
+@keyframes donationSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Responsive para móviles */
+@media (max-width: 640px) {
+  a[href*="flow.cl"] {
+    padding: 12px 16px;
+  }
+  
+  a[href*="flow.cl"] span:first-child {
+    font-size: 1.25rem;
+  }
+  
+  a[href*="flow.cl"] span:last-child {
+    font-size: 0.875rem;
+  }
+}
+
+
+/* === ESTILOS PARA FOOTER DE DONACIÓN === */
+
+/* Footer con animación sutil */
+footer {
+  animation: footerSlideIn 0.8s ease-out;
+  animation-delay: 0.5s;
+  animation-fill-mode: both;
+}
+
+@keyframes footerSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Contenedor del footer */
+footer .bg-gradient-to-r {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+footer .bg-gradient-to-r::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(34, 197, 94, 0.05), transparent);
+  transition: left 1s ease;
+}
+
+footer .bg-gradient-to-r:hover::before {
+  left: 100%;
+}
+
+footer .bg-gradient-to-r:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(34, 197, 94, 0.1);
+}
+
+/* Icono del footer con animación */
+footer .text-2xl {
+  animation: footerIconPulse 3s infinite;
+}
+
+@keyframes footerIconPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* Botón del footer */
+footer a {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+footer a::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.6s ease;
+}
+
+footer a:hover::before {
+  left: 100%;
+}
+
+/* Responsive para el footer */
+@media (max-width: 640px) {
+  footer .flex-col {
+    text-align: center;
+  }
+  
+  footer .text-center {
+    margin-bottom: 0.75rem;
+  }
+  
+  footer a {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* === ANIMACIONES ADICIONALES PARA MENSAJES DE DONACIÓN === */
+
+/* Efecto de brillo en el texto */
+.text-green-700,
+.text-green-300 {
+  position: relative;
+}
+
+.text-green-700::after,
+.text-green-300::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: linear-gradient(90deg, #22c55e, #10b981);
+  transition: width 0.3s ease;
+}
+
+footer .bg-gradient-to-r:hover .text-green-700::after,
+footer .bg-gradient-to-r:hover .text-green-300::after {
+  width: 100%;
+}
+
+/* === ESTILOS PARA MODAL DE PRODUCTIVIDAD RESPONSIVE === */
+
+/* Mejorar el responsive del modal de productividad */
+.productivity-modal {
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* Asegurar que las métricas no se desborden */
+.productivity-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .productivity-metrics-grid {
+    gap: 1rem;
+  }
+}
+
+/* Contenedores de métricas con altura mínima */
+.productivity-metric-card {
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .productivity-metric-card {
+    min-height: 100px;
+    padding: 1rem;
+  }
+}
+
+/* Números de métricas responsive */
+.productivity-metric-number {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+@media (min-width: 640px) {
+  .productivity-metric-number {
+    font-size: 1.875rem;
+  }
+}
+
+/* Texto de métricas responsive */
+.productivity-metric-label {
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
+
+@media (min-width: 640px) {
+  .productivity-metric-label {
+    font-size: 0.875rem;
+  }
+}
+
+/* Botón de compartir responsive */
+.productivity-share-btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .productivity-share-btn {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Título del modal responsive */
+.productivity-modal-title {
+  font-size: 1.125rem;
+}
+
+@media (min-width: 640px) {
+  .productivity-modal-title {
+    font-size: 1.5rem;
+  }
+}
+
+/* Icono del título responsive */
+.productivity-modal-icon {
+  font-size: 1.25rem;
+  margin-right: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .productivity-modal-icon {
+    font-size: 1.875rem;
+    margin-right: 0.75rem;
+  }
+}

@@ -1,0 +1,53 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="icon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f8fafc;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Fondo redondeado -->
+  <rect width="512" height="512" rx="112" ry="112" fill="url(#bg)"/>
+  
+  <!-- Icono principal - Lista con checkmarks -->
+  <g transform="translate(128, 128)">
+    <!-- Lista principal -->
+    <rect x="0" y="0" width="256" height="256" rx="32" fill="url(#icon)" opacity="0.9"/>
+    
+    <!-- Elementos de la lista -->
+    <g transform="translate(42, 42)">
+      <!-- Elemento 1 - Tarea completada -->
+      <circle cx="20" cy="20" r="16" fill="#22c55e"/>
+      <path d="M12 20 L18 26 L28 14" stroke="white" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="52" y="10" width="118" height="20" rx="10" fill="#3b82f6"/>
+      
+      <!-- Elemento 2 - Nota -->
+      <circle cx="20" cy="64" r="16" fill="#f59e0b"/>
+      <path d="M20 52 L20 76 M12 64 L28 64" stroke="white" stroke-width="4" stroke-linecap="round"/>
+      <rect x="52" y="54" width="118" height="20" rx="10" fill="#f59e0b"/>
+      
+      <!-- Elemento 3 - Recordatorio -->
+      <circle cx="20" cy="108" r="16" fill="#ef4444"/>
+      <path d="M20 96 L20 120 M12 108 L28 108" stroke="white" stroke-width="4" stroke-linecap="round"/>
+      <rect x="52" y="98" width="118" height="20" rx="10" fill="#ef4444"/>
+      
+      <!-- Elemento 4 - Compra -->
+      <circle cx="20" cy="152" r="16" fill="#8b5cf6"/>
+      <path d="M12 152 L28 152 M20 144 L20 160" stroke="white" stroke-width="4" stroke-linecap="round"/>
+      <rect x="52" y="142" width="118" height="20" rx="10" fill="#8b5cf6"/>
+      
+      <!-- Elemento 5 - Calendario -->
+      <circle cx="20" cy="196" r="16" fill="#06b6d4"/>
+      <rect x="12" y="188" width="16" height="16" rx="2" fill="white"/>
+      <path d="M12 188 L12 196 L28 196" stroke="white" stroke-width="2" fill="none"/>
+      <rect x="52" y="186" width="118" height="20" rx="10" fill="#06b6d4"/>
+    </g>
+  </g>
+  
+  <!-- Sombra sutil -->
+  <ellipse cx="256" cy="480" rx="160" ry="20" fill="rgba(0,0,0,0.1)"/>
+</svg>
