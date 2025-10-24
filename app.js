@@ -1068,23 +1068,34 @@ function getFilteredItems() {
     );
 
     // Filtrar por categoría
-    const categoryFilter = document.getElementById('category-filter');
-    if (categoryFilter && categoryFilter.value !== 'all') {
-        const category = categoryFilter.value;
-        filteredItems = filteredItems.filter(item => {
-            switch (category) {
-                case 'notes':
-                    return item.type === 'Nota';
-                case 'tasks':
-                    return item.type === 'Tarea';
-                case 'reminders':
-                    return item.type === 'Recordatorio';
-                case 'shopping':
-                    return item.type === 'Compra';
-                default:
-                    return true;
-            }
-        });
+    if (currentCategory !== 'all') {
+        const categoryMap = {
+            'notes': 'Nota',
+            'tasks': 'Tarea',
+            'shopping': 'Compra',
+            'reminders': 'Recordatorio'
+        };
+        filteredItems = filteredItems.filter(item => item.type === categoryMap[currentCategory]);
+    }
+
+    // Filtrar elementos de carpetas protegidas - OCULTAR COMPLETAMENTE en vista principal
+    filteredItems = filteredItems.filter(item => {
+        if (!item.folderId) {
+            return true; // Elementos sin carpeta siempre se muestran
+        }
+        
+        // Si el elemento está en una carpeta protegida, verificar si está desbloqueada
+        if (hasFolderAccessKey(item.folderId)) {
+            return isFolderUnlocked(item.folderId);
+        }
+        
+        return true; // Carpetas sin protección siempre se muestran
+    });
+
+    // En la vista Todo, mostrar TODOS los elementos (con y sin carpeta)
+    // En otras vistas, mantener el comportamiento original
+    if (currentView !== 'todo') {
+        filteredItems = filteredItems.filter(item => !item.folderId);
     }
 
     return filteredItems;
@@ -1523,11 +1534,15 @@ function confirmBulkColorChange() {
     });
     
     saveItems();
+    
+    // Cerrar solo el modal de cambio de color
+    const modal = document.getElementById('bulk-color-selector')?.closest('.fixed');
+    if (modal) {
+        modal.remove();
+    }
+    
     renderList();
     clearAllSelections();
-    
-    // Cerrar todos los modales
-    document.querySelectorAll('.fixed').forEach(modal => modal.remove());
     
     showSystemMessage(`Color cambiado para ${count} elemento${count !== 1 ? 's' : ''}.`);
 }
@@ -1578,11 +1593,15 @@ function confirmBulkStatusChange() {
     });
     
     saveItems();
+    
+    // Cerrar solo el modal de cambio de estado
+    const modal = document.getElementById('bulk-status-selector')?.closest('.fixed');
+    if (modal) {
+        modal.remove();
+    }
+    
     renderList();
     clearAllSelections();
-    
-    // Cerrar todos los modales
-    document.querySelectorAll('.fixed').forEach(modal => modal.remove());
     
     const statusNames = {
         'pending': 'Pendiente',
@@ -1591,6 +1610,111 @@ function confirmBulkStatusChange() {
     };
     
     showSystemMessage(`Estado cambiado a "${statusNames[status]}" para ${count} elemento${count !== 1 ? 's' : ''}.`);
+}
+
+// --- Sistema de Selección Múltiple para Carpetas ---
+
+/** Variable para almacenar el modo de selección de carpetas */
+let isFolderSelectionModeActive = false;
+
+/** Variable para almacenar el ID de la carpeta actual */
+let currentFolderId = null;
+
+/** Activa/desactiva el modo de selección de elementos en carpetas */
+function toggleFolderItemsSelectionMode() {
+    isFolderSelectionModeActive = !isFolderSelectionModeActive;
+    
+    const selectBtn = document.getElementById('select-folder-items-mode-btn');
+    const selectAllBtn = document.getElementById('select-all-folder-items-btn');
+    
+    if (isFolderSelectionModeActive) {
+        // Modo selección activado
+        if (selectBtn) {
+            selectBtn.textContent = '✖️ Cancelar';
+            selectBtn.classList.remove('bg-blue-500', 'hover:bg-blue-600');
+            selectBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+        }
+        if (selectAllBtn) {
+            selectAllBtn.classList.remove('hidden');
+        }
+    } else {
+        // Modo selección desactivado
+        if (selectBtn) {
+            selectBtn.textContent = '✏️ Seleccionar';
+            selectBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
+            selectBtn.classList.add('bg-blue-500', 'hover:bg-blue-600');
+        }
+        if (selectAllBtn) {
+            selectAllBtn.classList.add('hidden');
+        }
+        clearAllSelections();
+    }
+    
+    // Obtener el ID de la carpeta actual desde el título
+    const folderTitle = document.getElementById('selected-folder-title');
+    if (folderTitle && folderTitle.querySelector) {
+        const editBtn = folderTitle.querySelector('[data-folder-id]');
+        if (editBtn) {
+            currentFolderId = editBtn.getAttribute('data-folder-id');
+        }
+    }
+    
+    // Re-renderizar para mostrar/ocultar checkboxes
+    if (currentFolderId) {
+        renderFolderItems(currentFolderId);
+    }
+}
+
+/** Obtiene los elementos filtrados de la carpeta actual */
+function getFilteredFolderItems() {
+    if (!currentFolderId) return [];
+    
+    const folderItems = getItemsInFolder(currentFolderId);
+    
+    return folderItems;
+}
+
+/** Alterna la selección de todos los elementos visibles en la carpeta */
+function toggleSelectAllFolderItems() {
+    // Obtener todos los elementos visibles de la carpeta
+    const visibleItems = getFilteredFolderItems();
+    
+    // Si todos están seleccionados, deseleccionar todos
+    const allSelected = visibleItems.every(item => selectedItems.has(item.id));
+    
+    if (allSelected) {
+        // Deseleccionar todos los elementos visibles
+        visibleItems.forEach(item => {
+            selectedItems.delete(item.id);
+        });
+    } else {
+        // Seleccionar todos los elementos visibles
+        visibleItems.forEach(item => {
+            selectedItems.add(item.id);
+        });
+    }
+    
+    updateSelectionUI();
+    updateSelectAllFolderButtonText();
+}
+
+/** Actualiza el texto del botón de seleccionar todo en carpetas */
+function updateSelectAllFolderButtonText() {
+    const selectAllBtn = document.getElementById('select-all-folder-items-btn');
+    if (!selectAllBtn) return;
+    
+    const visibleItems = getFilteredFolderItems();
+    const allSelected = visibleItems.length > 0 && visibleItems.every(item => selectedItems.has(item.id));
+    
+    if (allSelected) {
+        selectAllBtn.textContent = '❌ Deseleccionar Todo';
+        selectAllBtn.classList.remove('bg-green-500', 'hover:bg-green-600');
+        selectAllBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+    } else {
+        selectAllBtn.textContent = '✅ Seleccionar Todo';
+        selectAllBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
+        selectAllBtn.classList.add('bg-green-500', 'hover:bg-green-600');
+    }
 }
 
 // --- Sistema de Archivo Automático Semanal ---
@@ -2058,6 +2182,9 @@ function openCreateItemModal(folderId = null) {
     // Poblar dropdown de carpetas
     populateFolderSelector(folderId);
     
+    // Ocultar FAB cuando se abre el modal
+    fab.classList.add('hidden');
+    
     // Resetear selección de colores
     document.querySelectorAll('.color-option').forEach(btn => {
         btn.classList.remove('ring-2', 'ring-blue-500');
@@ -2253,7 +2380,16 @@ function createItemHtml(item) {
 
     // Genera el HTML del elemento
     return `
-        <div id="item-${item.id}" class="${containerClasses}">
+        <div id="item-${item.id}" class="${containerClasses}" data-item-id="${item.id}">
+            
+            <!-- Checkbox de selección -->
+            ${isFolderSelectionModeActive ? `
+            <div class="flex-shrink-0 mr-3 mt-1">
+                <input type="checkbox" class="item-checkbox w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" 
+                       onchange="toggleItemSelection('${item.id}')">
+            </div>
+            ` : ''}
+            
             <!-- Icono -->
             <div class="flex-shrink-0 mr-3 mt-1">
                 <div class="p-2 rounded-full text-white text-sm" style="${getIconColorStyle(item.color)}">${icon}</div>
@@ -2354,7 +2490,22 @@ function renderFolderItems(folderId) {
         console.log('Creating HTML for item:', item);
         console.log('createItemHtml function available:', typeof createItemHtml);
         try {
-            const itemHtml = createItemHtml(item);
+            let itemHtml = createItemHtml(item);
+            
+            // Agregar checkbox si está en modo de selección
+            if (folderSelectionMode) {
+                const isChecked = selectedFolderItems.has(item.id) ? 'checked' : '';
+                const checkboxHtml = `
+                    <div class="flex items-start gap-3">
+                        <input type="checkbox" class="folder-item-checkbox mt-4 w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 cursor-pointer" data-item-id="${item.id}" ${isChecked} onchange="toggleFolderItemSelection('${item.id}')">
+                        <div class="flex-1">
+                            ${itemHtml}
+                        </div>
+                    </div>
+                `;
+                itemHtml = checkboxHtml;
+            }
+            
             console.log('Generated HTML:', itemHtml);
             folderItemsList.insertAdjacentHTML('beforeend', itemHtml);
         } catch (error) {
@@ -2365,6 +2516,13 @@ function renderFolderItems(folderId) {
     });
     
     console.log('renderFolderItems completed, items rendered:', folderItemsList.children.length);
+    
+    // Renderizar listas de compras en las tarjetas
+    setTimeout(() => {
+        if (typeof window.addShoppingListsToItems === 'function') {
+            window.addShoppingListsToItems();
+        }
+    }, 100);
 }
 
 /** Muestra la vista de carpetas */
@@ -2400,8 +2558,23 @@ function showFoldersView() {
 /** Muestra la lista de carpetas */
 function showFoldersListView() {
     currentFolderView = 'list';
-    if (foldersList) foldersList.parentElement.classList.remove('hidden');
+    selectedFolderId = null;
+    currentFolderId = null;
+    
+    // Mostrar lista de carpetas y ocultar contenido
+    const foldersListContainer = document.getElementById('folders-list-container');
+    if (foldersListContainer) foldersListContainer.classList.remove('hidden');
     if (folderContent) folderContent.classList.add('hidden');
+    
+    // Mostrar header de carpetas y ocultar header de contenido
+    const foldersHeader = document.getElementById('folders-header');
+    const folderContentHeader = document.getElementById('folder-content-header');
+    if (foldersHeader) foldersHeader.classList.remove('hidden');
+    if (folderContentHeader) folderContentHeader.classList.add('hidden');
+    
+    // Ocultar menú de acciones múltiples
+    const folderSelectionActions = document.getElementById('folder-selection-actions');
+    if (folderSelectionActions) folderSelectionActions.classList.add('hidden');
     
     // Asegurar que el botón FAB esté visible
     ensureFabVisibility();
@@ -2419,29 +2592,34 @@ function showFolderContentView(folderId, skipAccessCheck = false) {
     
     currentFolderView = 'content';
     selectedFolderId = folderId;
+    currentFolderId = folderId; // Guardar ID para selección múltiple
     
     const folder = getFolderById(folderId);
     if (!folder) return;
     
-    if (foldersList) foldersList.parentElement.classList.add('hidden');
+    // Ocultar lista de carpetas y mostrar contenido
+    const foldersListContainer = document.getElementById('folders-list-container');
+    if (foldersListContainer) foldersListContainer.classList.add('hidden');
     if (folderContent) folderContent.classList.remove('hidden');
     
-    // Actualizar el título y agregar botón de editar
+    // Ocultar header de carpetas y mostrar header de contenido
+    const foldersHeader = document.getElementById('folders-header');
+    const folderContentHeader = document.getElementById('folder-content-header');
+    if (foldersHeader) foldersHeader.classList.add('hidden');
+    if (folderContentHeader) {
+        folderContentHeader.classList.remove('hidden');
+        folderContentHeader.classList.add('flex');
+    }
+    
+    // Actualizar el título (sin botón de editar)
     if (selectedFolderTitle) {
         const folderColor = folder.color || 'green';
         const colorValue = getFolderColorValue(folderColor);
         
         selectedFolderTitle.innerHTML = `
-            <div class="flex items-center space-x-3">
-                <div class="flex items-center space-x-2">
-                    <div class="w-6 h-6 rounded-lg shadow-md" style="background-color: ${colorValue}"></div>
-                    <span>${folder.name}</span>
-                </div>
-                <button id="edit-folder-from-content-btn" class="p-2 text-gray-500 hover:text-white dark:text-gray-400 dark:hover:text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-md" style="background-color: rgba(255, 255, 255, 0.8); backdrop-filter: blur(4px);" data-folder-id="${folderId}" title="Editar carpeta" onmouseover="this.style.backgroundColor='${colorValue}'; this.style.color='white';" onmouseout="this.style.backgroundColor='rgba(255, 255, 255, 0.8)'; this.style.color='rgb(107, 114, 128)';">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                </button>
+            <div class="flex items-center space-x-2">
+                <div class="w-6 h-6 rounded-lg shadow-md" style="background-color: ${colorValue}"></div>
+                <span>${folder.name}</span>
             </div>
         `;
     }
@@ -3172,6 +3350,13 @@ function renderList() {
     });
     updateSummary();
     updateProductivityButton();
+    
+    // Renderizar listas de compras en las tarjetas
+    setTimeout(() => {
+        if (typeof window.addShoppingListsToItems === 'function') {
+            window.addShoppingListsToItems();
+        }
+    }, 100);
 }
 
 /** Actualiza el cuadro de resumen diario. */
@@ -3706,6 +3891,7 @@ function openEditModal(itemId) {
     });
     
     editModal.classList.remove('hidden');
+    fab.classList.add('hidden'); // Ocultar FAB cuando se abre el modal
     editContentInput.focus();
 }
 
@@ -3775,6 +3961,7 @@ fab.addEventListener('click', () => {
         populateFolderSelector();
         
         modal.classList.remove('hidden');
+        fab.classList.add('hidden'); // Ocultar FAB cuando se abre el modal
         universalInput.focus();
     }
 });
@@ -3782,6 +3969,24 @@ fab.addEventListener('click', () => {
 /** Manejador de eventos para cerrar el modal */
 cancelBtn.addEventListener('click', () => {
     modal.classList.add('hidden');
+    fab.classList.remove('hidden'); // Mostrar FAB cuando se cierra el modal
+});
+
+/** Manejador de eventos para cerrar el modal al hacer clic en el backdrop */
+modal.addEventListener('click', (e) => {
+    // Solo cerrar si se hace clic directamente en el backdrop (no en el contenido del modal)
+    if (e.target === modal) {
+        modal.classList.add('hidden');
+        fab.classList.remove('hidden'); // Mostrar FAB cuando se cierra el modal
+    }
+});
+
+/** Manejador de eventos para cerrar el modal con la tecla ESC */
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+        modal.classList.add('hidden');
+        fab.classList.remove('hidden'); // Mostrar FAB cuando se cierra el modal
+    }
 });
 
 /** Manejador de eventos para el botón Agregar */
@@ -3807,6 +4012,7 @@ addBtn.addEventListener('click', () => {
         addItem(content, type, selectedColor, status, date, folderId, time);
         console.log('Closing modal');
         modal.classList.add('hidden');
+        fab.classList.remove('hidden'); // Mostrar FAB cuando se cierra el modal
     } else {
         showSystemMessage("El contenido no puede estar vacío.", 'error');
         universalInput.focus();
@@ -4354,6 +4560,7 @@ document.addEventListener('click', (e) => {
 // Modal crear carpeta
 document.getElementById('cancel-folder-btn').addEventListener('click', () => {
     createFolderModal.classList.add('hidden');
+    fab.classList.remove('hidden'); // Mostrar FAB cuando se cierra el modal
 });
 
 document.getElementById('create-folder-confirm-btn').addEventListener('click', () => {
@@ -4373,6 +4580,7 @@ document.getElementById('create-folder-confirm-btn').addEventListener('click', (
     if (name) {
         createFolder(name, description, color, emoji, accessKey);
         createFolderModal.classList.add('hidden');
+        fab.classList.remove('hidden'); // Mostrar FAB cuando se cierra el modal
         
         // Limpiar campos
         folderNameInput.value = '';
@@ -4389,6 +4597,7 @@ document.getElementById('create-folder-confirm-btn').addEventListener('click', (
 document.getElementById('cancel-edit-folder-btn').addEventListener('click', (e) => {
     e.stopPropagation();
     editFolderModal.classList.add('hidden');
+    fab.classList.remove('hidden'); // Mostrar FAB cuando se cierra el modal
     editingFolderId = null; // Limpiar el ID de edición
 });
 
@@ -4402,6 +4611,7 @@ document.getElementById('save-folder-btn').addEventListener('click', (e) => {
     if (name && editingFolderId) {
         updateFolder(editingFolderId, name, description, color, emoji);
         editFolderModal.classList.add('hidden');
+        fab.classList.remove('hidden'); // Mostrar FAB cuando se cierra el modal
         editingFolderId = null; // Limpiar el ID de edición
     } else if (!name) {
         showSystemMessage("El nombre de la carpeta es obligatorio.", 'error');
@@ -4415,6 +4625,7 @@ document.getElementById('delete-folder-btn').addEventListener('click', () => {
         if (confirm('¿Estás seguro de que quieres eliminar esta carpeta? Todos los elementos dentro de ella también se eliminarán.')) {
             deleteFolder(editingFolderId);
             editFolderModal.classList.add('hidden');
+            fab.classList.remove('hidden'); // Mostrar FAB cuando se cierra el modal
             editingFolderId = null;
         }
     }
@@ -4546,6 +4757,7 @@ closeWelcomeBtn.addEventListener('click', () => {
 /** Event listeners para modal de edición */
 editCancelBtn.addEventListener('click', () => {
     editModal.classList.add('hidden');
+    fab.classList.remove('hidden'); // Mostrar FAB cuando se cierra el modal
     editingItemId = null;
 });
 
@@ -4566,6 +4778,7 @@ editSaveBtn.addEventListener('click', () => {
         // Actualizar elemento con carpeta seleccionada y hora
         updateItem(editingItemId, content, type, selectedColor, status, date, folderId, time);
         editModal.classList.add('hidden');
+        fab.classList.remove('hidden'); // Mostrar FAB cuando se cierra el modal
         editingItemId = null;
     } else {
         showSystemMessage("El contenido no puede estar vacío.", 'error');
@@ -4865,6 +5078,7 @@ function openCreateFolderModal() {
     folderDescriptionInput.value = '';
     initializeFolderColorSelector();
     createFolderModal.classList.remove('hidden');
+    fab.classList.add('hidden'); // Ocultar FAB cuando se abre el modal
     folderNameInput.focus();
 }
 
@@ -5389,7 +5603,11 @@ function exportFolder(folderId) {
             estado: item.status,
             fecha: item.date,
             fechaCreacion: getValidDate(item.createdAt),
-            fechaModificacion: getValidDate(item.updatedAt)
+            fechaModificacion: getValidDate(item.updatedAt),
+            // Datos adicionales
+            hora: item.time || null,
+            imagen: item.image || null,
+            listaCompras: item.shoppingList || null
         }))
     };
 
@@ -5448,7 +5666,11 @@ function exportNote(itemId) {
         fecha: item.date,
         fechaCreacion: getValidDate(item.createdAt),
         fechaModificacion: getValidDate(item.updatedAt),
-        carpeta: item.folderId ? getFolderById(item.folderId)?.name : null
+        carpeta: item.folderId ? getFolderById(item.folderId)?.name : null,
+        // Datos adicionales
+        hora: item.time || null,
+        imagen: item.image || null,
+        listaCompras: item.shoppingList || null
     };
 
     console.log('Datos a exportar:', exportData);
@@ -5830,7 +6052,11 @@ async function shareNote(itemId) {
             fecha: item.date,
             fechaCreacion: new Date(item.createdAt).toISOString(),
             fechaModificacion: new Date(item.updatedAt).toISOString(),
-            carpeta: item.folderId ? getFolderById(item.folderId)?.name : null
+            carpeta: item.folderId ? getFolderById(item.folderId)?.name : null,
+            // Datos adicionales
+            hora: item.time || null,
+            imagen: item.image || null,
+            listaCompras: item.shoppingList || null
         };
 
         // Crear archivo .txt con contenido JSON
@@ -5955,7 +6181,11 @@ function importFolder(data) {
                     date: noteData.fecha || new Date().toISOString().split('T')[0],
                     folderId: newFolder.id,
                     createdAt: Date.now(),
-                    updatedAt: Date.now()
+                    updatedAt: Date.now(),
+                    // Datos adicionales
+                    time: noteData.hora || null,
+                    image: noteData.imagen || null,
+                    shoppingList: noteData.listaCompras || []
                 };
                 items.push(newItem);
             });
@@ -5963,6 +6193,20 @@ function importFolder(data) {
         }
 
         renderFoldersList();
+        
+        // Renderizar imágenes y listas de compras después de un pequeño delay
+        setTimeout(() => {
+            // Renderizar imágenes
+            if (typeof window.addImagesToRenderedItems === 'function') {
+                window.addImagesToRenderedItems();
+            }
+            
+            // Renderizar listas de compras
+            if (typeof window.addShoppingListsToItems === 'function') {
+                window.addShoppingListsToItems();
+            }
+        }, 200);
+        
         showSystemMessage(`✅ Carpeta "${data.nombre}" importada correctamente`);
     } catch (error) {
         showSystemMessage("❌ Error al importar la carpeta", 'error');
@@ -5992,7 +6236,11 @@ function importNote(data) {
             date: data.fecha || new Date().toISOString().split('T')[0],
             folderId: folderId,
             createdAt: Date.now(),
-            updatedAt: Date.now()
+            updatedAt: Date.now(),
+            // Datos adicionales
+            time: data.hora || null,
+            image: data.imagen || null,
+            shoppingList: data.listaCompras || []
         };
 
         items.push(newItem);
@@ -6004,6 +6252,19 @@ function importNote(data) {
         } else if (currentView === 'folders' && folderId) {
             renderFolderItems(folderId);
         }
+        
+        // Renderizar imágenes y listas de compras después de un pequeño delay
+        setTimeout(() => {
+            // Renderizar imágenes
+            if (typeof window.addImagesToRenderedItems === 'function') {
+                window.addImagesToRenderedItems();
+            }
+            
+            // Renderizar listas de compras
+            if (typeof window.addShoppingListsToItems === 'function') {
+                window.addShoppingListsToItems();
+            }
+        }, 200);
 
         showSystemMessage(`✅ Nota "${data.titulo || data.contenido}" importada correctamente`);
     } catch (error) {
@@ -6807,6 +7068,257 @@ if (nextVerseBtn) {
         showNextVerse();
     });
 }
+// ===== EVENT LISTENERS PARA CARPETAS =====
+
+// Botón "Volver a Carpetas"
+if (backToFoldersBtn) {
+    backToFoldersBtn.addEventListener('click', function() {
+        showFoldersListView();
+    });
+}
+
+// Botón "Seleccionar" en vista de carpeta
+const selectFolderItemsModeBtn = document.getElementById('select-folder-items-mode-btn');
+if (selectFolderItemsModeBtn) {
+    selectFolderItemsModeBtn.addEventListener('click', function() {
+        toggleFolderSelectionMode();
+    });
+}
+
+// Botón "Seleccionar Todo" en vista de carpeta
+const selectAllFolderItemsBtn = document.getElementById('select-all-folder-items-btn');
+if (selectAllFolderItemsBtn) {
+    selectAllFolderItemsBtn.addEventListener('click', function() {
+        selectAllFolderItems();
+    });
+}
+
+// Botones del menú de acciones múltiples en carpetas
+const folderCancelSelectionBtn = document.getElementById('folder-cancel-selection-btn');
+const folderClearSelectionBtn = document.getElementById('folder-clear-selection-btn');
+const folderMoveToFolderBtn = document.getElementById('folder-move-to-folder-btn');
+const folderChangeColorBtn = document.getElementById('folder-change-color-btn');
+
+if (folderCancelSelectionBtn) {
+    folderCancelSelectionBtn.addEventListener('click', function() {
+        cancelFolderSelection();
+    });
+}
+
+if (folderClearSelectionBtn) {
+    folderClearSelectionBtn.addEventListener('click', function() {
+        deleteSelectedFolderItems();
+    });
+}
+
+if (folderMoveToFolderBtn) {
+    folderMoveToFolderBtn.addEventListener('click', function() {
+        moveSelectedFolderItems();
+    });
+}
+
+if (folderChangeColorBtn) {
+    folderChangeColorBtn.addEventListener('click', function() {
+        changeColorSelectedFolderItems();
+    });
+}
+
+// ===== FUNCIONES PARA SELECCIÓN MÚLTIPLE EN CARPETAS =====
+
+let folderSelectionMode = false;
+let selectedFolderItems = new Set();
+
+/** Activa/desactiva el modo de selección en carpetas */
+function toggleFolderSelectionMode() {
+    folderSelectionMode = !folderSelectionMode;
+    selectedFolderItems.clear();
+    
+    const selectFolderItemsModeBtn = document.getElementById('select-folder-items-mode-btn');
+    const selectAllFolderItemsBtn = document.getElementById('select-all-folder-items-btn');
+    const folderSelectionActions = document.getElementById('folder-selection-actions');
+    
+    if (folderSelectionMode) {
+        // Activar modo de selección
+        if (selectFolderItemsModeBtn) {
+            selectFolderItemsModeBtn.textContent = '❌ Cancelar';
+            selectFolderItemsModeBtn.classList.remove('bg-blue-500', 'hover:bg-blue-600');
+            selectFolderItemsModeBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+        }
+        if (selectAllFolderItemsBtn) selectAllFolderItemsBtn.classList.remove('hidden');
+        
+        // Agregar checkboxes a los elementos
+        renderFolderItems(selectedFolderId);
+    } else {
+        // Desactivar modo de selección
+        if (selectFolderItemsModeBtn) {
+            selectFolderItemsModeBtn.textContent = '✏️ Seleccionar';
+            selectFolderItemsModeBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
+            selectFolderItemsModeBtn.classList.add('bg-blue-500', 'hover:bg-blue-600');
+        }
+        if (selectAllFolderItemsBtn) selectAllFolderItemsBtn.classList.add('hidden');
+        if (folderSelectionActions) folderSelectionActions.classList.add('hidden');
+        
+        // Quitar checkboxes
+        renderFolderItems(selectedFolderId);
+    }
+}
+
+/** Selecciona todos los elementos de la carpeta */
+function selectAllFolderItems() {
+    if (!selectedFolderId) return;
+    
+    const folderItems = getItemsInFolder(selectedFolderId);
+    selectedFolderItems.clear();
+    
+    folderItems.forEach(item => {
+        selectedFolderItems.add(item.id);
+    });
+    
+    updateFolderSelectionUI();
+}
+
+/** Cancela la selección en carpetas */
+function cancelFolderSelection() {
+    folderSelectionMode = false;
+    selectedFolderItems.clear();
+    toggleFolderSelectionMode();
+}
+
+/** Elimina los elementos seleccionados */
+function deleteSelectedFolderItems() {
+    if (selectedFolderItems.size === 0) {
+        showSystemMessage('⚠️ No hay elementos seleccionados', 'warning');
+        return;
+    }
+    
+    if (!confirm(`¿Estás seguro de que deseas eliminar ${selectedFolderItems.size} elemento(s)?`)) {
+        return;
+    }
+    
+    selectedFolderItems.forEach(itemId => {
+        const index = items.findIndex(i => i.id === itemId);
+        if (index !== -1) {
+            items.splice(index, 1);
+        }
+    });
+    
+    saveItems();
+    selectedFolderItems.clear();
+    renderFolderItems(selectedFolderId);
+    updateFolderSelectionUI();
+    showSystemMessage('🗑️ Elementos eliminados correctamente', 'success');
+}
+
+/** Mueve los elementos seleccionados a otra carpeta */
+function moveSelectedFolderItems() {
+    if (selectedFolderItems.size === 0) {
+        showSystemMessage('⚠️ No hay elementos seleccionados', 'warning');
+        return;
+    }
+    
+    // Obtener carpetas disponibles (excluyendo la actual)
+    const availableFolders = folders.filter(f => f.id !== selectedFolderId);
+    
+    if (availableFolders.length === 0) {
+        showSystemMessage('⚠️ No hay otras carpetas disponibles', 'warning');
+        return;
+    }
+    
+    // Crear selector de carpeta
+    const folderOptions = availableFolders.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
+    const targetFolderId = prompt(`Selecciona la carpeta destino:\n\n${availableFolders.map((f, i) => `${i + 1}. ${f.name}`).join('\n')}\n\nIngresa el número de carpeta:`);
+    
+    if (!targetFolderId) return;
+    
+    const folderIndex = parseInt(targetFolderId) - 1;
+    if (isNaN(folderIndex) || folderIndex < 0 || folderIndex >= availableFolders.length) {
+        showSystemMessage('❌ Opción inválida', 'error');
+        return;
+    }
+    
+    const targetFolder = availableFolders[folderIndex];
+    
+    selectedFolderItems.forEach(itemId => {
+        const item = items.find(i => i.id === itemId);
+        if (item) {
+            item.folderId = targetFolder.id;
+        }
+    });
+    
+    saveItems();
+    selectedFolderItems.clear();
+    renderFolderItems(selectedFolderId);
+    updateFolderSelectionUI();
+    showSystemMessage(`📁 ${selectedFolderItems.size} elemento(s) movido(s) a "${targetFolder.name}"`, 'success');
+}
+
+/** Cambia el color de los elementos seleccionados */
+function changeColorSelectedFolderItems() {
+    if (selectedFolderItems.size === 0) {
+        showSystemMessage('⚠️ No hay elementos seleccionados', 'warning');
+        return;
+    }
+    
+    const colors = ['blue', 'green', 'yellow', 'red', 'purple', 'pink', 'gray', 'indigo'];
+    const colorOptions = colors.map((c, i) => `${i + 1}. ${c.charAt(0).toUpperCase() + c.slice(1)}`).join('\n');
+    const colorChoice = prompt(`Selecciona un color:\n\n${colorOptions}\n\nIngresa el número:`);
+    
+    if (!colorChoice) return;
+    
+    const colorIndex = parseInt(colorChoice) - 1;
+    if (isNaN(colorIndex) || colorIndex < 0 || colorIndex >= colors.length) {
+        showSystemMessage('❌ Opción inválida', 'error');
+        return;
+    }
+    
+    const selectedColor = colors[colorIndex];
+    
+    selectedFolderItems.forEach(itemId => {
+        const item = items.find(i => i.id === itemId);
+        if (item) {
+            item.color = selectedColor;
+        }
+    });
+    
+    saveItems();
+    selectedFolderItems.clear();
+    renderFolderItems(selectedFolderId);
+    updateFolderSelectionUI();
+    showSystemMessage(`🎨 Color cambiado a ${selectedColor}`, 'success');
+}
+
+/** Actualiza la UI de selección en carpetas */
+function updateFolderSelectionUI() {
+    const folderSelectionActions = document.getElementById('folder-selection-actions');
+    const folderSelectedCount = document.getElementById('folder-selected-count');
+    
+    if (folderSelectionActions && folderSelectedCount) {
+        if (selectedFolderItems.size > 0) {
+            folderSelectionActions.classList.remove('hidden');
+            folderSelectedCount.textContent = selectedFolderItems.size;
+        } else {
+            folderSelectionActions.classList.add('hidden');
+        }
+    }
+    
+    // Actualizar checkboxes
+    const checkboxes = document.querySelectorAll('.folder-item-checkbox');
+    checkboxes.forEach(checkbox => {
+        const itemId = checkbox.getAttribute('data-item-id');
+        checkbox.checked = selectedFolderItems.has(itemId);
+    });
+}
+
+/** Maneja el click en checkbox de elemento de carpeta */
+function toggleFolderItemSelection(itemId) {
+    if (selectedFolderItems.has(itemId)) {
+        selectedFolderItems.delete(itemId);
+    } else {
+        selectedFolderItems.add(itemId);
+    }
+    updateFolderSelectionUI();
+}
+
 // ===== INICIALIZACIÓN =====
 
 // Cargar configuración del versículo diario al cargar la página

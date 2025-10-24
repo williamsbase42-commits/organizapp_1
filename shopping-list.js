@@ -364,15 +364,47 @@ function addShoppingListsToItems() {
         const visibleItems = item.shoppingList.slice(0, maxVisible);
         const hasMore = item.shoppingList.length > maxVisible;
         
-        visibleItems.forEach(shoppingItem => {
+        visibleItems.forEach((shoppingItem, index) => {
             const itemDiv = document.createElement('div');
             itemDiv.className = 'flex items-center gap-2 text-sm';
             
             const checkbox = document.createElement('span');
             checkbox.textContent = shoppingItem.done ? '☑' : '☐';
-            checkbox.className = shoppingItem.done 
+            checkbox.className = (shoppingItem.done 
                 ? 'text-green-500 dark:text-green-400' 
-                : 'text-gray-400 dark:text-gray-500';
+                : 'text-gray-400 dark:text-gray-500') + ' cursor-pointer hover:scale-110 transition-transform';
+            checkbox.style.cursor = 'pointer';
+            
+            // Agregar evento de clic para marcar/desmarcar
+            checkbox.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Cambiar el estado del item
+                shoppingItem.done = !shoppingItem.done;
+                
+                // Actualizar visualmente el checkbox
+                checkbox.textContent = shoppingItem.done ? '☑' : '☐';
+                checkbox.className = (shoppingItem.done 
+                    ? 'text-green-500 dark:text-green-400' 
+                    : 'text-gray-400 dark:text-gray-500') + ' cursor-pointer hover:scale-110 transition-transform';
+                
+                // Actualizar visualmente el texto
+                text.className = shoppingItem.done 
+                    ? 'text-gray-500 dark:text-gray-400 line-through' 
+                    : 'text-gray-700 dark:text-gray-300';
+                
+                // Guardar cambios en el array global de items
+                if (typeof saveItems === 'function') {
+                    saveItems();
+                }
+                
+                // Actualizar el contador de completados si está visible
+                const counterDiv = itemElement.querySelector('.shopping-list-preview .text-xs.text-center');
+                if (counterDiv) {
+                    const completed = item.shoppingList.filter(i => i.done).length;
+                    const total = item.shoppingList.length;
+                    counterDiv.innerHTML = `✅ <strong>${completed}</strong> de <strong>${total}</strong> completados`;
+                }
+            });
             
             const text = document.createElement('span');
             text.textContent = shoppingItem.item;
@@ -448,9 +480,43 @@ function openShoppingListModal(item) {
         
         const checkbox = document.createElement('span');
         checkbox.textContent = shoppingItem.done ? '☑' : '☐';
-        checkbox.className = shoppingItem.done 
+        checkbox.className = (shoppingItem.done 
             ? 'text-2xl text-green-500 dark:text-green-400' 
-            : 'text-2xl text-gray-400 dark:text-gray-500';
+            : 'text-2xl text-gray-400 dark:text-gray-500') + ' cursor-pointer hover:scale-110 transition-transform';
+        checkbox.style.cursor = 'pointer';
+        
+        // Agregar evento de clic para marcar/desmarcar
+        checkbox.addEventListener('click', (e) => {
+            e.stopPropagation();
+            // Cambiar el estado del item
+            shoppingItem.done = !shoppingItem.done;
+            
+            // Actualizar visualmente el checkbox
+            checkbox.textContent = shoppingItem.done ? '☑' : '☐';
+            checkbox.className = (shoppingItem.done 
+                ? 'text-2xl text-green-500 dark:text-green-400' 
+                : 'text-2xl text-gray-400 dark:text-gray-500') + ' cursor-pointer hover:scale-110 transition-transform';
+            
+            // Actualizar visualmente el texto
+            text.className = shoppingItem.done 
+                ? 'flex-1 text-sm text-gray-500 dark:text-gray-400 line-through' 
+                : 'flex-1 text-sm text-gray-700 dark:text-gray-300 font-medium';
+            
+            // Guardar cambios
+            if (typeof saveItems === 'function') {
+                saveItems();
+            }
+            
+            // Actualizar estadísticas del modal
+            const completed = item.shoppingList.filter(i => i.done).length;
+            const total = item.shoppingList.length;
+            const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+            
+            if (completedCount) completedCount.textContent = completed;
+            if (totalCount) totalCount.textContent = total;
+            if (progressPercentage) progressPercentage.textContent = `${percentage}%`;
+            if (progressBar) progressBar.style.width = `${percentage}%`;
+        });
         
         const text = document.createElement('span');
         text.textContent = shoppingItem.item;
@@ -486,6 +552,17 @@ function closeShoppingListModal() {
     if (modal) {
         modal.classList.add('hidden');
         document.body.style.overflow = '';
+        
+        // Refrescar las listas de compras visibles en las tarjetas
+        setTimeout(() => {
+            // Limpiar listas existentes
+            document.querySelectorAll('.shopping-list-preview').forEach(el => el.remove());
+            
+            // Re-renderizar todas las listas de compras
+            if (typeof window.addShoppingListsToItems === 'function') {
+                window.addShoppingListsToItems();
+            }
+        }, 100);
     }
 }
 

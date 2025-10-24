@@ -209,7 +209,8 @@ function initializeImageIntegration() {
             const savedItemId = currentEditingItemId;
             const shoppingList = (typeof getEditShoppingList === 'function') ? getEditShoppingList() : null;
             
-            if ((imageData || (shoppingList && shoppingList.length > 0)) && savedItemId && items) {
+            // Siempre procesar si hay un itemId válido
+            if (savedItemId && items) {
                 setTimeout(() => {
                     const item = items.find(i => i.id === savedItemId);
                     if (item) {
@@ -223,26 +224,35 @@ function initializeImageIntegration() {
                         }
                         
                         // Guardar lista de compras (solo si el tipo es Compra)
-                        if (item.type === 'Compra' && shoppingList && shoppingList.length > 0) {
-                            item.shoppingList = shoppingList;
-                            // console.log('🛒 [EDIT ITEM] Lista de compras actualizada:', shoppingList.length, 'items');
-                            updated = true;
+                        if (item.type === 'Compra') {
+                            if (shoppingList && shoppingList.length > 0) {
+                                item.shoppingList = shoppingList;
+                                // console.log('🛒 [EDIT ITEM] Lista de compras actualizada:', shoppingList.length, 'items');
+                                updated = true;
+                            } else if (!item.shoppingList) {
+                                // Inicializar lista vacía si no existe
+                                item.shoppingList = [];
+                            }
                         }
                         
                         if (updated) {
                             saveItems();
                             // console.log('✅ [EDIT ITEM] Cambios guardados en localStorage');
-                            
-                            // Re-renderizar
-                            setTimeout(() => {
-                                addImagesToRenderedItems();
-                                
-                                // Re-renderizar listas de compras
-                                if (typeof window.addShoppingListsToItems === 'function') {
-                                    window.addShoppingListsToItems();
-                                }
-                            }, 300);
                         }
+                        
+                        // SIEMPRE re-renderizar imágenes y listas de compras después de editar
+                        setTimeout(() => {
+                            // Limpiar listas de compras existentes primero
+                            document.querySelectorAll('.shopping-list-preview').forEach(el => el.remove());
+                            
+                            // Re-renderizar imágenes
+                            addImagesToRenderedItems();
+                            
+                            // Re-renderizar listas de compras
+                            if (typeof window.addShoppingListsToItems === 'function') {
+                                window.addShoppingListsToItems();
+                            }
+                        }, 300);
                         
                         // Limpiar lista temporal
                         if (typeof clearEditShoppingList === 'function') {

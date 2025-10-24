@@ -238,36 +238,64 @@
 
         <!-- Vista de Carpetas -->
         <div id="folders-main-view" class="hidden">
-            <!-- Navegación de carpetas -->
-            <div class="flex justify-between items-center mb-6">
-                <div class="flex items-center space-x-4">
-                    <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">📁 Carpetas</h2>
-                </div>
-                <div class="flex space-x-2">
-                    <button id="create-folder-btn" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium">
-                        📁 Nueva Carpeta
+            <!-- Navegación de carpetas principal (se oculta al entrar a una carpeta) -->
+            <div id="folders-header" class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
+                <h2 id="folders-main-title" class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">📁 Carpetas</h2>
+                <button id="create-folder-btn" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium text-sm sm:text-base w-full sm:w-auto">
+                    📁 Nueva Carpeta
+                </button>
+            </div>
+
+            <!-- Navegación dentro de carpeta (se muestra al entrar a una carpeta) -->
+            <div id="folder-content-header" class="hidden flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
+                <h2 id="selected-folder-title" class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100"></h2>
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <button id="select-folder-items-mode-btn" class="px-3 py-2 sm:px-4 sm:py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium text-sm w-full sm:w-auto">
+                        ✏️ Seleccionar
+                    </button>
+                    <button id="select-all-folder-items-btn" class="px-3 py-2 sm:px-4 sm:py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium text-sm hidden w-full sm:w-auto">
+                        ✅ Seleccionar Todo
+                    </button>
+                    <button id="back-to-folders-btn" class="px-3 py-2 sm:px-4 sm:py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium text-sm w-full sm:w-auto">
+                        ← Volver a Carpetas
                     </button>
                 </div>
             </div>
 
+            <!-- Menú de acciones múltiples para carpetas -->
+            <div id="folder-selection-actions" class="hidden mb-6 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-700 rounded-xl p-4 shadow-lg border-2 border-blue-200 dark:border-blue-800">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                    <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        <span id="folder-selected-count">0</span> elemento(s) seleccionado(s)
+                    </span>
+                    <div class="flex flex-col sm:flex-row gap-2 sm:ml-auto">
+                        <button id="folder-cancel-selection-btn" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium text-sm w-full sm:w-auto">
+                            ❌ Cancelar
+                        </button>
+                        <button id="folder-clear-selection-btn" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium text-sm w-full sm:w-auto">
+                            🗑️ Eliminar
+                        </button>
+                        <button id="folder-move-to-folder-btn" class="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors font-medium text-sm w-full sm:w-auto">
+                            📁 Mover
+                        </button>
+                        <button id="folder-change-color-btn" class="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium text-sm w-full sm:w-auto">
+                            🎨 Cambiar Color
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Lista de carpetas -->
-            <div class="bg-white dark:bg-surface-dark rounded-xl shadow-lg p-6 overflow-visible">
+            <div id="folders-list-container" class="bg-white dark:bg-surface-dark rounded-xl shadow-lg p-4 sm:p-6 overflow-visible">
                 <div id="folders-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-visible">
                     <!-- Las carpetas se generarán dinámicamente -->
                 </div>
             </div>
 
             <!-- Contenido de la carpeta seleccionada -->
-            <div id="folder-content" class="mt-6 hidden">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 id="selected-folder-title" class="text-xl font-bold text-gray-900 dark:text-gray-100"></h3>
-                    <button id="back-to-folders-btn" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium">
-                        ← Volver a Carpetas
-                    </button>
-                </div>
-                
+            <div id="folder-content" class="hidden">
                 <!-- Lista de elementos en la carpeta -->
-                <div class="bg-white dark:bg-surface-dark rounded-xl shadow-lg p-6">
+                <div class="bg-white dark:bg-surface-dark rounded-xl shadow-lg p-4 sm:p-6">
                     <div id="folder-items-list" class="space-y-3">
                         <!-- Los elementos de la carpeta aparecerán aquí -->
                     </div>
@@ -304,135 +332,144 @@
 
     <!-- Modal de Entrada Universal (Inicialmente Oculto) -->
     <div id="input-modal" class="fixed inset-0 bg-gradient-to-br from-black/60 via-purple-900/20 to-blue-900/20 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-gradient-to-br from-white via-blue-50/50 to-purple-50/50 dark:from-gray-800 dark:via-blue-900/20 dark:to-purple-900/20 rounded-2xl p-6 w-full max-w-md shadow-2xl border border-white/20 dark:border-gray-700/30 transition-all duration-500 transform scale-100 hover:shadow-3xl my-4 max-h-[90vh] overflow-y-auto">
-            <div class="flex items-center justify-center mb-4">
-                <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <span class="text-xl">✨</span>
-                </div>
-                <h3 class="text-xl font-bold ml-3 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Nuevo Elemento</h3>
-            </div>
+        <div class="bg-gradient-to-br from-white via-blue-50/50 to-purple-50/50 dark:from-gray-800 dark:via-blue-900/20 dark:to-purple-900/20 rounded-2xl w-full max-w-md shadow-2xl border border-white/20 dark:border-gray-700/30 transition-all duration-500 my-4 max-h-[90vh] flex flex-col overflow-hidden">
             
-            <!-- Contenido -->
-            <div class="mb-4">
-                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">📝 Contenido</label>
-                <textarea id="universal-input" rows="2" placeholder="Escribe tu contenido aquí..."
-                    class="w-full p-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 ios-input android-input shadow-sm hover:shadow-md"></textarea>
-            </div>
-            
-            <!-- Selectores -->
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <!-- Tipo -->
-                <div class="space-y-2">
-                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">🎯 Tipo</label>
-                    <select id="type-selector" class="w-full p-2 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-sm hover:shadow-md">
-                        <option value="Nota">📝 Nota</option>
-                        <option value="Tarea">✅ Tarea</option>
-                        <option value="Compra">🛒 Compra</option>
-                        <option value="Recordatorio">⏰ Recordatorio</option>
-                    </select>
-                </div>
-
-                <!-- Estado -->
-                <div class="space-y-2">
-                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">📊 Estado</label>
-                    <select id="status-selector" class="w-full p-2 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-sm hover:shadow-md">
-                        <option value="pending">⏳ Pendiente</option>
-                        <option value="done">✅ Realizado</option>
-                        <option value="completed">🎉 Terminado</option>
-                    </select>
-                </div>
+            <!-- Header del Modal -->
+            <div class="flex items-center justify-center px-6 pt-6 pb-4 w-full">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white">✨ Nuevo Elemento</h3>
             </div>
 
-            <!-- Carpeta -->
-            <div class="mb-4">
-                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">📁 Carpeta (opcional)</label>
-                <select id="folder-selector" class="w-full p-2 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-sm hover:shadow-md">
-                    <option value="">📁 Sin carpeta</option>
-                    <!-- Las carpetas se generarán dinámicamente -->
-                </select>
-            </div>
-
-            <!-- Color y Fecha -->
-            <div class="grid grid-cols-2 gap-4 mb-6">
-                <!-- Color -->
-                <div class="space-y-2">
-                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">🎨 Color</label>
-                    <div id="color-selector" class="flex flex-wrap gap-2 p-2 rounded-xl bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm border border-gray-200 dark:border-gray-600">
-                        <!-- Los colores se generarán dinámicamente -->
-                    </div>
+            <!-- Contenido con scroll -->
+            <div class="flex-1 overflow-y-auto px-6 pb-4">
+                <!-- Contenido -->
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">📝 Contenido</label>
+                    <textarea id="universal-input" rows="2" placeholder="Escribe tu contenido aquí..."
+                        class="w-full p-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 ios-input android-input shadow-sm hover:shadow-md"></textarea>
                 </div>
-
-                <!-- Fecha -->
-                <div class="space-y-2">
-                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">📅 Fecha</label>
-                    <input type="date" id="date-selector" class="w-full p-2 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-sm hover:shadow-md">
-                </div>
-            </div>
-
-            <!-- Hora (solo para Recordatorios) -->
-            <div id="time-selector-container" class="mb-6 hidden">
-                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">🕐 Hora (opcional)</label>
-                <div class="flex items-center gap-3">
-                    <input type="time" id="time-selector" class="flex-1 p-2 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-sm hover:shadow-md">
-                    <button type="button" id="clear-time-btn" class="px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 bg-gray-100 dark:bg-gray-700 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30 transition-all duration-200" title="Quitar hora">
-                        ✕
-                    </button>
-                </div>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Deja vacío para recordatorio sin hora específica</p>
-            </div>
-
-            <!-- Lista de Compras (solo para tipo Compra) -->
-            <div id="shopping-list-container" class="mb-6 hidden">
-                <button type="button" id="toggle-shopping-list-btn" class="w-full px-4 py-3 text-sm font-semibold rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center gap-2">
-                    <span class="text-lg">🛒</span>
-                    <span>Lista de compras</span>
-                    <span id="shopping-list-toggle-icon">▼</span>
-                </button>
                 
-                <div id="shopping-list-content" class="mt-3 hidden">
-                    <div class="bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm rounded-xl p-4 border-2 border-green-200 dark:border-green-800">
-                        <!-- Input para agregar items -->
-                        <div class="flex gap-2 mb-3">
-                            <input type="text" id="shopping-item-input" placeholder="Ej: Leche, Pan, etc..." class="flex-1 p-2 rounded-lg border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-sm min-w-0">
-                            <button type="button" id="add-shopping-item-btn" class="flex-shrink-0 px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium text-sm whitespace-nowrap">
-                                ➕<span class="hidden sm:inline ml-1">Agregar</span>
-                            </button>
-                        </div>
-                        
-                        <!-- Lista de items -->
-                        <div id="shopping-items-list" class="space-y-2 max-h-32 overflow-y-auto">
-                            <!-- Los items se agregarán aquí dinámicamente -->
-                        </div>
-                        
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">💡 Agrega artículos a tu lista de compras</p>
+                <!-- Selectores -->
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <!-- Tipo -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">🎯 Tipo</label>
+                        <select id="type-selector" class="w-full p-2 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-sm hover:shadow-md">
+                            <option value="Nota">📝 Nota</option>
+                            <option value="Tarea">✅ Tarea</option>
+                            <option value="Compra">🛒 Compra</option>
+                            <option value="Recordatorio">⏰ Recordatorio</option>
+                        </select>
+                    </div>
+
+                    <!-- Estado -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">📊 Estado</label>
+                        <select id="status-selector" class="w-full p-2 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-sm hover:shadow-md">
+                            <option value="pending">⏳ Pendiente</option>
+                            <option value="done">✅ Realizado</option>
+                            <option value="completed">🎉 Terminado</option>
+                        </select>
                     </div>
                 </div>
-            </div>
 
-            <!-- Imagen (opcional) -->
-            <div class="mb-6">
-                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">🖼️ Imagen (opcional)</label>
-                <div class="w-full">
-                    <input type="file" id="image-input" accept="image/*" class="hidden">
-                    <button type="button" id="image-upload-btn" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 hover:border-blue-500 dark:hover:border-blue-400 focus:ring-2 focus:ring-blue-500 transition-all duration-300 shadow-sm hover:shadow-md flex items-center justify-center gap-2">
-                        <span class="text-2xl">📷</span>
-                        <span class="text-sm font-medium">Seleccionar imagen</span>
-                    </button>
+                <!-- Carpeta -->
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">📁 Carpeta (opcional)</label>
+                    <select id="folder-selector" class="w-full p-2 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-sm hover:shadow-md">
+                        <option value="">📁 Sin carpeta</option>
+                        <!-- Las carpetas se generarán dinámicamente -->
+                    </select>
                 </div>
-                <div id="image-preview-container" class="mt-3 hidden w-full">
-                    <div class="relative inline-block w-full">
-                        <img id="image-preview" src="" alt="Vista previa" class="w-full max-h-48 rounded-xl shadow-lg border-2 border-gray-200 dark:border-gray-600 object-cover">
-                        <button type="button" id="remove-image-btn" class="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center shadow-lg transition-all duration-200 transform hover:scale-110" title="Quitar imagen">
+
+                <!-- Color y Fecha -->
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <!-- Color -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">🎨 Color</label>
+                        <div id="color-selector" class="flex flex-wrap gap-2 p-2 rounded-xl bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm border border-gray-200 dark:border-gray-600">
+                            <!-- Los colores se generarán dinámicamente -->
+                        </div>
+                    </div>
+
+                    <!-- Fecha -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">📅 Fecha</label>
+                        <input type="date" id="date-selector" class="w-full p-2 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-sm hover:shadow-md">
+                    </div>
+                </div>
+
+                <!-- Hora (solo para Recordatorios) -->
+                <div id="time-selector-container" class="mb-6 hidden">
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">🕐 Hora (opcional)</label>
+                    <div class="flex items-center gap-3">
+                        <input type="time" id="time-selector" class="flex-1 p-2 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-sm hover:shadow-md">
+                        <button type="button" id="clear-time-btn" class="px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 bg-gray-100 dark:bg-gray-700 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30 transition-all duration-200" title="Quitar hora">
                             ✕
                         </button>
                     </div>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2" id="image-file-name"></p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Deja vacío para recordatorio sin hora específica</p>
+                </div>
+
+                <!-- Lista de Compras (solo para tipo Compra) -->
+                <div id="shopping-list-container" class="mb-6 hidden">
+                    <button type="button" id="toggle-shopping-list-btn" class="w-full px-4 py-3 text-sm font-semibold rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+                        <span class="text-lg">🛒</span>
+                        <span>Lista de compras</span>
+                        <span id="shopping-list-toggle-icon">▼</span>
+                    </button>
+                    
+                    <div id="shopping-list-content" class="mt-3 hidden">
+                        <div class="bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm rounded-xl p-4 border-2 border-green-200 dark:border-green-800">
+                            <!-- Input para agregar items -->
+                            <div class="flex items-center gap-2 mb-3">
+                                <input type="text" id="shopping-item-input" placeholder="Ej: Leche, Pan, etc..." class="flex-1 p-2 rounded-lg border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-sm min-w-0">
+                                <button type="button" id="add-shopping-item-btn" class="flex-shrink-0 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium text-sm whitespace-nowrap">
+                                    ➕<span class="hidden sm:inline ml-1">Agregar</span>
+                                </button>
+                            </div>
+                            
+                            <!-- Lista de items -->
+                            <div id="shopping-items-list" class="space-y-2 max-h-32 overflow-y-auto">
+                                <!-- Los items se agregarán aquí dinámicamente -->
+                            </div>
+                            
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">💡 Agrega artículos a tu lista de compras</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Imagen (opcional) -->
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">🖼️ Imagen (opcional)</label>
+                    <div class="w-full">
+                        <input type="file" id="image-input" accept="image/*" class="hidden">
+                        <button type="button" id="image-upload-btn" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-900 dark:text-gray-100 hover:border-blue-500 dark:hover:border-blue-400 focus:ring-2 focus:ring-blue-500 transition-all duration-300 shadow-sm hover:shadow-md flex items-center justify-center gap-2">
+                            <span class="text-2xl">📷</span>
+                            <span class="text-sm font-medium">Seleccionar imagen</span>
+                        </button>
+                    </div>
+                    <div id="image-preview-container" class="mt-3 hidden w-full">
+                        <div class="relative inline-block w-full">
+                            <img id="image-preview" src="" alt="Vista previa" class="w-full max-h-48 rounded-xl shadow-lg border-2 border-gray-200 dark:border-gray-600 object-cover">
+                            <button type="button" id="remove-image-btn" class="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center shadow-lg transition-all duration-200 transform hover:scale-110" title="Quitar imagen">
+                                ✕
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2" id="image-file-name"></p>
+                    </div>
                 </div>
             </div>
 
-            <div class="flex justify-between">
-                <button id="cancel-btn" class="px-6 py-3 text-sm font-semibold rounded-2xl text-gray-600 dark:text-gray-300 bg-gray-100/80 dark:bg-gray-700/80 backdrop-blur-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 shadow-sm hover:shadow-md">Cancelar</button>
-                <button id="add-btn" class="px-6 py-3 text-sm font-semibold rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 ios-button android-button">✨ Agregar</button>
+            <!-- Botones de acción - Footer fijo -->
+            <div class="flex-shrink-0 px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gradient-to-br from-white via-blue-50/50 to-purple-50/50 dark:from-gray-800 dark:via-blue-900/20 dark:to-purple-900/20 rounded-b-2xl">
+                <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                    <button type="button" id="cancel-btn" class="flex-1 px-4 py-2.5 text-sm font-semibold rounded-lg text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 shadow-md">
+                        Cancelar
+                    </button>
+                    <button type="button" id="add-btn" class="flex-1 px-4 py-2.5 text-sm font-semibold rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl">
+                        ✨ Agregar
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -527,9 +564,9 @@
                 <div id="edit-shopping-list-content" class="mt-3 hidden">
                     <div class="bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm rounded-xl p-4 border-2 border-green-200 dark:border-green-800">
                         <!-- Input para agregar items -->
-                        <div class="flex gap-2 mb-3">
+                        <div class="flex items-center gap-2 mb-3">
                             <input type="text" id="edit-shopping-item-input" placeholder="Ej: Leche, Pan, etc..." class="flex-1 p-2 rounded-lg border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-sm min-w-0">
-                            <button type="button" id="edit-add-shopping-item-btn" class="flex-shrink-0 px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium text-sm whitespace-nowrap">
+                            <button type="button" id="edit-add-shopping-item-btn" class="flex-shrink-0 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium text-sm whitespace-nowrap">
                                 ➕<span class="hidden sm:inline ml-1">Agregar</span>
                             </button>
                         </div>
@@ -670,7 +707,7 @@
                 </button>
                 
                 <!-- Importar -->
-                <button id="import-btn-menu" class="w-full flex items-center justify-between p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                <button id="import-btn" class="w-full flex items-center justify-between p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                     <div class="flex items-center">
                         <span class="text-lg mr-3">📂</span>
                         <span class="text-gray-700 dark:text-gray-300">Importar Datos</span>
@@ -1257,6 +1294,46 @@
             document.body.appendChild(installBtn);
         });
     </script>
+
+    <!-- Modal para ver lista de compras completa -->
+    <div id="view-shopping-list-modal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-lg shadow-2xl border border-gray-200 dark:border-gray-700 max-h-[90vh] flex flex-col">
+            <div class="bg-gradient-to-r from-green-500 to-emerald-600 p-6 rounded-t-2xl flex-shrink-0">
+                <div id="view-shopping-list-title" class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <span class="text-3xl">🛒</span>
+                        <div>
+                            <h3 class="text-xl font-bold text-white">Lista de Compras</h3>
+                            <p class="text-sm text-white/80"></p>
+                        </div>
+                    </div>
+                    <button onclick="closeShoppingListModal()" class="text-white hover:bg-white/20 rounded-full p-2 transition-colors">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- Barra de progreso -->
+                <div class="bg-white/20 rounded-full h-3 overflow-hidden">
+                    <div id="progress-bar" class="bg-white h-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between items-center mt-2 text-sm text-white">
+                    <span><strong id="completed-count">0</strong> de <strong id="total-count">0</strong> completados</span>
+                    <span id="progress-percentage" class="font-bold">0%</span>
+                </div>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto p-6">
+                <div id="view-shopping-list-items" class="space-y-2">
+                    <!-- Los items se generarán dinámicamente -->
+                </div>
+                
+                <button onclick="closeShoppingListModal()" class="w-full mt-6 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300 shadow-md hover:shadow-lg">
+                    ✅ Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
 </body>
-</html>
 </html>
