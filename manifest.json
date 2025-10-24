@@ -1,7 +1,7 @@
 {
   "name": "OrganizApp",
   "short_name": "OrganizApp",
-  "version": "1.3.0",
+  "version": "1.4.2",
   "description": "Tu aplicación personal para gestionar tareas, notas, compras y recordatorios",
   "start_url": "./index.html",
   "display": "standalone",

@@ -23,7 +23,7 @@ let lastLoginDate = null; // Último día que el usuario abrió la app
 let streakCount = 0; // Días consecutivos de uso
 
 // Variables del sistema de actualizaciones
-const APP_VERSION = '1.4.1'; // Versión actual de la app - Sistema de actualización automática mejorado
+const APP_VERSION = '1.4.2'; // Modal mejorado y funcionalidad FAB optimizada
 let lastKnownVersion = null; // Última versión conocida por el usuario
 
 // Variables del sistema de PWA y Service Worker
