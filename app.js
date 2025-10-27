@@ -23,7 +23,7 @@ let lastLoginDate = null; // Último día que el usuario abrió la app
 let streakCount = 0; // Días consecutivos de uso
 
 // Variables del sistema de actualizaciones
-const APP_VERSION = '1.4.2'; // Modal mejorado y funcionalidad FAB optimizada
+const APP_VERSION = '2.0.6'; // Corrección UI lista de compras + FAB - Auto-actualización mejorada
 let lastKnownVersion = null; // Última versión conocida por el usuario
 
 // Variables del sistema de PWA y Service Worker
@@ -2964,7 +2964,7 @@ async function initializeServiceWorker() {
 
 /** Maneja mensajes del Service Worker - CRÍTICO para actualización automática */
 function handleServiceWorkerMessage(event) {
-    const { data } = event.data;
+    const data = event.data;
     
     switch (data?.type) {
         case 'NEW_VERSION_AVAILABLE':
@@ -2985,6 +2985,12 @@ function handleServiceWorkerMessage(event) {
                     window.location.reload();
                 }, 2000);
             }
+            break;
+            
+        case 'FORCE_RELOAD':
+            console.log('[PWA] Forzando recarga de la aplicación...');
+            // CRÍTICO: Recarga inmediata sin delay
+            window.location.reload(true);
             break;
             
         case 'VERSION_INFO':
