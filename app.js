@@ -4634,12 +4634,14 @@ document.getElementById('delete-folder-btn').addEventListener('click', () => {
 // Event listeners para modales de clave de acceso
 document.getElementById('cancel-access-key-btn').addEventListener('click', () => {
     document.getElementById('access-key-modal').classList.add('hidden');
+    fab.classList.remove('hidden'); // Mostrar FAB cuando se cierra el modal
 });
 
 document.getElementById('confirm-access-key-btn').addEventListener('click', handleConfirmAccessKey);
 
 document.getElementById('cancel-create-access-key-btn').addEventListener('click', () => {
     document.getElementById('create-access-key-modal').classList.add('hidden');
+    fab.classList.remove('hidden'); // Mostrar FAB cuando se cierra el modal
 });
 
 document.getElementById('save-access-key-btn').addEventListener('click', handleSaveAccessKey);
@@ -4752,6 +4754,8 @@ userNameInput.addEventListener('keypress', (e) => {
 closeWelcomeBtn.addEventListener('click', () => {
     dailyWelcomeModal.classList.add('hidden');
     markDailyWelcomeShown();
+    // Mostrar el FAB después de cerrar el modal de bienvenida
+    fab.classList.remove('hidden');
 });
 
 /** Event listeners para modal de edición */
@@ -5116,6 +5120,7 @@ function openEditFolderModal(folderId) {
     });
     
     editFolderModal.classList.remove('hidden');
+    fab.classList.add('hidden'); // Ocultar FAB cuando se abre el modal
     editFolderNameInput.focus();
 }
 
@@ -5192,8 +5197,8 @@ function initializeApp() {
     // Actualizar estado de notificaciones en la UI
     updateNotificationStatus();
     
-    // Asegurar que el botón FAB esté visible
-    ensureFabVisibility();
+    // FAB estará oculto hasta que el usuario cierre el modal de bienvenida
+    // El FAB se mostrará automáticamente cuando se presione "¡Perfecto!" en el modal de bienvenida
     
     authReady = true;
     console.log("OrganizApp inicializado. Datos cargados:", items.length);
@@ -5823,6 +5828,7 @@ function openCreateAccessKeyModal(folderId) {
     
     // Mostrar modal
     modal.classList.remove('hidden');
+    fab.classList.add('hidden'); // Ocultar FAB cuando se abre el modal
     newKeyInput.focus();
 }
 
@@ -5853,6 +5859,7 @@ function openAccessKeyModal(folderId) {
     
     // Mostrar modal
     modal.classList.remove('hidden');
+    fab.classList.add('hidden'); // Ocultar FAB cuando se abre el modal
     keyInput.focus();
 }
 
@@ -5890,6 +5897,7 @@ function handleConfirmAccessKey() {
             // Modo eliminación - eliminar protección
             removeFolderAccessKey(folderId);
             modal.classList.add('hidden');
+            fab.classList.remove('hidden'); // Mostrar FAB cuando se cierra el modal
             showSystemMessage('🔓 Protección de carpeta eliminada correctamente');
             
             // Refrescar vista
@@ -5898,6 +5906,7 @@ function handleConfirmAccessKey() {
         } else {
             // Modo acceso - mostrar contenido temporalmente
             modal.classList.add('hidden');
+            fab.classList.remove('hidden'); // Mostrar FAB cuando se cierra el modal
             showSystemMessage('🔓 Acceso temporal concedido');
             
             // Cambiar a vista de carpetas y abrir la carpeta específica
@@ -5943,6 +5952,7 @@ function openRemoveAccessKeyModal(folderId) {
     
     // Mostrar modal
     modal.classList.remove('hidden');
+    fab.classList.add('hidden'); // Ocultar FAB cuando se abre el modal
     keyInput.focus();
 }
 
@@ -6023,6 +6033,7 @@ function handleSaveAccessKey() {
     
     // Cerrar modal
     modal.classList.add('hidden');
+    fab.classList.remove('hidden'); // Mostrar FAB cuando se cierra el modal
     
     // Refrescar vista
     renderList();

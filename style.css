@@ -1175,6 +1175,66 @@ main {
   }
 }
 
+/* === ESTILOS PARA LISTA DE COMPRAS === */
+
+/* Forzar dirección de texto de izquierda a derecha en inputs de lista de compras */
+#shopping-item-input,
+#edit-shopping-item-input {
+    direction: ltr !important;
+    unicode-bidi: embed !important;
+    text-align: left !important;
+    font-size: 1rem !important;
+    min-height: 44px !important;
+    writing-mode: horizontal-tb !important;
+    -webkit-writing-mode: horizontal-tb !important;
+    -ms-writing-mode: lr-tb !important;
+}
+
+/* Placeholder también debe estar en LTR */
+#shopping-item-input::placeholder,
+#edit-shopping-item-input::placeholder {
+    direction: ltr !important;
+    text-align: left !important;
+}
+
+/* Contenedor de los inputs */
+#shopping-list-content .flex,
+#edit-shopping-list-content .flex {
+    flex-direction: row !important;
+}
+
+/* Botones de agregar items con tamaño óptimo */
+#add-shopping-item-btn,
+#edit-add-shopping-item-btn {
+    min-width: 50px !important;
+    max-width: 50px !important;
+    min-height: 44px !important;
+    padding: 0.75rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+}
+
+/* Responsive para móviles */
+@media (max-width: 640px) {
+    #shopping-item-input,
+    #edit-shopping-item-input {
+        font-size: 16px !important; /* Evitar zoom en iOS */
+        min-height: 48px !important;
+        padding: 12px !important;
+    }
+    
+    #add-shopping-item-btn,
+    #edit-add-shopping-item-btn {
+        min-width: 52px !important;
+        max-width: 52px !important;
+        min-height: 48px !important;
+        font-size: 1.25rem !important;
+        padding: 12px !important;
+    }
+}
+
 /* === ESTILOS PARA SISTEMA DE CARPETAS SIMPLIFICADO === */
 
 /* Estilos para tarjetas de carpetas */
