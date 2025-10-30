@@ -7946,6 +7946,43 @@ async function shareCustomizedVerse() {
         clonedContent.style.height = '1920px';
         clonedContent.style.position = 'relative';
         clonedContent.style.borderRadius = '0'; // Sin bordes redondeados en la exportación
+        
+        // Escalar el contenido del texto (4x porque 1080/270 = 4)
+        const scaleRatio = 4;
+        const textElement = clonedContent.querySelector('#verse-preview-text');
+        const referenceElement = clonedContent.querySelector('#verse-preview-reference');
+        const contentElement = clonedContent.querySelector('#verse-preview-content');
+        const logoElement = clonedContent.querySelector('.absolute.bottom-4');
+        
+        if (textElement) {
+            textElement.style.fontSize = '80px'; // Aproximadamente 20px * 4
+            textElement.style.lineHeight = '1.4';
+            textElement.style.marginBottom = '40px';
+            textElement.style.padding = '0 60px';
+        }
+        
+        if (referenceElement) {
+            referenceElement.style.fontSize = '48px'; // Aproximadamente 12px * 4
+            referenceElement.style.padding = '0 60px';
+        }
+        
+        if (contentElement) {
+            contentElement.style.padding = '120px 80px';
+        }
+        
+        if (logoElement) {
+            logoElement.style.bottom = '40px';
+            logoElement.style.right = '40px';
+            logoElement.style.padding = '20px 24px';
+            logoElement.style.fontSize = '32px';
+            
+            // Escalar el emoji del logo
+            const logoEmoji = logoElement.querySelector('span:first-child');
+            const logoText = logoElement.querySelector('span:last-child');
+            if (logoEmoji) logoEmoji.style.fontSize = '48px';
+            if (logoText) logoText.style.fontSize = '36px';
+        }
+        
         tempContainer.appendChild(clonedContent);
         
         // Generar la imagen con html2canvas (1080x1920 - Stories/Reels format)
