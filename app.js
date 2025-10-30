@@ -23,7 +23,7 @@ let lastLoginDate = null; // Último día que el usuario abrió la app
 let streakCount = 0; // Días consecutivos de uso
 
 // Variables del sistema de actualizaciones
-const APP_VERSION = '2.0.7'; // Sistema de compartir versículos mejorado - Logo y texto optimizado
+const APP_VERSION = '2.0.8'; // Fix: Tamaño de logo en imágenes exportadas aumentado significativamente
 let lastKnownVersion = null; // Última versión conocida por el usuario
 
 // Variables del sistema de PWA y Service Worker
@@ -7971,28 +7971,30 @@ async function shareCustomizedVerse() {
         }
         
         if (logoElement) {
-            logoElement.style.bottom = '48px'; // 12px * 4
+            // Escalar EXTRA GRANDE para que sea legible en 1080x1920
+            logoElement.style.bottom = '60px';
             logoElement.style.left = '50%';
             logoElement.style.transform = 'translateX(-50%)';
-            logoElement.style.padding = '20px 48px'; // 5px*4 y 12px*4
-            logoElement.style.fontSize = '40px'; // 10px * 4
+            logoElement.style.padding = '32px 64px'; // Más grande
             logoElement.style.borderRadius = '100px';
-            logoElement.style.boxShadow = '0 8px 32px rgba(0,0,0,0.3)';
+            logoElement.style.boxShadow = '0 12px 40px rgba(0,0,0,0.4)';
             logoElement.style.display = 'flex';
-            logoElement.style.flexDirection = 'row'; // Asegurar que sea horizontal
+            logoElement.style.flexDirection = 'row';
             logoElement.style.alignItems = 'center';
-            logoElement.style.gap = '24px'; // 6px * 4
+            logoElement.style.gap = '32px'; // Más espacio
             logoElement.style.whiteSpace = 'nowrap';
+            logoElement.style.borderWidth = '4px';
             
-            // Escalar el emoji y texto del logo
+            // Texto MUCHO MÁS GRANDE
             const logoEmoji = logoElement.querySelector('span:first-child');
             const logoText = logoElement.querySelector('span:last-child');
             if (logoEmoji) {
-                logoEmoji.style.fontSize = '56px'; // 14px * 4
+                logoEmoji.style.fontSize = '80px'; // EMOJI GRANDE
             }
             if (logoText) {
-                logoText.style.fontSize = '40px'; // 10px * 4
+                logoText.style.fontSize = '72px'; // TEXTO MUCHO MÁS GRANDE
                 logoText.style.letterSpacing = '0.05em';
+                logoText.style.fontWeight = '700';
             }
         }
         
