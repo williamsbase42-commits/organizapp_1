@@ -7738,21 +7738,15 @@ const textColors = {
 
 /** Abre el modal de personalización de versículo */
 function openCustomizeVerseModal() {
-    // Obtener el versículo actual del DOM
-    const verseContent = document.getElementById('verse-content');
-    if (!verseContent) return;
-    
-    const verseTextElement = verseContent.querySelector('p.italic');
-    const verseRefElement = verseContent.querySelector('p.text-sm.mt-2');
-    
-    if (!verseTextElement) {
+    // Verificar que haya un versículo cargado usando la variable global
+    if (!currentVerse || !currentVerse.texto) {
         showSystemMessage('⚠️ No hay versículo disponible para compartir', 'warning');
         return;
     }
     
-    // Guardar datos del versículo
-    currentVerseData.text = verseTextElement.textContent.replace(/^[""]|[""]$/g, '').trim();
-    currentVerseData.reference = verseRefElement ? verseRefElement.textContent.trim() : '';
+    // Guardar datos del versículo desde la variable global
+    currentVerseData.text = currentVerse.texto.trim();
+    currentVerseData.reference = currentVerse.cita.trim();
     
     // Actualizar vista previa
     updateVersePreview();
@@ -7773,8 +7767,8 @@ function updateVersePreview() {
     // Actualizar fondo
     const bgUrl = currentVerseData.background.startsWith('data:') 
         ? currentVerseData.background 
-        : `assets/backgrounds/${currentVerseData.background}.jpg`;
-    versePreviewContainer.style.backgroundImage = `url('${bgUrl}')`;
+        : `./assets/backgrounds/${currentVerseData.background}.jpg`;
+    versePreviewContainer.style.backgroundImage = `url("${bgUrl}")`;
     
     // Actualizar fuente
     versePreviewContent.style.fontFamily = fontFamilies[currentVerseData.font];
