@@ -23,7 +23,7 @@ let lastLoginDate = null; // Último día que el usuario abrió la app
 let streakCount = 0; // Días consecutivos de uso
 
 // Variables del sistema de actualizaciones
-const APP_VERSION = '2.0.6'; // Corrección UI lista de compras + FAB - Auto-actualización mejorada
+const APP_VERSION = '2.0.7'; // Sistema de compartir versículos mejorado - Logo y texto optimizado
 let lastKnownVersion = null; // Última versión conocida por el usuario
 
 // Variables del sistema de PWA y Service Worker
@@ -7971,16 +7971,29 @@ async function shareCustomizedVerse() {
         }
         
         if (logoElement) {
-            logoElement.style.bottom = '64px'; // 16px * 4
-            logoElement.style.right = '64px';
-            logoElement.style.padding = '32px 48px'; // 8px*4 y 12px*4
-            logoElement.style.fontSize = '48px'; // 12px * 4
+            logoElement.style.bottom = '48px'; // 12px * 4
+            logoElement.style.left = '50%';
+            logoElement.style.transform = 'translateX(-50%)';
+            logoElement.style.padding = '20px 48px'; // 5px*4 y 12px*4
+            logoElement.style.fontSize = '40px'; // 10px * 4
+            logoElement.style.borderRadius = '100px';
+            logoElement.style.boxShadow = '0 8px 32px rgba(0,0,0,0.3)';
+            logoElement.style.display = 'flex';
+            logoElement.style.flexDirection = 'row'; // Asegurar que sea horizontal
+            logoElement.style.alignItems = 'center';
+            logoElement.style.gap = '24px'; // 6px * 4
+            logoElement.style.whiteSpace = 'nowrap';
             
-            // Escalar el emoji del logo
+            // Escalar el emoji y texto del logo
             const logoEmoji = logoElement.querySelector('span:first-child');
             const logoText = logoElement.querySelector('span:last-child');
-            if (logoEmoji) logoEmoji.style.fontSize = '48px';
-            if (logoText) logoText.style.fontSize = '48px';
+            if (logoEmoji) {
+                logoEmoji.style.fontSize = '56px'; // 14px * 4
+            }
+            if (logoText) {
+                logoText.style.fontSize = '40px'; // 10px * 4
+                logoText.style.letterSpacing = '0.05em';
+            }
         }
         
         tempContainer.appendChild(clonedContent);
