@@ -290,25 +290,149 @@ function scheduleReminderNotifications(item) {
     });
 }
 
-/** Muestra una notificación de recordatorio */
-function showReminderNotification(item, timeLabel) {
-    const title = `⏰ Recordatorio: ${item.content}`;
-    const body = `Programado para: ${timeLabel}`;
+/** Solicita permisos de notificación */
+async function requestNotificationPermission() {
+    if (!('Notification' in window)) {
+        console.log('Este navegador no soporta notificaciones');
+        showSystemMessage('⚠️ Tu navegador no soporta notificaciones', 'error');
+        return false;
+    }
     
-    // Notificación del navegador
-    if ('Notification' in window && Notification.permission === 'granted') {
-        const notification = new Notification(title, {
-            body: body,
+    if (Notification.permission === 'granted') {
+        console.log('Permisos de notificación ya otorgados');
+        return true;
+    }
+    
+    if (Notification.permission === 'denied') {
+        console.log('Permisos de notificación denegados');
+        showSystemMessage('🔕 Las notificaciones están bloqueadas. Por favor, actívalas en la configuración de tu navegador.', 'error');
+        return false;
+    }
+    
+    try {
+        const permission = await Notification.requestPermission();
+        
+        if (permission === 'granted') {
+            console.log('Permisos de notificación otorgados');
+            showSystemMessage('✅ ¡Notificaciones activadas! Recibirás alertas de tus recordatorios', 'success');
+            
+            // Mostrar notificación de prueba SOLO la primera vez
+            const hasShownTestNotification = localStorage.getItem('testNotificationShown');
+            if (!hasShownTestNotification) {
+                showTestNotification();
+                localStorage.setItem('testNotificationShown', 'true');
+            }
+            
+            // Programar notificaciones para recordatorios existentes
+            scheduleAllReminderNotifications();
+            
+            return true;
+        } else {
+            console.log('Permisos de notificación denegados por el usuario');
+            showSystemMessage('⚠️ Has rechazado las notificaciones. No recibirás alertas de tus recordatorios.', 'warning');
+            return false;
+        }
+    } catch (error) {
+        console.error('Error al solicitar permisos de notificación:', error);
+        showSystemMessage('❌ Error al activar notificaciones', 'error');
+        return false;
+    }
+}
+
+/** Muestra una notificación de prueba */
+function showTestNotification() {
+    if (Notification.permission === 'granted') {
+        const notification = new Notification('🎉 ¡Notificaciones Activadas!', {
+            body: 'OrganizApp te enviará recordatorios a tu bandeja de notificaciones',
             icon: './icons/logo-1.png',
             badge: './icons/logo-1.png',
-            tag: `reminder-${item.id}`,
-            requireInteraction: true
+            tag: 'test-notification',
+            vibrate: [200, 100, 200], // Patrón de vibración para móviles
+            requireInteraction: false
         });
         
-        // Cerrar la notificación después de 10 segundos
         setTimeout(() => {
             notification.close();
-        }, 10000);
+        }, 5000);
+    }
+}
+
+/** Muestra una notificación de recordatorio optimizada para móviles */
+async function showReminderNotification(item, timeLabel) {
+    const title = `⏰ ${item.content}`;
+    const body = `Recordatorio: ${timeLabel}`;
+    
+    // Notificación del navegador (funciona en Android/iOS con PWA)
+    if ('Notification' in window && Notification.permission === 'granted') {
+        try {
+            // Si hay service worker registrado, usar showNotification (mejor para móviles)
+            if (serviceWorkerRegistration && serviceWorkerRegistration.showNotification) {
+                await serviceWorkerRegistration.showNotification(title, {
+                    body: body,
+                    icon: './icons/logo-1.png',
+                    badge: './icons/logo-1.png',
+                    tag: `reminder-${item.id}`,
+                    requireInteraction: true,
+                    vibrate: [300, 100, 300, 100, 300], // Patrón de vibración
+                    silent: false,
+                    data: {
+                        itemId: item.id,
+                        type: 'reminder',
+                        url: window.location.href
+                    },
+                    actions: [
+                        {
+                            action: 'view',
+                            title: '👁️ Ver',
+                            icon: './icons/logo-1.png'
+                        },
+                        {
+                            action: 'complete',
+                            title: '✅ Completar',
+                            icon: './icons/logo-1.png'
+                        }
+                    ]
+                });
+            } else {
+                // Fallback para navegadores sin service worker
+                const notification = new Notification(title, {
+                    body: body,
+                    icon: './icons/logo-1.png',
+                    badge: './icons/logo-1.png',
+                    tag: `reminder-${item.id}`,
+                    requireInteraction: true,
+                    vibrate: [300, 100, 300, 100, 300], // Patrón de vibración para móviles
+                    silent: false
+                });
+                
+                // Click en la notificación
+                notification.onclick = function() {
+                    window.focus();
+                    notification.close();
+                    
+                    // Ir al item
+                    const element = document.getElementById(`item-${item.id}`);
+                    if (element) {
+                        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        element.classList.add('highlight-pulse');
+                        setTimeout(() => element.classList.remove('highlight-pulse'), 2000);
+                    }
+                };
+                
+                // Cerrar la notificación después de 30 segundos
+                setTimeout(() => {
+                    notification.close();
+                }, 30000);
+            }
+            
+            // Vibración adicional para móviles
+            if ('vibrate' in navigator) {
+                navigator.vibrate([300, 100, 300]);
+            }
+            
+        } catch (error) {
+            console.error('Error al mostrar notificación:', error);
+        }
     }
     
     // También mostrar mensaje en la app
@@ -418,13 +542,13 @@ function generateWelcomeMessage() {
     // Obtener solo tareas y recordatorios del día (excluir notas y compras)
     const todayItems = items.filter(item => item.date === today);
     const pendingTasks = todayItems.filter(item => item.type === 'Tarea' && item.status === 'pending');
-    const reminders = todayItems.filter(item => item.type === 'Recordatorio');
+    const reminders = todayItems.filter(item => item.type === 'Recordatorio' && (item.status === 'pending' || item.status === 'in-progress'));
 
     // Saludo según la hora
     let greeting = '';
-    if (hour < 12) {
+    if (hour >= 6 && hour < 12) {
         greeting = '¡Buenos días';
-    } else if (hour < 18) {
+    } else if (hour >= 12 && hour < 20) {
         greeting = '¡Buenas tardes';
     } else {
         greeting = '¡Buenas noches';
@@ -3377,6 +3501,137 @@ function updateSummary() {
 
 // --- 4. Funciones del Calendario ---
 
+/** 
+ * Feriados fijos de Chile
+ * Formato: { month: mes (1-12), day: día, name: nombre, irrenunciable: boolean }
+ */
+const FERIADOS_FIJOS_CHILE = [
+    { month: 1, day: 1, name: 'Año Nuevo', irrenunciable: true },
+    { month: 5, day: 1, name: 'Día del Trabajo', irrenunciable: true },
+    { month: 5, day: 21, name: 'Día de las Glorias Navales', irrenunciable: false },
+    { month: 6, day: 29, name: 'San Pedro y San Pablo', irrenunciable: false },
+    { month: 6, day: 20, name: 'Día Nacional de los Pueblos Indígenas', irrenunciable: false },
+    { month: 7, day: 16, name: 'Día de la Virgen del Carmen', irrenunciable: false },
+    { month: 8, day: 15, name: 'Asunción de la Virgen', irrenunciable: false },
+    { month: 9, day: 18, name: 'Día de la Independencia', irrenunciable: true },
+    { month: 9, day: 19, name: 'Día de las Glorias del Ejército', irrenunciable: true },
+    { month: 9, day: 20, name: 'Feriado adicional Fiestas Patrias', irrenunciable: false },
+    { month: 10, day: 12, name: 'Encuentro de Dos Mundos', irrenunciable: false },
+    { month: 10, day: 31, name: 'Día de las Iglesias Evangélicas y Protestantes', irrenunciable: false },
+    { month: 11, day: 1, name: 'Día de Todos los Santos', irrenunciable: false },
+    { month: 12, day: 8, name: 'Inmaculada Concepción', irrenunciable: false },
+    { month: 12, day: 25, name: 'Navidad', irrenunciable: true },
+    { month: 12, day: 31, name: 'Feriado Bancario (Fin de Año)', irrenunciable: false }
+];
+
+/**
+ * Calcula la fecha de Pascua usando el algoritmo de Meeus
+ * @param {number} year - El año para calcular Pascua
+ * @returns {Date} - Fecha de Pascua
+ */
+function calcularPascua(year) {
+    const a = year % 19;
+    const b = Math.floor(year / 100);
+    const c = year % 100;
+    const d = Math.floor(b / 4);
+    const e = b % 4;
+    const f = Math.floor((b + 8) / 25);
+    const g = Math.floor((b - f + 1) / 3);
+    const h = (19 * a + b - d - g + 15) % 30;
+    const i = Math.floor(c / 4);
+    const k = c % 4;
+    const l = (32 + 2 * e + 2 * i - h - k) % 7;
+    const m = Math.floor((a + 11 * h + 22 * l) / 451);
+    const month = Math.floor((h + l - 7 * m + 114) / 31);
+    const day = ((h + l - 7 * m + 114) % 31) + 1;
+    return new Date(year, month - 1, day);
+}
+
+/**
+ * Obtiene todos los feriados de Chile para un año específico
+ * @param {number} year - El año para obtener los feriados
+ * @returns {Array} - Array de feriados con formato { date: 'YYYY-MM-DD', name: string }
+ */
+function obtenerFeriadosChile(year) {
+    const feriados = [];
+    
+    // Agregar feriados fijos
+    FERIADOS_FIJOS_CHILE.forEach(feriado => {
+        const dateStr = `${year}-${String(feriado.month).padStart(2, '0')}-${String(feriado.day).padStart(2, '0')}`;
+        feriados.push({ 
+            date: dateStr, 
+            name: feriado.name, 
+            type: 'fijo',
+            irrenunciable: feriado.irrenunciable 
+        });
+    });
+    
+    // Calcular feriados móviles basados en Pascua
+    const pascua = calcularPascua(year);
+    
+    // Viernes Santo (2 días antes de Pascua)
+    const viernesSanto = new Date(pascua);
+    viernesSanto.setDate(pascua.getDate() - 2);
+    feriados.push({
+        date: `${viernesSanto.getFullYear()}-${String(viernesSanto.getMonth() + 1).padStart(2, '0')}-${String(viernesSanto.getDate()).padStart(2, '0')}`,
+        name: 'Viernes Santo',
+        type: 'movil',
+        irrenunciable: true
+    });
+    
+    // Sábado Santo (1 día antes de Pascua)
+    const sabadoSanto = new Date(pascua);
+    sabadoSanto.setDate(pascua.getDate() - 1);
+    feriados.push({
+        date: `${sabadoSanto.getFullYear()}-${String(sabadoSanto.getMonth() + 1).padStart(2, '0')}-${String(sabadoSanto.getDate()).padStart(2, '0')}`,
+        name: 'Sábado Santo',
+        type: 'movil',
+        irrenunciable: true
+    });
+    
+    // Feriados adicionales si caen en día hábil (lunes puente)
+    // San Pedro y San Pablo (29 de junio) - si cae entre martes y viernes, se traslada al lunes siguiente
+    const sanPedro = new Date(year, 5, 29); // mes 5 = junio (0-indexed)
+    const diaSanPedro = sanPedro.getDay();
+    if (diaSanPedro >= 2 && diaSanPedro <= 5) { // Martes a viernes
+        const siguienteLunes = new Date(sanPedro);
+        siguienteLunes.setDate(sanPedro.getDate() + (8 - diaSanPedro));
+        feriados.push({
+            date: `${siguienteLunes.getFullYear()}-${String(siguienteLunes.getMonth() + 1).padStart(2, '0')}-${String(siguienteLunes.getDate()).padStart(2, '0')}`,
+            name: 'San Pedro y San Pablo (trasladado)',
+            type: 'trasladado',
+            irrenunciable: false
+        });
+    }
+    
+    // Encuentro de Dos Mundos (12 de octubre) - si cae entre martes y viernes, se traslada al lunes siguiente
+    const encuentro = new Date(year, 9, 12); // mes 9 = octubre (0-indexed)
+    const diaEncuentro = encuentro.getDay();
+    if (diaEncuentro >= 2 && diaEncuentro <= 5) { // Martes a viernes
+        const siguienteLunes = new Date(encuentro);
+        siguienteLunes.setDate(encuentro.getDate() + (8 - diaEncuentro));
+        feriados.push({
+            date: `${siguienteLunes.getFullYear()}-${String(siguienteLunes.getMonth() + 1).padStart(2, '0')}-${String(siguienteLunes.getDate()).padStart(2, '0')}`,
+            name: 'Encuentro de Dos Mundos (trasladado)',
+            type: 'trasladado',
+            irrenunciable: false
+        });
+    }
+    
+    return feriados;
+}
+
+/**
+ * Verifica si una fecha es feriado en Chile
+ * @param {string} dateStr - Fecha en formato 'YYYY-MM-DD'
+ * @returns {Object|null} - Objeto con información del feriado o null
+ */
+function esFeriadoChile(dateStr) {
+    const [year] = dateStr.split('-').map(Number);
+    const feriados = obtenerFeriadosChile(year);
+    return feriados.find(f => f.date === dateStr) || null;
+}
+
 /** Renderiza el calendario */
 function renderCalendar() {
     const year = currentDate.getFullYear();
@@ -3416,14 +3671,21 @@ function renderCalendar() {
         const dayItems = items.filter(item => item.date === dateStr);
         const isToday = dateStr === new Date().toISOString().split('T')[0];
         const isSelected = selectedDate === dateStr;
+        const feriadoInfo = esFeriadoChile(dateStr);
         
         let dayClasses = 'calendar-day';
         if (isToday) dayClasses += ' today';
         if (isSelected) dayClasses += ' selected';
         if (dayItems.length > 0) dayClasses += ' has-items';
+        if (feriadoInfo) dayClasses += ' holiday';
         
         calendarHTML += `<div class="${dayClasses}" data-date="${dateStr}">`;
         calendarHTML += `<div class="calendar-day-number">${day}</div>`;
+        
+        // Mostrar feriado si existe
+        if (feriadoInfo) {
+            calendarHTML += `<div class="calendar-holiday-indicator" title="${feriadoInfo.name}">🎉 ${feriadoInfo.name}</div>`;
+        }
         
         // Mostrar hasta 3 elementos del día con colores por tipo
         dayItems.slice(0, 3).forEach(item => {
@@ -3454,6 +3716,7 @@ function renderCalendar() {
 /** Renderiza los detalles del día seleccionado */
 function renderDayDetails(dateStr) {
     const dayItems = items.filter(item => item.date === dateStr);
+    const feriadoInfo = esFeriadoChile(dateStr);
     
     // Corregir el problema de zona horaria parseando la fecha correctamente
     const [year, month, day] = dateStr.split('-').map(Number);
@@ -3468,8 +3731,24 @@ function renderDayDetails(dateStr) {
     
     selectedDayTitle.textContent = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
     
+    // Mostrar información del feriado si existe
+    let feriadoHTML = '';
+    if (feriadoInfo) {
+        feriadoHTML = `
+            <div class="mb-4 p-4 bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 rounded-xl border-2 border-red-200 dark:border-red-800 shadow-md">
+                <div class="flex items-center space-x-3">
+                    <span class="text-3xl">🎉</span>
+                    <div>
+                        <h4 class="text-lg font-bold text-red-700 dark:text-red-300">${feriadoInfo.name}</h4>
+                        <p class="text-sm text-red-600 dark:text-red-400">Feriado en Chile</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
     if (dayItems.length === 0) {
-        selectedDayItems.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-center py-4">No hay elementos para este día.</p>';
+        selectedDayItems.innerHTML = feriadoHTML + '<p class="text-gray-500 dark:text-gray-400 text-center py-4">No hay elementos para este día.</p>';
         return;
     }
     
@@ -3521,7 +3800,7 @@ function renderDayDetails(dateStr) {
         `;
     });
     
-    selectedDayItems.innerHTML = sectionsHTML;
+    selectedDayItems.innerHTML = feriadoHTML + sectionsHTML;
 }
 
 /** Crea el HTML para un elemento individual en la vista del día */
@@ -7341,5 +7620,428 @@ function toggleFolderItemSelection(itemId) {
 // Cargar configuración del versículo diario al cargar la página
 document.addEventListener('DOMContentLoaded', function() {
     loadDailyVerseSettings();
+    
+    // Solicitar permisos de notificación si hay recordatorios
+    setTimeout(() => {
+        const hasReminders = items.some(item => item.type === 'Recordatorio');
+        if (hasReminders && Notification.permission === 'default') {
+            showSystemMessage('💡 Activa las notificaciones para recibir alertas de tus recordatorios en tu celular', 'info');
+            // Esperar 2 segundos antes de solicitar permisos
+            setTimeout(() => {
+                requestNotificationPermission();
+            }, 2000);
+        } else if (Notification.permission === 'granted') {
+            // Reprogramar notificaciones existentes
+            scheduleAllReminderNotifications();
+        }
+    }, 1000);
 });
+
+// ===== MANEJO DE MENSAJES DEL SERVICE WORKER =====
+// Escuchar mensajes del service worker (cuando el usuario hace clic en notificaciones)
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', event => {
+        console.log('[App] Mensaje del Service Worker:', event.data);
+        
+        const { type, itemId } = event.data;
+        
+        if (type === 'COMPLETE_ITEM' && itemId) {
+            // Completar el item
+            const item = items.find(i => i.id === itemId);
+            if (item) {
+                item.status = 'completed';
+                item.updatedAt = Date.now();
+                saveItems();
+                renderList();
+                showSystemMessage(`✅ "${item.content}" marcado como completado`, 'success');
+                
+                // Limpiar notificaciones de este item
+                clearReminderNotifications(itemId);
+            }
+        } else if (type === 'NAVIGATE_TO_ITEM' && itemId) {
+            // Navegar al item
+            const element = document.getElementById(`item-${itemId}`);
+            if (element) {
+                // Cambiar a la vista apropiada
+                if (currentView !== 'todo') {
+                    switchView('todo');
+                }
+                
+                // Scroll al elemento
+                setTimeout(() => {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    element.classList.add('highlight-pulse');
+                    setTimeout(() => element.classList.remove('highlight-pulse'), 2000);
+                }, 500);
+            }
+        }
+    });
+}
+
+// ===== SOLICITAR PERMISOS AL CREAR PRIMER RECORDATORIO =====
+// Interceptar la creación de recordatorios para solicitar permisos
+const originalAddItem = addItem;
+addItem = function(content, type, colorClass, statusClass, date, folderId = null, time = null) {
+    const result = originalAddItem.call(this, content, type, colorClass, statusClass, date, folderId, time);
+    
+    // Si es un recordatorio y no tenemos permisos, solicitarlos
+    if (type === 'Recordatorio' && time && Notification.permission === 'default') {
+        setTimeout(() => {
+            requestNotificationPermission();
+        }, 500);
+    }
+    
+    return result;
+};
+
+// ========================================
+// SISTEMA DE COMPARTIR VERSÍCULOS PERSONALIZADOS
+// ========================================
+
+// Variables globales para personalización
+let currentVerseData = {
+    text: '',
+    reference: '',
+    background: 'fondo1',
+    font: 'serif',
+    color: 'white',
+    align: 'center'
+};
+
+// Referencias a elementos del DOM
+const shareVerseBtn = document.getElementById('share-verse-btn');
+const customizeVerseModal = document.getElementById('customize-verse-modal');
+const closeCustomizeVerseBtn = document.getElementById('close-customize-verse-btn');
+const cancelCustomizeVerseBtn = document.getElementById('cancel-customize-verse-btn');
+const shareCustomizedVerseBtn = document.getElementById('share-customized-verse-btn');
+const versePreviewContainer = document.getElementById('verse-preview-container');
+const versePreviewContent = document.getElementById('verse-preview-content');
+const versePreviewText = document.getElementById('verse-preview-text');
+const versePreviewReference = document.getElementById('verse-preview-reference');
+const customBgInput = document.getElementById('custom-bg-input');
+const uploadCustomBgBtn = document.getElementById('upload-custom-bg-btn');
+
+// Mapeo de fuentes
+const fontFamilies = {
+    'serif': "'Georgia', serif",
+    'sans': "'Arial', sans-serif",
+    'cursive': "'Brush Script MT', cursive",
+    'monospace': "'Courier New', monospace"
+};
+
+// Mapeo de colores
+const textColors = {
+    'white': '#ffffff',
+    'black': '#000000',
+    'gold': '#FFD700'
+};
+
+/** Abre el modal de personalización de versículo */
+function openCustomizeVerseModal() {
+    // Obtener el versículo actual del DOM
+    const verseContent = document.getElementById('verse-content');
+    if (!verseContent) return;
+    
+    const verseTextElement = verseContent.querySelector('p.italic');
+    const verseRefElement = verseContent.querySelector('p.text-sm.mt-2');
+    
+    if (!verseTextElement) {
+        showSystemMessage('⚠️ No hay versículo disponible para compartir', 'warning');
+        return;
+    }
+    
+    // Guardar datos del versículo
+    currentVerseData.text = verseTextElement.textContent.replace(/^[""]|[""]$/g, '').trim();
+    currentVerseData.reference = verseRefElement ? verseRefElement.textContent.trim() : '';
+    
+    // Actualizar vista previa
+    updateVersePreview();
+    
+    // Mostrar modal
+    customizeVerseModal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+/** Cierra el modal de personalización */
+function closeCustomizeVerseModal() {
+    customizeVerseModal.classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+/** Actualiza la vista previa del versículo */
+function updateVersePreview() {
+    // Actualizar fondo
+    const bgUrl = currentVerseData.background.startsWith('data:') 
+        ? currentVerseData.background 
+        : `assets/backgrounds/${currentVerseData.background}.jpg`;
+    versePreviewContainer.style.backgroundImage = `url('${bgUrl}')`;
+    
+    // Actualizar fuente
+    versePreviewContent.style.fontFamily = fontFamilies[currentVerseData.font];
+    
+    // Actualizar color
+    const color = textColors[currentVerseData.color];
+    versePreviewText.style.color = color;
+    versePreviewReference.style.color = color;
+    
+    // Actualizar alineación
+    if (currentVerseData.align === 'center') {
+        versePreviewContent.style.justifyContent = 'center';
+        versePreviewContent.style.paddingBottom = '8rem';
+    } else {
+        versePreviewContent.style.justifyContent = 'flex-end';
+        versePreviewContent.style.paddingBottom = '4rem';
+    }
+    
+    // Actualizar texto
+    versePreviewText.textContent = `"${currentVerseData.text}"`;
+    versePreviewReference.textContent = currentVerseData.reference;
+}
+
+/** Maneja la selección de fondo */
+function handleBackgroundSelection(button) {
+    // Quitar selección de todos los botones
+    document.querySelectorAll('.verse-bg-option').forEach(btn => {
+        btn.classList.remove('active', 'border-amber-500', 'border-4');
+        btn.classList.add('border-gray-300', 'border-2');
+    });
+    
+    // Marcar el seleccionado
+    button.classList.add('active', 'border-amber-500', 'border-4');
+    button.classList.remove('border-gray-300', 'border-2');
+    
+    // Actualizar estado
+    currentVerseData.background = button.getAttribute('data-bg');
+    updateVersePreview();
+}
+
+/** Maneja la selección de fuente */
+function handleFontSelection(button) {
+    // Quitar selección de todos los botones
+    document.querySelectorAll('.verse-font-option').forEach(btn => {
+        btn.classList.remove('active', 'border-amber-500', 'bg-amber-50', 'dark:bg-amber-900/20');
+        btn.classList.add('border-gray-300', 'dark:border-gray-600');
+    });
+    
+    // Marcar el seleccionado
+    button.classList.add('active', 'border-amber-500', 'bg-amber-50', 'dark:bg-amber-900/20');
+    button.classList.remove('border-gray-300', 'dark:border-gray-600');
+    
+    // Actualizar estado
+    currentVerseData.font = button.getAttribute('data-font');
+    updateVersePreview();
+}
+
+/** Maneja la selección de color */
+function handleColorSelection(button) {
+    // Quitar selección de todos los botones
+    document.querySelectorAll('.verse-color-option').forEach(btn => {
+        btn.classList.remove('active', 'border-amber-500', 'border-4');
+        btn.classList.add('border-gray-300', 'border-2');
+    });
+    
+    // Marcar el seleccionado
+    button.classList.add('active', 'border-amber-500', 'border-4');
+    button.classList.remove('border-gray-300', 'border-2');
+    
+    // Actualizar estado
+    currentVerseData.color = button.getAttribute('data-color');
+    updateVersePreview();
+}
+
+/** Maneja la selección de alineación */
+function handleAlignSelection(button) {
+    // Quitar selección de todos los botones
+    document.querySelectorAll('.verse-align-option').forEach(btn => {
+        btn.classList.remove('active', 'border-amber-500', 'bg-amber-50', 'dark:bg-amber-900/20');
+        btn.classList.add('border-gray-300', 'dark:border-gray-600');
+    });
+    
+    // Marcar el seleccionado
+    button.classList.add('active', 'border-amber-500', 'bg-amber-50', 'dark:bg-amber-900/20');
+    button.classList.remove('border-gray-300', 'dark:border-gray-600');
+    
+    // Actualizar estado
+    currentVerseData.align = button.getAttribute('data-align');
+    updateVersePreview();
+}
+
+/** Maneja la carga de imagen personalizada */
+function handleCustomBackgroundUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // Verificar que sea una imagen
+    if (!file.type.startsWith('image/')) {
+        showSystemMessage('⚠️ Por favor selecciona un archivo de imagen válido', 'warning');
+        return;
+    }
+    
+    // Leer la imagen
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        // Actualizar fondo con la imagen personalizada
+        currentVerseData.background = e.target.result;
+        updateVersePreview();
+        
+        // Quitar selección de fondos predefinidos
+        document.querySelectorAll('.verse-bg-option').forEach(btn => {
+            btn.classList.remove('active', 'border-amber-500', 'border-4');
+            btn.classList.add('border-gray-300', 'border-2');
+        });
+        
+        showSystemMessage('✅ Imagen de fondo personalizada cargada', 'success');
+    };
+    reader.readAsDataURL(file);
+}
+
+/** Genera y comparte la imagen del versículo */
+async function shareCustomizedVerse() {
+    try {
+        // Mostrar mensaje de carga
+        shareCustomizedVerseBtn.disabled = true;
+        shareCustomizedVerseBtn.innerHTML = `
+            <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>Generando...</span>
+        `;
+        
+        // Crear un contenedor temporal para html2canvas
+        const tempContainer = document.createElement('div');
+        tempContainer.style.position = 'fixed';
+        tempContainer.style.left = '-9999px';
+        tempContainer.style.width = '1080px';
+        tempContainer.style.height = '1080px';
+        document.body.appendChild(tempContainer);
+        
+        // Clonar el contenido del versículo
+        const clonedContent = versePreviewContainer.cloneNode(true);
+        clonedContent.style.width = '1080px';
+        clonedContent.style.height = '1080px';
+        clonedContent.style.position = 'relative';
+        tempContainer.appendChild(clonedContent);
+        
+        // Generar la imagen con html2canvas
+        const canvas = await html2canvas(clonedContent, {
+            width: 1080,
+            height: 1080,
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: null,
+            logging: false
+        });
+        
+        // Limpiar contenedor temporal
+        document.body.removeChild(tempContainer);
+        
+        // Convertir canvas a blob
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.95));
+        
+        // Intentar compartir usando Web Share API
+        if (navigator.share && navigator.canShare) {
+            const file = new File([blob], 'versiculo.jpg', { type: 'image/jpeg' });
+            
+            if (navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({
+                        files: [file],
+                        title: 'Versículo del Día',
+                        text: currentVerseData.reference
+                    });
+                    
+                    showSystemMessage('✅ Versículo compartido exitosamente', 'success');
+                    closeCustomizeVerseModal();
+                    return;
+                } catch (shareError) {
+                    // Si el usuario cancela, no mostrar error
+                    if (shareError.name === 'AbortError') {
+                        console.log('Usuario canceló compartir');
+                    } else {
+                        console.log('Error al compartir:', shareError);
+                    }
+                }
+            }
+        }
+        
+        // Fallback: descargar la imagen
+        const url = canvas.toDataURL('image/jpeg', 0.95);
+        const link = document.createElement('a');
+        link.download = `versiculo-${Date.now()}.jpg`;
+        link.href = url;
+        link.click();
+        
+        showSystemMessage('📥 Imagen descargada. Compártela desde tu galería', 'success');
+        closeCustomizeVerseModal();
+        
+    } catch (error) {
+        console.error('Error al generar imagen:', error);
+        showSystemMessage('❌ Error al generar la imagen', 'error');
+    } finally {
+        // Restaurar botón
+        shareCustomizedVerseBtn.disabled = false;
+        shareCustomizedVerseBtn.innerHTML = `
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+            </svg>
+            Compartir
+        `;
+    }
+}
+
+// Event Listeners para el sistema de compartir versículos
+if (shareVerseBtn) {
+    shareVerseBtn.addEventListener('click', openCustomizeVerseModal);
+}
+
+if (closeCustomizeVerseBtn) {
+    closeCustomizeVerseBtn.addEventListener('click', closeCustomizeVerseModal);
+}
+
+if (cancelCustomizeVerseBtn) {
+    cancelCustomizeVerseBtn.addEventListener('click', closeCustomizeVerseModal);
+}
+
+if (shareCustomizedVerseBtn) {
+    shareCustomizedVerseBtn.addEventListener('click', shareCustomizedVerse);
+}
+
+// Event listeners para opciones de fondo
+document.querySelectorAll('.verse-bg-option').forEach(button => {
+    button.addEventListener('click', () => handleBackgroundSelection(button));
+});
+
+// Event listeners para opciones de fuente
+document.querySelectorAll('.verse-font-option').forEach(button => {
+    button.addEventListener('click', () => handleFontSelection(button));
+});
+
+// Event listeners para opciones de color
+document.querySelectorAll('.verse-color-option').forEach(button => {
+    button.addEventListener('click', () => handleColorSelection(button));
+});
+
+// Event listeners para opciones de alineación
+document.querySelectorAll('.verse-align-option').forEach(button => {
+    button.addEventListener('click', () => handleAlignSelection(button));
+});
+
+// Event listener para subir imagen personalizada
+if (uploadCustomBgBtn && customBgInput) {
+    uploadCustomBgBtn.addEventListener('click', () => customBgInput.click());
+    customBgInput.addEventListener('change', handleCustomBackgroundUpload);
+}
+
+// Cerrar modal al hacer clic fuera
+if (customizeVerseModal) {
+    customizeVerseModal.addEventListener('click', (e) => {
+        if (e.target === customizeVerseModal) {
+            closeCustomizeVerseModal();
+        }
+    });
+}
+
+console.log('✅ Sistema de compartir versículos personalizados inicializado');
 

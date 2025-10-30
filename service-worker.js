@@ -420,15 +420,66 @@ self.addEventListener('push', event => {
   }
 });
 
-// Manejo de clicks en notificaciones
+// Manejo de clicks en notificaciones (optimizado para móviles)
 self.addEventListener('notificationclick', event => {
+  console.log('[SW] Click en notificación:', event.action, event.notification.data);
+  
+  const notificationData = event.notification.data || {};
+  const urlToOpen = notificationData.url || './';
+  
   event.notification.close();
   
-  if (event.action === 'open' || !event.action) {
+  // Manejar acciones específicas
+  if (event.action === 'complete' && notificationData.itemId) {
+    // Completar el recordatorio
     event.waitUntil(
-      clients.openWindow(event.notification.data?.url || './')
+      clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+        // Buscar ventana ya abierta
+        for (const client of clientList) {
+          if (client.url.includes(urlToOpen.split('?')[0]) && 'focus' in client) {
+            // Enviar mensaje para completar el item
+            client.postMessage({
+              type: 'COMPLETE_ITEM',
+              itemId: notificationData.itemId
+            });
+            return client.focus();
+          }
+        }
+        // Si no hay ventana abierta, abrir una nueva
+        if (clients.openWindow) {
+          return clients.openWindow(urlToOpen);
+        }
+      })
+    );
+  } else if (event.action === 'view' || !event.action) {
+    // Abrir o enfocar la app
+    event.waitUntil(
+      clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+        // Buscar ventana ya abierta
+        for (const client of clientList) {
+          if (client.url.includes(urlToOpen.split('?')[0]) && 'focus' in client) {
+            // Enviar mensaje para ir al item
+            if (notificationData.itemId) {
+              client.postMessage({
+                type: 'NAVIGATE_TO_ITEM',
+                itemId: notificationData.itemId
+              });
+            }
+            return client.focus();
+          }
+        }
+        // Si no hay ventana abierta, abrir una nueva
+        if (clients.openWindow) {
+          return clients.openWindow(urlToOpen);
+        }
+      })
     );
   }
+});
+
+// Manejo de cierre de notificaciones
+self.addEventListener('notificationclose', event => {
+  console.log('[SW] Notificación cerrada:', event.notification.tag);
 });
 
 // === MANEJO DE ERRORES GLOBALES ===

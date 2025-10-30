@@ -185,12 +185,48 @@ body {
     overflow: hidden !important;
 }
 
+/* Estilos para feriados chilenos en el calendario */
+.calendar-day.holiday {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%) !important;
+    border: 2px solid rgba(239, 68, 68, 0.3) !important;
+}
+
+.dark .calendar-day.holiday {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.1) 100%) !important;
+    border: 2px solid rgba(239, 68, 68, 0.5) !important;
+}
+
+.calendar-holiday-indicator {
+    font-size: 0.65rem !important;
+    color: #dc2626;
+    font-weight: 600;
+    background: rgba(254, 226, 226, 0.8);
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+    margin: 0.125rem 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 100% !important;
+    box-sizing: border-box;
+}
+
+.dark .calendar-holiday-indicator {
+    color: #fca5a5;
+    background: rgba(127, 29, 29, 0.5);
+}
+
 /* Mejorar responsive del calendario */
 @media (max-width: 640px) {
     .calendar-item-preview {
         font-size: 0.625rem;
         padding: 0.125rem;
         max-width: 100% !important;
+    }
+    
+    .calendar-holiday-indicator {
+        font-size: 0.55rem !important;
+        padding: 0.1rem 0.2rem;
     }
     
     .calendar-day-number {
@@ -200,6 +236,36 @@ body {
     .calendar-day {
         padding: 0.25rem !important;
     }
+}
+
+/* Animación para resaltar elementos cuando se navega desde notificaciones */
+@keyframes highlight-pulse {
+    0%, 100% {
+        background-color: transparent;
+        transform: scale(1);
+    }
+    25% {
+        background-color: rgba(34, 197, 94, 0.2);
+        transform: scale(1.02);
+    }
+    50% {
+        background-color: rgba(34, 197, 94, 0.3);
+        transform: scale(1.03);
+    }
+    75% {
+        background-color: rgba(34, 197, 94, 0.2);
+        transform: scale(1.02);
+    }
+}
+
+.highlight-pulse {
+    animation: highlight-pulse 2s ease-in-out;
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.5), 0 0 20px rgba(34, 197, 94, 0.3);
+    border-radius: 12px;
+}
+
+.dark .highlight-pulse {
+    box-shadow: 0 0 0 4px rgba(74, 222, 128, 0.5), 0 0 20px rgba(74, 222, 128, 0.3);
 }
 
 /* Forzar que el body y html no permitan scroll horizontal */
