@@ -23,7 +23,7 @@ let lastLoginDate = null; // Último día que el usuario abrió la app
 let streakCount = 0; // Días consecutivos de uso
 
 // Variables del sistema de actualizaciones
-const APP_VERSION = '2.0.9'; // Emoji picker mejorado y modal scrollable
+const APP_VERSION = '2.1.0'; // Export idéntica a vista previa + emoji picker completo + sin color personalizado
 let lastKnownVersion = null; // Última versión conocida por el usuario
 
 // Variables del sistema de PWA y Service Worker
@@ -7885,10 +7885,8 @@ function updateVersePreview() {
     // Actualizar fuente
     versePreviewContent.style.fontFamily = fontFamilies[currentVerseData.font];
     
-    // Actualizar color (soporta colores predefinidos y personalizados hex)
-    const color = currentVerseData.color.startsWith('#') 
-        ? currentVerseData.color 
-        : textColors[currentVerseData.color];
+    // Actualizar color (solo predefinidos; si no, usar blanco)
+    const color = textColors[currentVerseData.color] || '#ffffff';
     versePreviewText.style.color = color;
     versePreviewReference.style.color = color;
     
