@@ -4591,8 +4591,9 @@ if (importBtn) {
     importBtn.addEventListener('click', importFile);
 }
 
-/** Event listener para compartir versículo */
-document.getElementById('share-verse-btn').addEventListener('click', shareVerse);
+/** Event listener para compartir versículo - MOVIDO AL FINAL DEL ARCHIVO */
+// Este listener ahora está en el sistema de compartir versículos personalizados (línea ~7990)
+// document.getElementById('share-verse-btn').addEventListener('click', shareVerse);
 
 /** Event listeners para selectores de emoji de carpetas */
 document.addEventListener('click', (e) => {
@@ -5748,15 +5749,18 @@ function displayDailyVerse() {
 }
 
 /**
- * COMPARTE EL VERSÍCULO DEL DÍA
+ * COMPARTE EL VERSÍCULO DEL DÍA COMO TEXTO (SIN IMAGEN)
  */
-async function shareVerse() {
-    if (!currentVerse) {
+async function shareVerseAsText(verseData = null) {
+    // Si no se proporciona verseData, usar currentVerse
+    const verse = verseData || currentVerse;
+    
+    if (!verse || !verse.texto) {
         showSystemMessage("No hay versículo para compartir", 'error');
         return;
     }
     
-    const shareText = `📖 Versículo del Día - OrganizApp\n\n"${currentVerse.texto}"\n— ${currentVerse.cita}\n\nCompartido desde OrganizApp`;
+    const shareText = `📖 Versículo del Día - OrganizApp\n\n"${verse.texto}"\n— ${verse.cita}\n\nCompartido desde OrganizApp`;
     
     if (navigator.share) {
         try {
@@ -5764,7 +5768,7 @@ async function shareVerse() {
                 title: 'Versículo del Día',
                 text: shareText
             });
-            showSystemMessage("Versículo compartido exitosamente");
+            showSystemMessage("✅ Versículo compartido exitosamente", 'success');
         } catch (error) {
             if (error.name !== 'AbortError') {
                 console.error('Error al compartir:', error);
@@ -5775,7 +5779,7 @@ async function shareVerse() {
         // Fallback para escritorio
         try {
             await navigator.clipboard.writeText(shareText);
-            showSystemMessage("Versículo copiado al portapapeles");
+            showSystemMessage("📋 Versículo copiado al portapapeles", 'success');
         } catch (error) {
             console.error('Error al copiar:', error);
             showSystemMessage("Tu navegador no permite compartir directamente. El versículo es:\n\n" + shareText, 'info');
@@ -7184,18 +7188,34 @@ function searchVerses(searchTerm) {
                         <p class="text-gray-800 dark:text-gray-200 text-sm leading-relaxed mb-2">"${verse.texto}"</p>
                         <p class="text-purple-600 dark:text-purple-400 font-medium text-xs">— ${verse.cita}</p>
                     </div>
-                    <button class="share-verse-found-btn ml-3 p-2 text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-200 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-lg transition-all duration-200" data-verse='${JSON.stringify(verse)}' title="Compartir versículo">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
-                        </svg>
-                    </button>
+                    <div class="flex gap-2 ml-3">
+                        <button class="share-verse-text-found-btn p-2 text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-200 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-lg transition-all duration-200" data-verse='${JSON.stringify(verse)}' title="Compartir como texto">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                            </svg>
+                        </button>
+                        <button class="share-verse-found-btn p-2 text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-200 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-lg transition-all duration-200" data-verse='${JSON.stringify(verse)}' title="Compartir como imagen">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             `;
             
             versesList.appendChild(verseCard);
         });
         
-        // Agregar event listeners para compartir
+        // Agregar event listeners para compartir como texto
+        versesList.querySelectorAll('.share-verse-text-found-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const verseData = JSON.parse(btn.getAttribute('data-verse'));
+                shareVerseAsText(verseData);
+            });
+        });
+        
+        // Agregar event listeners para compartir como imagen
         versesList.querySelectorAll('.share-verse-found-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -7751,6 +7771,11 @@ function openCustomizeVerseModal() {
     // Actualizar vista previa
     updateVersePreview();
     
+    // Ocultar el botón flotante (+)
+    if (fab) {
+        fab.style.display = 'none';
+    }
+    
     // Mostrar modal
     customizeVerseModal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
@@ -7760,6 +7785,11 @@ function openCustomizeVerseModal() {
 function closeCustomizeVerseModal() {
     customizeVerseModal.classList.add('hidden');
     document.body.style.overflow = '';
+    
+    // Mostrar el botón flotante (+) de nuevo
+    if (fab) {
+        fab.style.display = '';
+    }
 }
 
 /** Actualiza la vista previa del versículo */
@@ -7902,25 +7932,26 @@ async function shareCustomizedVerse() {
             <span>Generando...</span>
         `;
         
-        // Crear un contenedor temporal para html2canvas
+        // Crear un contenedor temporal para html2canvas (formato vertical 1080x1920)
         const tempContainer = document.createElement('div');
         tempContainer.style.position = 'fixed';
         tempContainer.style.left = '-9999px';
         tempContainer.style.width = '1080px';
-        tempContainer.style.height = '1080px';
+        tempContainer.style.height = '1920px';
         document.body.appendChild(tempContainer);
         
         // Clonar el contenido del versículo
         const clonedContent = versePreviewContainer.cloneNode(true);
         clonedContent.style.width = '1080px';
-        clonedContent.style.height = '1080px';
+        clonedContent.style.height = '1920px';
         clonedContent.style.position = 'relative';
+        clonedContent.style.borderRadius = '0'; // Sin bordes redondeados en la exportación
         tempContainer.appendChild(clonedContent);
         
-        // Generar la imagen con html2canvas
+        // Generar la imagen con html2canvas (1080x1920 - Stories/Reels format)
         const canvas = await html2canvas(clonedContent, {
             width: 1080,
-            height: 1080,
+            height: 1920,
             scale: 2,
             useCORS: true,
             allowTaint: true,
@@ -7986,6 +8017,12 @@ async function shareCustomizedVerse() {
 }
 
 // Event Listeners para el sistema de compartir versículos
+const shareVerseTextBtn = document.getElementById('share-verse-text-btn');
+
+if (shareVerseTextBtn) {
+    shareVerseTextBtn.addEventListener('click', () => shareVerseAsText());
+}
+
 if (shareVerseBtn) {
     shareVerseBtn.addEventListener('click', openCustomizeVerseModal);
 }
@@ -8038,4 +8075,33 @@ if (customizeVerseModal) {
 }
 
 console.log('✅ Sistema de compartir versículos personalizados inicializado');
+
+/** Comparte un versículo encontrado en el modal "Encontrar Versículo" */
+function shareFoundVerse(verseData) {
+    if (!verseData || !verseData.texto) {
+        showSystemMessage('⚠️ No se puede compartir este versículo', 'warning');
+        return;
+    }
+    
+    // Cerrar el modal de "Encontrar Versículo" primero
+    if (foundMyVerseModal) {
+        foundMyVerseModal.classList.add('hidden');
+    }
+    
+    // Actualizar los datos del versículo para el modal de personalización
+    currentVerseData.text = verseData.texto.trim();
+    currentVerseData.reference = verseData.cita.trim();
+    
+    // Actualizar vista previa
+    updateVersePreview();
+    
+    // Ocultar el botón flotante (+)
+    if (fab) {
+        fab.style.display = 'none';
+    }
+    
+    // Mostrar modal de personalización
+    customizeVerseModal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
 
