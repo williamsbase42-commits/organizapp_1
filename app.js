@@ -23,7 +23,7 @@ let lastLoginDate = null; // Último día que el usuario abrió la app
 let streakCount = 0; // Días consecutivos de uso
 
 // Variables del sistema de actualizaciones
-const APP_VERSION = '2.0.8'; // Fix: Tamaño de logo en imágenes exportadas aumentado significativamente
+const APP_VERSION = '2.0.9'; // Emoji picker mejorado y modal scrollable
 let lastKnownVersion = null; // Última versión conocida por el usuario
 
 // Variables del sistema de PWA y Service Worker
@@ -598,7 +598,6 @@ function generateWelcomeMessage() {
 
     return message;
 }
-
 /** Obtiene el tip del día que cambia realmente una vez por día */
 function getDailyTip() {
     const today = new Date().toISOString().split('T')[0];
@@ -900,6 +899,90 @@ function getSelectedFolderEmoji(selectorClass) {
 function getSelectedEditFolderEmoji(selectorClass) {
     const selectedEmoji = document.querySelector(`.${selectorClass}.ring-2`);
     return selectedEmoji ? selectedEmoji.getAttribute('data-emoji') : '📁';
+}
+
+/** Modal selector de emojis (3 columnas) */
+const emojiPickerModal = document.getElementById('emoji-picker-modal');
+const emojiPickerGrid = document.getElementById('emoji-picker-grid');
+const openCreateEmojiPickerBtn = document.getElementById('open-folder-emoji-picker-btn');
+const openEditEmojiPickerBtn = document.getElementById('open-edit-folder-emoji-picker-btn');
+const closeEmojiPickerBtn = document.getElementById('close-emoji-picker-btn');
+const closeEmojiPickerFooterBtn = document.getElementById('close-emoji-picker-footer-btn');
+let emojiPickerTargetClass = 'folder-emoji-option';
+
+// Lista ampliada de emojis (se pueden agregar más fácilmente aquí)
+const ALL_FOLDER_EMOJIS = [
+    // General
+    '📁','📂','🗂️','📋','📝','📄','📌','📎','📇','🗃️','🗄️',
+    // Trabajo/Oficina
+    '💼','🏢','🏆','📊','📈','💰','💳','💵','🧾','🗓️','📅','🗒️','📠','🖨️',
+    // Hogar/Familia
+    '🏠','🏡','👨‍👩‍👧‍👦','👶','🛋️','🔑','🧸','🛏️','🪑',
+    // Educación
+    '🎓','📚','📖','✏️','🖊️','🎒','📐','📏','🧮','🧪',
+    // Tecnología
+    '💻','🖥️','⌨️','🖱️','📱','📲','🔌','🔋','🧰','🛠️','⚙️',
+    // Salud/Fitness
+    '🏥','💊','💉','🏃','💪','🧘','🚴','⚽','🏀','🏈','🏊',
+    // Comida/Bebida
+    '🍕','🍔','🍰','☕','🥗','🍎','🥑','🍙','🍣','🍪','🍩','🍫','🍜',
+    // Viajes
+    '✈️','🌍','🗺️','🚗','🏖️','🏔️','🧳','🚆','🛳️',
+    // Arte/Creatividad
+    '🎨','🖌️','🎭','🎬','📸','🎵','🎸','🎤','🎧','🖼️',
+    // Compras
+    '🛒','🛍️','🏪','🏷️','💸',
+    // Personal/Emociones
+    '❤️','💙','💚','💛','💜','😊','🌟','⭐','✨','😎','🤩','🙌','👍',
+    // Objetivos/Motivación
+    '🎯','💡','🚀','🔥','⚡','📌',
+    // Naturaleza/Animales
+    '🌸','🌻','🌳','🦋','🐱','🐶','🐾','🌈','🌿','🍀',
+    // Fe/Espiritualidad
+    '✝️','🙏','⛪','☮️','🕊️',
+    // Especiales
+    '🎁','🎉','🎂','🔒','⚠️','♻️','🔍','📦','🗑️'
+];
+
+function renderEmojiPickerGrid(targetClass) {
+    if (!emojiPickerGrid) return;
+    emojiPickerGrid.innerHTML = ALL_FOLDER_EMOJIS.map(e => `
+        <button type="button" class="${targetClass} w-full aspect-square rounded-xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-700 dark:to-gray-800 border-2 border-gray-200 dark:border-gray-600 hover:shadow-lg transition-all duration-200 flex items-center justify-center text-2xl active:scale-95" data-emoji="${e}" title="${e}">${e}</button>
+    `).join('');
+}
+
+function openEmojiPicker(targetClass) {
+    emojiPickerTargetClass = targetClass;
+    renderEmojiPickerGrid(targetClass);
+    if (emojiPickerModal) emojiPickerModal.classList.remove('hidden');
+}
+
+function closeEmojiPicker() {
+    if (emojiPickerModal) emojiPickerModal.classList.add('hidden');
+}
+
+if (openCreateEmojiPickerBtn) {
+    openCreateEmojiPickerBtn.addEventListener('click', () => openEmojiPicker('folder-emoji-option'));
+}
+
+if (openEditEmojiPickerBtn) {
+    openEditEmojiPickerBtn.addEventListener('click', () => openEmojiPicker('edit-folder-emoji-option'));
+}
+
+if (closeEmojiPickerBtn) {
+    closeEmojiPickerBtn.addEventListener('click', closeEmojiPicker);
+}
+
+if (closeEmojiPickerFooterBtn) {
+    closeEmojiPickerFooterBtn.addEventListener('click', closeEmojiPicker);
+}
+
+if (emojiPickerModal) {
+    emojiPickerModal.addEventListener('click', (e) => {
+        if (e.target === emojiPickerModal) {
+            closeEmojiPicker();
+        }
+    });
 }
 
 /** Obtiene el estilo de color para iconos */
@@ -1248,7 +1331,6 @@ function toggleSelectAll() {
     updateSelectionUI();
     updateSelectAllButtonText();
 }
-
 /** Actualiza el texto del botón de seleccionar todo */
 function updateSelectAllButtonText() {
     const selectAllBtn = document.getElementById('select-all-btn');
@@ -1881,7 +1963,6 @@ function performWeeklyArchive() {
         showSystemMessage(`📦 Archivo semanal completado: ${archivedCount} tareas movidas a "Terminado"`);
     }
 }
-
 /** Calcula las métricas de productividad */
 function calculateProductivityMetrics() {
     const now = new Date();
@@ -2460,7 +2541,6 @@ function createFolderCardHtml(folder, itemsCount) {
         </div>
     `;
 }
-
 /** Crea el HTML para un elemento individual */
 function createItemHtml(item) {
     const colorConfig = getColorConfig(item.color);
@@ -3085,7 +3165,6 @@ async function initializeServiceWorker() {
         console.log('[PWA] Service Worker no soportado en este navegador');
     }
 }
-
 /** Maneja mensajes del Service Worker - CRÍTICO para actualización automática */
 function handleServiceWorkerMessage(event) {
     const data = event.data;
@@ -3712,7 +3791,6 @@ function renderCalendar() {
         });
     });
 }
-
 /** Renderiza los detalles del día seleccionado */
 function renderDayDetails(dateStr) {
     const dayItems = items.filter(item => item.date === dateStr);
@@ -4329,7 +4407,6 @@ colorSelector.addEventListener('change', (e) => {
         e.target.classList.add('ring-2', 'ring-blue-500');
     }
 });
-
 /** Manejador de eventos delegados para la lista (completar, editar, eliminar) */
 itemList.addEventListener('click', (e) => {
     // Ignorar clicks en checkboxes
@@ -4610,6 +4687,11 @@ document.addEventListener('click', (e) => {
         
         // Marcar como seleccionado
         emojiBtn.classList.add('ring-2', 'ring-green-500', 'bg-green-100', 'dark:bg-green-900/30');
+
+        // Si estamos dentro del modal de picker, cerrarlo
+        if (emojiPickerModal && !emojiPickerModal.classList.contains('hidden') && emojiPickerModal.contains(emojiBtn)) {
+            closeEmojiPicker();
+        }
     }
     
     // Selector de emoji para editar carpeta
@@ -4625,6 +4707,11 @@ document.addEventListener('click', (e) => {
         
         // Marcar como seleccionado
         emojiBtn.classList.add('ring-2', 'ring-orange-500', 'bg-orange-100', 'dark:bg-orange-900/30');
+
+        // Si estamos dentro del modal de picker, cerrarlo
+        if (emojiPickerModal && !emojiPickerModal.classList.contains('hidden') && emojiPickerModal.contains(emojiBtn)) {
+            closeEmojiPicker();
+        }
     }
 });
 
@@ -4977,7 +5064,6 @@ if (folderColorSelector) {
         }
     });
 }
-
 if (editFolderColorSelector) {
     editFolderColorSelector.addEventListener('click', (e) => {
         if (e.target.classList.contains('edit-folder-color-option')) {
@@ -5583,7 +5669,6 @@ async function installApp() {
     deferredPrompt = null;
     hideInstallButton();
 }
-
 /** Muestra notificación de actualización */
 function showUpdateNotification() {
     const updateNotification = document.createElement('div');
@@ -6212,7 +6297,6 @@ function handleConfirmAccessKey() {
         keyInput.focus();
     }
 }
-
 /**
 /**
  * Abre el modal para eliminar clave de acceso (requiere confirmación con clave actual)
@@ -6839,7 +6923,6 @@ function updateVerseWidgetVisibility() {
         }
     }
 }
-
 // ===== FUNCIONES PARA FOUND MY VERSE =====
 
 /**
@@ -7478,7 +7561,6 @@ function toggleFolderSelectionMode() {
         renderFolderItems(selectedFolderId);
     }
 }
-
 /** Selecciona todos los elementos de la carpeta */
 function selectAllFolderItems() {
     if (!selectedFolderId) return;
@@ -7803,8 +7885,10 @@ function updateVersePreview() {
     // Actualizar fuente
     versePreviewContent.style.fontFamily = fontFamilies[currentVerseData.font];
     
-    // Actualizar color
-    const color = textColors[currentVerseData.color];
+    // Actualizar color (soporta colores predefinidos y personalizados hex)
+    const color = currentVerseData.color.startsWith('#') 
+        ? currentVerseData.color 
+        : textColors[currentVerseData.color];
     versePreviewText.style.color = color;
     versePreviewReference.style.color = color;
     
@@ -7857,7 +7941,7 @@ function handleFontSelection(button) {
 }
 
 /** Maneja la selección de color */
-function handleColorSelection(button) {
+function handleColorSelection(button, customColor = null) {
     // Quitar selección de todos los botones
     document.querySelectorAll('.verse-color-option').forEach(btn => {
         btn.classList.remove('active', 'border-amber-500', 'border-4');
@@ -7869,7 +7953,12 @@ function handleColorSelection(button) {
     button.classList.remove('border-gray-300', 'border-2');
     
     // Actualizar estado
-    currentVerseData.color = button.getAttribute('data-color');
+    const colorValue = button.getAttribute('data-color');
+    if (colorValue === 'custom' && customColor) {
+        currentVerseData.color = customColor;
+    } else {
+        currentVerseData.color = colorValue;
+    }
     updateVersePreview();
 }
 
@@ -7947,56 +8036,75 @@ async function shareCustomizedVerse() {
         clonedContent.style.position = 'relative';
         clonedContent.style.borderRadius = '0'; // Sin bordes redondeados en la exportación
         
-        // Escalar proporcionalmente 4x (1080÷270 = 4) para mantener vista previa
+        // Escalar proporcionalmente 4x (1080÷270 = 4) OPTIMIZADO para versículos largos
         const textElement = clonedContent.querySelector('#verse-preview-text');
         const referenceElement = clonedContent.querySelector('#verse-preview-reference');
         const contentElement = clonedContent.querySelector('#verse-preview-content');
         const logoElement = clonedContent.querySelector('.absolute.bottom-4');
         
         if (textElement) {
-            textElement.style.fontSize = '96px'; // 24px * 4
-            textElement.style.lineHeight = '1.5';
-            textElement.style.marginBottom = '64px'; // 16px * 4
-            textElement.style.padding = '0 128px'; // 32px * 4
+            textElement.style.fontSize = '68px'; // Reducido para evitar sobreposición
+            textElement.style.lineHeight = '1.35'; // Ajustado para mejor espaciado
+            textElement.style.marginBottom = '48px'; // 12px * 4
+            textElement.style.padding = '0 100px'; // Reducido padding lateral
             textElement.style.fontWeight = '600';
+            textElement.style.wordWrap = 'break-word';
+            textElement.style.overflowWrap = 'break-word';
         }
         
         if (referenceElement) {
-            referenceElement.style.fontSize = '64px'; // 16px * 4
-            referenceElement.style.padding = '0 128px';
+            referenceElement.style.fontSize = '52px'; // 13px * 4
+            referenceElement.style.padding = '0 100px';
+            referenceElement.style.marginTop = '32px';
         }
         
         if (contentElement) {
-            contentElement.style.padding = '128px'; // 32px * 4
+            contentElement.style.padding = '100px 80px'; // Ajustado para mejor distribución
+            contentElement.style.paddingBottom = '300px'; // Más espacio para sello elevado
+            contentElement.style.justifyContent = 'center';
         }
         
-        if (logoElement) {
-            // Escalar EXTRA GRANDE para que sea legible en 1080x1920
-            logoElement.style.bottom = '60px';
-            logoElement.style.left = '50%';
-            logoElement.style.transform = 'translateX(-50%)';
-            logoElement.style.padding = '32px 64px'; // Más grande
-            logoElement.style.borderRadius = '100px';
-            logoElement.style.boxShadow = '0 12px 40px rgba(0,0,0,0.4)';
-            logoElement.style.display = 'flex';
-            logoElement.style.flexDirection = 'row';
-            logoElement.style.alignItems = 'center';
-            logoElement.style.gap = '32px'; // Más espacio
-            logoElement.style.whiteSpace = 'nowrap';
-            logoElement.style.borderWidth = '4px';
-            
-            // Texto MUCHO MÁS GRANDE
-            const logoEmoji = logoElement.querySelector('span:first-child');
-            const logoText = logoElement.querySelector('span:last-child');
-            if (logoEmoji) {
-                logoEmoji.style.fontSize = '80px'; // EMOJI GRANDE
-            }
-            if (logoText) {
-                logoText.style.fontSize = '72px'; // TEXTO MUCHO MÁS GRANDE
-                logoText.style.letterSpacing = '0.05em';
-                logoText.style.fontWeight = '700';
-            }
-        }
+        // ELIMINAR cualquier sello previo de "Compartido desde OrganizApp" del clon
+        Array.from(clonedContent.querySelectorAll('div'))
+            .filter(el => typeof el.textContent === 'string' && el.textContent.includes('Compartido desde OrganizApp'))
+            .forEach(el => el.remove());
+        
+        // CREAR NUEVO LOGO con tamaño optimizado
+        const newLogo = document.createElement('div');
+        newLogo.style.position = 'absolute';
+        newLogo.style.bottom = '220px';
+        newLogo.style.left = '50%';
+        newLogo.style.transform = 'translateX(-50%)';
+        newLogo.style.background = 'linear-gradient(to right, #2563eb, #9333ea)';
+        newLogo.style.padding = '10px 28px';
+        newLogo.style.borderRadius = '100px';
+        newLogo.style.boxShadow = '0 12px 40px rgba(0,0,0,0.5)';
+        newLogo.style.display = 'flex';
+        newLogo.style.flexDirection = 'row';
+        newLogo.style.alignItems = 'center';
+        newLogo.style.justifyContent = 'center';
+        newLogo.style.gap = '10px';
+        newLogo.style.whiteSpace = 'nowrap';
+        newLogo.style.border = '2px solid rgba(255,255,255,0.3)';
+        
+        // Emoji
+        const emojiSpan = document.createElement('span');
+        emojiSpan.textContent = '✨';
+        emojiSpan.style.fontSize = '32px';
+        emojiSpan.style.lineHeight = '1';
+        
+        // Texto
+        const textSpan = document.createElement('span');
+        textSpan.textContent = 'Compartido desde OrganizApp';
+        textSpan.style.fontSize = '32px';
+        textSpan.style.fontWeight = '700';
+        textSpan.style.color = '#ffffff';
+        textSpan.style.letterSpacing = '0.05em';
+        textSpan.style.lineHeight = '1';
+        
+        newLogo.appendChild(emojiSpan);
+        newLogo.appendChild(textSpan);
+        clonedContent.appendChild(newLogo);
         
         tempContainer.appendChild(clonedContent);
         
@@ -8102,11 +8210,24 @@ document.querySelectorAll('.verse-bg-option').forEach(button => {
 document.querySelectorAll('.verse-font-option').forEach(button => {
     button.addEventListener('click', () => handleFontSelection(button));
 });
-
 // Event listeners para opciones de color
 document.querySelectorAll('.verse-color-option').forEach(button => {
     button.addEventListener('click', () => handleColorSelection(button));
 });
+
+// Event listener para color personalizado
+const customColorInput = document.getElementById('custom-color-input');
+const customColorButton = document.getElementById('custom-color-button');
+if (customColorInput && customColorButton) {
+    customColorInput.addEventListener('input', (e) => {
+        const selectedColor = e.target.value;
+        handleColorSelection(customColorButton, selectedColor);
+    });
+    customColorInput.addEventListener('change', (e) => {
+        const selectedColor = e.target.value;
+        handleColorSelection(customColorButton, selectedColor);
+    });
+}
 
 // Event listeners para opciones de alineación
 document.querySelectorAll('.verse-align-option').forEach(button => {
@@ -8129,6 +8250,135 @@ if (customizeVerseModal) {
 }
 
 console.log('✅ Sistema de compartir versículos personalizados inicializado');
+
+// Descargar imagen del versículo (botón explícito)
+const downloadCustomizedVerseBtn = document.getElementById('download-customized-verse-btn');
+
+async function downloadCustomizedVerse() {
+    try {
+        if (!versePreviewContainer) return;
+        if (downloadCustomizedVerseBtn) {
+            downloadCustomizedVerseBtn.disabled = true;
+            downloadCustomizedVerseBtn.textContent = 'Generando...';
+        }
+
+        // Contenedor temporal 1080x1920
+        const tempContainer = document.createElement('div');
+        tempContainer.style.position = 'fixed';
+        tempContainer.style.left = '-9999px';
+        tempContainer.style.width = '1080px';
+        tempContainer.style.height = '1920px';
+        document.body.appendChild(tempContainer);
+
+        // Clonar y preparar
+        const clonedContent = versePreviewContainer.cloneNode(true);
+        clonedContent.style.width = '1080px';
+        clonedContent.style.height = '1920px';
+        clonedContent.style.position = 'relative';
+        clonedContent.style.borderRadius = '0';
+
+        // Ajustes de tipografía como en shareCustomizedVerse
+        const textElement = clonedContent.querySelector('#verse-preview-text');
+        const referenceElement = clonedContent.querySelector('#verse-preview-reference');
+        const contentElement = clonedContent.querySelector('#verse-preview-content');
+        const logoElement = clonedContent.querySelector('.absolute.bottom-4');
+
+        if (textElement) {
+            textElement.style.fontSize = '68px';
+            textElement.style.lineHeight = '1.35';
+            textElement.style.marginBottom = '48px';
+            textElement.style.padding = '0 100px';
+            textElement.style.fontWeight = '600';
+            textElement.style.wordWrap = 'break-word';
+            textElement.style.overflowWrap = 'break-word';
+        }
+        if (referenceElement) {
+            referenceElement.style.fontSize = '52px';
+            referenceElement.style.padding = '0 100px';
+            referenceElement.style.marginTop = '32px';
+        }
+        if (contentElement) {
+            contentElement.style.padding = '100px 80px';
+            contentElement.style.paddingBottom = '300px';
+            contentElement.style.justifyContent = 'center';
+        }
+
+        // Eliminar sello previo y agregar el actual pequeño
+        Array.from(clonedContent.querySelectorAll('div'))
+            .filter(el => typeof el.textContent === 'string' && el.textContent.includes('Compartido desde OrganizApp'))
+            .forEach(el => el.remove());
+
+        const newLogo = document.createElement('div');
+        newLogo.style.position = 'absolute';
+        newLogo.style.bottom = '220px';
+        newLogo.style.left = '50%';
+        newLogo.style.transform = 'translateX(-50%)';
+        newLogo.style.background = 'linear-gradient(to right, #2563eb, #9333ea)';
+        newLogo.style.padding = '10px 28px';
+        newLogo.style.borderRadius = '100px';
+        newLogo.style.boxShadow = '0 12px 40px rgba(0,0,0,0.5)';
+        newLogo.style.display = 'flex';
+        newLogo.style.flexDirection = 'row';
+        newLogo.style.alignItems = 'center';
+        newLogo.style.justifyContent = 'center';
+        newLogo.style.gap = '10px';
+        newLogo.style.whiteSpace = 'nowrap';
+        newLogo.style.border = '2px solid rgba(255,255,255,0.3)';
+
+        const emojiSpan = document.createElement('span');
+        emojiSpan.textContent = '✨';
+        emojiSpan.style.fontSize = '32px';
+        emojiSpan.style.lineHeight = '1';
+
+        const textSpan = document.createElement('span');
+        textSpan.textContent = 'Compartido desde OrganizApp';
+        textSpan.style.fontSize = '32px';
+        textSpan.style.fontWeight = '700';
+        textSpan.style.color = '#ffffff';
+        textSpan.style.letterSpacing = '0.05em';
+        textSpan.style.lineHeight = '1';
+
+        newLogo.appendChild(emojiSpan);
+        newLogo.appendChild(textSpan);
+        clonedContent.appendChild(newLogo);
+        tempContainer.appendChild(clonedContent);
+
+        const canvas = await html2canvas(clonedContent, {
+            width: 1080,
+            height: 1920,
+            scale: 1,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: null,
+            logging: false,
+            windowWidth: 1080,
+            windowHeight: 1920
+        });
+
+        document.body.removeChild(tempContainer);
+
+        // Descargar
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+        const a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = 'versiculo_organizapp.jpg';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    } catch (e) {
+        console.error('Error al descargar imagen:', e);
+        showSystemMessage('Error al generar la imagen', 'error');
+    } finally {
+        if (downloadCustomizedVerseBtn) {
+            downloadCustomizedVerseBtn.disabled = false;
+            downloadCustomizedVerseBtn.textContent = 'Descargar';
+        }
+    }
+}
+
+if (downloadCustomizedVerseBtn) {
+    downloadCustomizedVerseBtn.addEventListener('click', downloadCustomizedVerse);
+}
 
 /** Comparte un versículo encontrado en el modal "Encontrar Versículo" */
 function shareFoundVerse(verseData) {
@@ -8158,4 +8408,3 @@ function shareFoundVerse(verseData) {
     customizeVerseModal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
 }
-
