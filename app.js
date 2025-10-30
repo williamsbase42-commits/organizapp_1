@@ -7947,40 +7947,40 @@ async function shareCustomizedVerse() {
         clonedContent.style.position = 'relative';
         clonedContent.style.borderRadius = '0'; // Sin bordes redondeados en la exportación
         
-        // Escalar el contenido del texto (4x porque 1080/270 = 4)
-        const scaleRatio = 4;
+        // Escalar proporcionalmente 4x (1080÷270 = 4) para mantener vista previa
         const textElement = clonedContent.querySelector('#verse-preview-text');
         const referenceElement = clonedContent.querySelector('#verse-preview-reference');
         const contentElement = clonedContent.querySelector('#verse-preview-content');
         const logoElement = clonedContent.querySelector('.absolute.bottom-4');
         
         if (textElement) {
-            textElement.style.fontSize = '80px'; // Aproximadamente 20px * 4
-            textElement.style.lineHeight = '1.4';
-            textElement.style.marginBottom = '40px';
-            textElement.style.padding = '0 60px';
+            textElement.style.fontSize = '96px'; // 24px * 4
+            textElement.style.lineHeight = '1.5';
+            textElement.style.marginBottom = '64px'; // 16px * 4
+            textElement.style.padding = '0 128px'; // 32px * 4
+            textElement.style.fontWeight = '600';
         }
         
         if (referenceElement) {
-            referenceElement.style.fontSize = '48px'; // Aproximadamente 12px * 4
-            referenceElement.style.padding = '0 60px';
+            referenceElement.style.fontSize = '64px'; // 16px * 4
+            referenceElement.style.padding = '0 128px';
         }
         
         if (contentElement) {
-            contentElement.style.padding = '120px 80px';
+            contentElement.style.padding = '128px'; // 32px * 4
         }
         
         if (logoElement) {
-            logoElement.style.bottom = '40px';
-            logoElement.style.right = '40px';
-            logoElement.style.padding = '20px 24px';
-            logoElement.style.fontSize = '32px';
+            logoElement.style.bottom = '64px'; // 16px * 4
+            logoElement.style.right = '64px';
+            logoElement.style.padding = '32px 48px'; // 8px*4 y 12px*4
+            logoElement.style.fontSize = '48px'; // 12px * 4
             
             // Escalar el emoji del logo
             const logoEmoji = logoElement.querySelector('span:first-child');
             const logoText = logoElement.querySelector('span:last-child');
             if (logoEmoji) logoEmoji.style.fontSize = '48px';
-            if (logoText) logoText.style.fontSize = '36px';
+            if (logoText) logoText.style.fontSize = '48px';
         }
         
         tempContainer.appendChild(clonedContent);
@@ -7989,11 +7989,13 @@ async function shareCustomizedVerse() {
         const canvas = await html2canvas(clonedContent, {
             width: 1080,
             height: 1920,
-            scale: 2,
+            scale: 1, // Scale 1 para evitar problemas de escalado
             useCORS: true,
             allowTaint: true,
             backgroundColor: null,
-            logging: false
+            logging: false,
+            windowWidth: 1080,
+            windowHeight: 1920
         });
         
         // Limpiar contenedor temporal
